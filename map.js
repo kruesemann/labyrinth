@@ -1,14 +1,16 @@
 import * as SCENE from "./scene.js";
 import * as SHADER from "./shader.js";
 import * as PLAYER from "./player.js";
+import * as NOISE from "./noise.js";
 import { createObject } from "./object.js";
 
+let initialSeed = undefined;
 let tileSize = 1;
-const tileMap = [];
+let tileMap = [];
 let numRows = 0;
 let numColumns = 0;
 let mesh = undefined;
-const objects = [];
+let objects = [];
 
 export function getTileMapInfo() {
     return { tileMap, numColumns, numRows };
@@ -18,9 +20,18 @@ export function getTileSize() {
     return tileSize;
 }
 
-export function initialize() {
-    numRows = 100;
-    numColumns = 100;
+export function initialize(seed, rows, columns) {
+    initialSeed = seed;
+    tileSize = 1;
+    tileMap = [];
+    numRows = rows;
+    numColumns = columns;
+    SCENE.removeMesh(mesh);
+    mesh = undefined;
+    for (let object of objects) {
+        SCENE.removeMesh(object.form.mesh);
+    }
+    objects = [];
 
     for (let i = 0; i < numRows; i++) {
         for (let j = 0; j < numColumns; j++) {
@@ -30,6 +41,20 @@ export function initialize() {
 }
 
 function createMesh() {
+    const numChannels = 3;
+    const noiseColors = [
+        [1.0, 0.5, 0.25, 0.13, 0.06, 0.03],
+        [1.0, 0.75, 0.625, 0.5, 0.375, 0.25],
+        [0.0, 0.25, 0.25, 0.5, 0.02, 0.01],
+    ];
+    const noiseExponents = [
+        3,
+        1,
+        0.5,
+    ];
+
+    const colorMap = NOISE.doubleNoise2D(initialSeed, numChannels, numRows, numColumns, noiseColors, noiseExponents);
+
     const vertices = [];
     const colors = []; // replace with texture coordinates
 
@@ -37,34 +62,38 @@ function createMesh() {
         for (let j = 0; j < numColumns; j++) {
             vertices.push(j * tileSize);
             vertices.push(i * tileSize);
-            vertices.push(0);
+            vertices.push(-0.01);
             vertices.push((j + 1) * tileSize);
             vertices.push(i * tileSize);
-            vertices.push(0);
+            vertices.push(-0.01);
             vertices.push(j * tileSize);
             vertices.push((i + 1) * tileSize);
-            vertices.push(0);
+            vertices.push(-0.01);
             vertices.push((j + 1) * tileSize);
             vertices.push(i * tileSize);
-            vertices.push(0);
+            vertices.push(-0.01);
             vertices.push((j + 1) * tileSize);
             vertices.push((i + 1) * tileSize);
-            vertices.push(0);
+            vertices.push(-0.01);
             vertices.push(j * tileSize);
             vertices.push((i + 1) * tileSize);
-            vertices.push(0);
+            vertices.push(-0.01);
+
+            if (colorMap[i * numColumns + j][0] < 0.05) {
+                tileMap[i * numColumns + j] = 1;
+            }
 
             if (tileMap[i * numColumns + j] == 1) {
                 for (let k = 0; k < 6; k++) {
-                    colors.push(0.1);
-                    colors.push(0.1);
+                    colors.push(0.0);
+                    colors.push(0.0);
                     colors.push(0.0);
                 }
             } else {
                 for (let k = 0; k < 6; k++) {
-                    colors.push(0.0);
-                    colors.push(0.3);
-                    colors.push(0.0);
+                    colors.push(colorMap[i * numColumns + j][0]);
+                    colors.push(colorMap[i * numColumns + j][1]);
+                    colors.push(colorMap[i * numColumns + j][2]);
                 }
             }
         }
@@ -86,14 +115,6 @@ export function create() {
         tileMap[i * numColumns] = 1;
         tileMap[i * numColumns + numColumns - 1] = 1;
     }
-
-    for (let j = 16; j < 67; j++) {
-        tileMap[53 * numColumns + j] = 1;
-    }
-
-    tileMap[80 * numColumns + 45] = 1;
-    tileMap[80 * numColumns + 47] = 1;
-    
 
     mesh = createMesh();
     SCENE.addMesh(mesh);

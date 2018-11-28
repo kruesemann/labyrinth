@@ -1,24 +1,41 @@
-let WIDTH = window.innerWidth;
-let HEIGHT = window.innerHeight;
-let VIEW_ANGLE = 45, ASPECT = WIDTH / HEIGHT, NEAR = 1, FAR = 1000;
-let scrollSpeed = 0.001;
+let WIDTH = undefined;
+let HEIGHT = undefined;
+let VIEW_ANGLE = undefined;
+let ASPECT = undefined;
+let NEAR = undefined;
+let FAR = undefined;
+let scrollSpeed = undefined;
 
-let renderer = new THREE.WebGLRenderer();
-let camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
-let scene = new THREE.Scene();
+let renderer = undefined;
+let camera = undefined;
+let scene = undefined;
 
-renderer.setSize(WIDTH, HEIGHT);
-document.body.appendChild(renderer.domElement);
-scene.add(camera);
-camera.position.z = 50;
-
-window.onresize = function resize() {
+export function initialize() {
     WIDTH = window.innerWidth;
     HEIGHT = window.innerHeight;
+    VIEW_ANGLE = 45;
     ASPECT = WIDTH / HEIGHT;
-    camera.aspect = ASPECT;
-    camera.updateProjectionMatrix();
+    NEAR = 1;
+    FAR = 1000;
+    scrollSpeed = 0.001;
+
+    renderer = new THREE.WebGLRenderer();
+    camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+    scene = new THREE.Scene();
+
     renderer.setSize(WIDTH, HEIGHT);
+    document.body.appendChild(renderer.domElement);
+    scene.add(camera);
+    camera.position.z = 50;
+
+    window.onresize = function resize() {
+        WIDTH = window.innerWidth;
+        HEIGHT = window.innerHeight;
+        ASPECT = WIDTH / HEIGHT;
+        camera.aspect = ASPECT;
+        camera.updateProjectionMatrix();
+        renderer.setSize(WIDTH, HEIGHT);
+    }
 }
 
 export function moveCamera(x, y) {
@@ -51,4 +68,13 @@ export function addMesh(mesh) {
 
 export function removeMesh(mesh) {
     scene.remove(mesh);
+    //disposeHierarchy (mesh, disposeNode);
+}
+
+export function reset() {
+    while(scene.children.length > 0){ 
+        removeMesh(scene.children[0]); 
+    }
+    scene.add(camera);
+    camera.position.z = 50;
 }

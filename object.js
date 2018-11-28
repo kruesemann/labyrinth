@@ -28,7 +28,7 @@ function createDotForm(x, y, color) {
     const form = {
         id: "dot",
         nodes: [{ x: 0, y: 0 }],
-        mesh: new THREE.Mesh(geometry, SHADER.getMaterial()),
+        mesh: new THREE.Mesh(geometry, SHADER.getObjectMaterial()),
         move: function (dx, dy) {
             function add(a, b) {
                 return Math.round((a + b) * 10) / 10;
@@ -113,7 +113,7 @@ function createBoxForm(x, y, color) {
             { x: 0, y: 0 },
             { x: 0, y: 0 },
         ],
-        mesh: new THREE.Mesh(geometry, SHADER.getMaterial()),
+        mesh: new THREE.Mesh(geometry, SHADER.getObjectMaterial()),
         move: function (dx, dy) {
             function add(a, b) {
                 return Math.round((a + b) * 10) / 10;
@@ -199,7 +199,7 @@ function createSnakeForm(x, y, color) {
     const form = {
         id: "snake",
         nodes: nodes,
-        mesh: new THREE.Mesh(geometry, SHADER.getMaterial()),
+        mesh: new THREE.Mesh(geometry, SHADER.getObjectMaterial()),
         move: function (dx, dy) {
             function add(a, b) {
                 return Math.round((a + b) * 10) / 10;

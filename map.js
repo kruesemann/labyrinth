@@ -14,7 +14,7 @@ let mesh = undefined;
 let objects = [];
 
 export function getTileMapInfo() {
-    return { tileMap, numColumns, numRows };
+    return { numColumns, numRows };
 }
 
 export function getTileSize() {
@@ -36,15 +36,34 @@ export function initialize(seed, rows, columns) {
 
     for (let i = 0; i < numRows; i++) {
         for (let j = 0; j < numColumns; j++) {
-            tileMap.push(0);
+            tileMap.push({ type: CONSTANTS.TILE_HIGHWALL, cavernID: -1 });
         }
     }
 }
 
 function createMesh() {
-
     const vertices = [];
     const colors = []; // replace with texture coordinates
+    const caverns = [];
+
+    const cavernColors = [
+        [1.00, 0.00, 0.00], //red
+        [0.00, 1.00, 0.00], //lime
+        [0.00, 0.00, 1.00], //blue
+        [1.00, 1.00, 0.00], //yellow
+        [1.00, 0.00, 1.00], //fuchsia
+        [0.00, 1.00, 1.00], //aqua
+        [0.50, 0.00, 0.00], //maroon
+        [0.00, 0.50, 0.00], //green
+        [0.00, 0.00, 0.50], //navy
+        [0.50, 0.50, 0.00], //olive
+        [0.50, 0.00, 0.50], //purple
+        [0.00, 0.50, 0.50], //teal
+        [1.00, 1.00, 1.00], //white
+        [0.50, 0.50, 0.50], //grey
+        [0.75, 0.75, 0.75], //silver
+        [0.25, 0.25, 0.25], //anthracite
+    ];
 
     for (let i = 0; i < numRows; i++) {
         for (let j = 0; j < numColumns; j++) {
@@ -67,35 +86,64 @@ function createMesh() {
             vertices.push((i + 1) * tileSize);
             vertices.push(-0.01);
 
-            if (tileMap[i * numColumns + j] == CONSTANTS.TILE_WALL) {
+            const tile = tileMap[i * numColumns + j];
+
+            if (tile.cavernID != -1) {
+                const cavernColor = cavernColors[tile.cavernID];
                 for (let k = 0; k < 6; k++) {
-                    colors.push(0.0);
-                    colors.push(0.0);
-                    colors.push(0.0);
+                    caverns.push(cavernColor[0]);
+                    caverns.push(cavernColor[1]);
+                    caverns.push(cavernColor[2]);
                 }
-            } else if (tileMap[i * numColumns + j] == CONSTANTS.TILE_DIRT) {
+            } else {
+                for (let k = 0; k < 6; k++) {
+                    caverns.push(0);
+                    caverns.push(0);
+                    caverns.push(0);
+                }
+            }
+
+            if (tile.type == CONSTANTS.TILE_WALL) {
+                for (let k = 0; k < 6; k++) {
+                    colors.push(0.05);
+                    colors.push(0.05);
+                    colors.push(0.05);
+                }
+            } else if (tile.type == CONSTANTS.TILE_DIRT) {
                 for (let k = 0; k < 6; k++) {
                     colors.push(0.24);
                     colors.push(0.15);
                     colors.push(0.0);
                 }
-            } else if (tileMap[i * numColumns + j] == CONSTANTS.TILE_WATER) {
+            } else if (tile.type == CONSTANTS.TILE_WATER) {
                 for (let k = 0; k < 6; k++) {
                     colors.push(0.0);
                     colors.push(0.2);
                     colors.push(0.6);
                 }
-            } else if (tileMap[i * numColumns + j] == CONSTANTS.TILE_DEEPWATER) {
+            } else if (tile.type == CONSTANTS.TILE_DEEPWATER) {
                 for (let k = 0; k < 6; k++) {
                     colors.push(0.0);
                     colors.push(0.1);
                     colors.push(0.3);
                 }
-            } else if (tileMap[i * numColumns + j] == CONSTANTS.TILE_GRASS) {
+            } else if (tile.type == CONSTANTS.TILE_GRASS) {
                 for (let k = 0; k < 6; k++) {
                     colors.push(0.1);
                     colors.push(0.3);
                     colors.push(0.0);
+                }
+            } else if (tile.type == CONSTANTS.TILE_HIGHWALL) {
+                for (let k = 0; k < 6; k++) {
+                    colors.push(0.0);
+                    colors.push(0.0);
+                    colors.push(0.0);
+                }
+            } else if (tile.type == CONSTANTS.TILE_PAVED) {
+                for (let k = 0; k < 6; k++) {
+                    colors.push(1.0);
+                    colors.push(0.2);
+                    colors.push(0.5);
                 }
             }
         }
@@ -104,8 +152,39 @@ function createMesh() {
     let geometry = new THREE.BufferGeometry();
     geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
     geometry.addAttribute('a_color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+    geometry.addAttribute('a_cavernID', new THREE.BufferAttribute(new Float32Array(caverns), 3));
 
-    return new THREE.Mesh(geometry, SHADER.getMaterial());
+    return new THREE.Mesh(geometry, SHADER.getMapMaterial());
+}
+
+function labelCaverns(caverns) {
+    const cavernCenters = [];
+    let ID = 0;
+
+    for (let i = 0; i < caverns.length; i++) {
+        const centerTile = coordsToTile(caverns[i].x, caverns[i].y);
+        if (tileMap[centerTile.i * numColumns + centerTile.j].cavernID == -1) {
+            cavernCenters.push({ i: centerTile.i, j: centerTile.j, ID });
+            const queue = [centerTile];
+
+            while (queue.length > 0) {
+                const current = queue.pop();
+                tileMap[current.i * numColumns + current.j].cavernID = ID;
+
+                for (let j = 0; j < 4; j++) {
+                    const neighbor = { i: current.i + CONSTANTS.DIRECTIONS[j].i, j: current.j + CONSTANTS.DIRECTIONS[j].j };
+
+                    if (tileMap[neighbor.i * numColumns + neighbor.j].cavernID == -1
+                        && !isTileWall(neighbor.i, neighbor.j)) {
+                        queue.push(neighbor);
+                    }
+                }
+            }
+            ID++;
+        }
+    }
+
+    return cavernCenters;
 }
 
 function norm(x, y) {
@@ -116,37 +195,53 @@ function dist(x1, y1, x2, y2) {
     return norm(x1 - x2, y1 - y2);
 }
 
-function ellipseDist(x, y, mx, my, rx, ry) {
-    return Math.sqrt(ry * ry * (x - mx) * (x - mx) + rx * rx * (y - my) * (y - my));
+function ellipseDist(x, y, mx, my, rx, ry, angle) {
+    const sin = Math.sin(angle);
+    const cos = Math.cos(angle);
+    const projX = cos * (x - mx) - sin * (y - my);
+    const projY = sin * (x - mx) + cos * (y - my);
+    return Math.sqrt(ry * ry * projX * projX + rx * rx * projY * projY);
 }
 
 export function create() {
-    const numCaves = 8;
-    const caves = [];
-    const caveSizeMin = 5;
-    const caveSizeMaxMin = 10;
-    const caveSizeMaxMax = 50;
+    const numZones = { i: 4, j: 4 };
+    const numCavernsPerZone = 1;
+    const caverns = [];
+    const cavernDistMin = 5;
+    const cavernSizeMin = 5;
+    const cavernSizeMaxMin = 10;
+    const cavernSizeMaxMax = 40;
 
-    for (let i = 0; i < numCaves; i++) {
-        caves.push({
-            x: numColumns * NOISE.random(),
-            y: numRows * NOISE.random(),
-            caveSizeX: caveSizeMaxMin + (caveSizeMaxMax - caveSizeMaxMin) * NOISE.random(),
-            caveSizeY: caveSizeMaxMin + (caveSizeMaxMax - caveSizeMaxMin) * NOISE.random(),
-        });
+    for (let i = 0; i < numZones.i; i++) {
+        for (let j = 0; j < numZones.j; j++) {
+            for (let k = 0; k < numCavernsPerZone; k++) {
+                const lowerOffset = (i == 0 ? cavernSizeMaxMax : cavernDistMin)                 + i * numRows / numZones.i;
+                const upperOffset = (i == numZones.i - 1 ? cavernSizeMaxMax : cavernDistMin)    + (numZones.i - i - 1) * numRows / numZones.i;
+                const leftOffset  = (j == 0 ? cavernSizeMaxMax : cavernDistMin)                 + j * numColumns / numZones.j + 5;
+                const rightOffset = (j == numZones.j ? cavernSizeMaxMax : cavernDistMin)        + (numZones.j - j - 1) * numColumns / numZones.j + 5;
+
+                caverns.push({
+                    x: leftOffset + (numColumns - leftOffset - rightOffset) * NOISE.random(),
+                    y: lowerOffset + (numRows - lowerOffset - upperOffset) * NOISE.random(),
+                    angle: Math.PI * NOISE.random(),
+                    cavernSizeX: cavernSizeMaxMin + (cavernSizeMaxMax - cavernSizeMaxMin) * NOISE.random(),
+                    cavernSizeY: cavernSizeMaxMin + (cavernSizeMaxMax - cavernSizeMaxMin) * NOISE.random(),
+                });
+            }
+        }
     }
 
     const numChannels = 3;
     const noiseColors = [
-        //[1.0, 0.5, 0.25, 0.13, 0.06, 0.03],
-        [0.0, 0.8, 0.8, 0.6, 0.5, 0.0],
-        [1.0, 0.75, 0.625, 0.5, 0.375, 0.25],
         [0.05, 0.1, 0.4, 0.15, 0.25, 0.05],
+        [1.0, 0.75, 0.625, 0.5, 0.375, 0.25],
+        [0.0, 0.8, 0.8, 0.6, 0.5, 0.0],
+        //[1.0, 0.5, 0.25, 0.13, 0.06, 0.03],
     ];
     const noiseExponents = [
-        3,
-        1,
         2,
+        1,
+        3,
     ];
 
     const colorMap = NOISE.doubleNoise2D(initialSeed, numChannels, numRows, numColumns, noiseColors, noiseExponents);
@@ -154,36 +249,46 @@ export function create() {
     for (let i = 1; i < numRows - 1; i++) {
         for (let j = 1; j < numColumns - 1; j++) {
             let tileCenter = tileToCenter(i, j);
-            for (let k = 0; k < numCaves; k++) {
-                let distToCenter = dist(tileCenter.x, tileCenter.y, caves[k].x, caves[k].y);
+            for (let k = 0; k < caverns.length; k++) {
+                let distToCenter = dist(tileCenter.x, tileCenter.y, caverns[k].x, caverns[k].y);
 
-                if (distToCenter < caveSizeMin) {
+                if (distToCenter < cavernSizeMin) {
                     if (colorMap[i * numColumns + j][1] > 0.5) {
                         if (colorMap[i * numColumns + j][1] > 0.6) {
-                            tileMap[i * numColumns + j] = CONSTANTS.TILE_DEEPWATER;
+                            tileMap[i * numColumns + j].type = CONSTANTS.TILE_DEEPWATER;
                         } else {
-                            tileMap[i * numColumns + j] = CONSTANTS.TILE_WATER;
+                            tileMap[i * numColumns + j].type = CONSTANTS.TILE_WATER;
                         }
                     } else {
-                        tileMap[i * numColumns + j] = CONSTANTS.TILE_GRASS;
+                        tileMap[i * numColumns + j].type = CONSTANTS.TILE_GRASS;
                     }
                 } else {
-                    let ellipseRadius = caves[k].caveSizeX * caves[k].caveSizeY;
-                    let distToMax = ellipseRadius - ellipseDist(tileCenter.x, tileCenter.y, caves[k].x, caves[k].y, caves[k].caveSizeX, caves[k].caveSizeY);
-                    if (colorMap[i * numColumns + j][2] < distToMax / (1.5 * ellipseRadius)) {
-                        if (colorMap[i * numColumns + j][1] > 0.5) {
-                            if (colorMap[i * numColumns + j][1] > 0.6) {
-                                tileMap[i * numColumns + j] = CONSTANTS.TILE_DEEPWATER;
+                    let ellipseRadius = caverns[k].cavernSizeX * caverns[k].cavernSizeY;
+                    let distToMax = ellipseRadius - ellipseDist(tileCenter.x, tileCenter.y, caverns[k].x, caverns[k].y, caverns[k].cavernSizeX, caverns[k].cavernSizeY, caverns[k].angle);
+
+                    if (colorMap[i * numColumns + j][0] < (distToMax + 2 * cavernSizeMaxMax) / (1.5 * ellipseRadius)) {
+                        if (colorMap[i * numColumns + j][0] < distToMax / (1.5 * ellipseRadius)) {
+                            if (colorMap[i * numColumns + j][1] > 0.5) {
+                                if (colorMap[i * numColumns + j][1] > 0.6) {
+                                    tileMap[i * numColumns + j].type = CONSTANTS.TILE_DEEPWATER;
+                                } else {
+                                    tileMap[i * numColumns + j].type = CONSTANTS.TILE_WATER;
+                                }
                             } else {
-                                tileMap[i * numColumns + j] = CONSTANTS.TILE_WATER;
+                                tileMap[i * numColumns + j].type = CONSTANTS.TILE_DIRT;
                             }
-                        } else {
-                            tileMap[i * numColumns + j] = CONSTANTS.TILE_DIRT;
+                        } else if (tileMap[i * numColumns + j].type == CONSTANTS.TILE_HIGHWALL) {
+                            tileMap[i * numColumns + j].type = CONSTANTS.TILE_WALL;
                         }
                     }
                 }
             }
         }
+    }
+
+    const cavernCenters = labelCaverns(caverns);
+    for (let i = 0; i < cavernCenters.length; i++) {
+        tileMap[cavernCenters[i].i * numColumns + cavernCenters[i].j].type = CONSTANTS.TILE_PAVED;
     }
 
     mesh = createMesh();
@@ -208,7 +313,7 @@ export function tileToCenter(i, j) {
 }
 
 function isTileBlocked(i, j, forbiddenTileTypes) {
-    const tileType = tileMap[i * numColumns + j];
+    const tileType = tileMap[i * numColumns + j].type;
     for (let i = 0; i < forbiddenTileTypes.length; i++) {
         if (tileType == forbiddenTileTypes[i]) {
             return true;
@@ -217,21 +322,10 @@ function isTileBlocked(i, j, forbiddenTileTypes) {
     return false;
 }
 
-const directions = [
-    { i: 1, j: 0 },
-    { i: 1, j: -1 },
-    { i: 0, j: -1 },
-    { i: -1, j: -1 },
-    { i: -1, j: 0 },
-    { i: -1, j: 1 },
-    { i: 0, j: 1 },
-    { i: 1, j: 1 }
-];
-
 function isNextTileBlocked(x, y, dx, dy, forbiddenTileTypes) {
     const currentTile = coordsToTile(x, y);
     
-    for (let dir of directions) {
+    for (let dir of CONSTANTS.DIRECTIONS) {
         const nextTile = { i: currentTile.i + dir.i, j: currentTile.j + dir.j };
         
         if (isTileBlocked(nextTile.i, nextTile.j, forbiddenTileTypes)) {
@@ -256,19 +350,19 @@ function isNextTileBlocked(x, y, dx, dy, forbiddenTileTypes) {
 }
 
 export function isNextTileGround(x, y, dx, dy) {
-    return !isNextTileBlocked(x, y, dx, dy, [CONSTANTS.TILE_WALL, CONSTANTS.TILE_WATER, CONSTANTS.TILE_DEEPWATER]);
+    return !isNextTileBlocked(x, y, dx, dy, [CONSTANTS.TILE_HIGHWALL, CONSTANTS.TILE_WALL, CONSTANTS.TILE_WATER, CONSTANTS.TILE_DEEPWATER]);
 }
 
 export function isTileGround(i, j) {
-    return !isTileBlocked(i, j, [CONSTANTS.TILE_WALL, CONSTANTS.TILE_WATER, CONSTANTS.TILE_DEEPWATER]);
+    return !isTileBlocked(i, j, [CONSTANTS.TILE_HIGHWALL, CONSTANTS.TILE_WALL, CONSTANTS.TILE_WATER, CONSTANTS.TILE_DEEPWATER]);
 }
 
 export function isNextTileWall(x, y, dx, dy) {
-    return isNextTileBlocked(x, y, dx, dy, [CONSTANTS.TILE_WALL]);
+    return isNextTileBlocked(x, y, dx, dy, [CONSTANTS.TILE_HIGHWALL, CONSTANTS.TILE_WALL]);
 }
 
 export function isTileWall(i, j) {
-    return isTileBlocked(i, j, [CONSTANTS.TILE_WALL]);
+    return isTileBlocked(i, j, [CONSTANTS.TILE_HIGHWALL, CONSTANTS.TILE_WALL]);
 }
 
 export function planObjects(counter) {

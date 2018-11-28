@@ -1,5 +1,6 @@
 import * as MAP from "./map.js";
 import * as PLAYER from "./player.js";
+import * as CONSTANTS from "./constants.js";
 
 function manhattan(x1, y1, x2, y2) {
     return Math.abs(x2 - x1) + Math.abs(y2 - y1);
@@ -92,19 +93,8 @@ BinaryHeap.prototype = {
     }
 };
 
-const directions = [
-    { i: 1, j: 0 },
-    { i: 1, j: -1 },
-    { i: 0, j: -1 },
-    { i: -1, j: -1 },
-    { i: -1, j: 0 },
-    { i: -1, j: 1 },
-    { i: 0, j: 1 },
-    { i: 1, j: 1 }
-];
-
-function aStar(map, position, target, object) {
-    const { tileMap, numColumns, numRows } = map;
+function aStar(mapInfo, position, target, object) {
+    const { numColumns, numRows } = mapInfo;
     const startTile = MAP.coordsToTile(position.x, position.y);
     const targetTile = MAP.coordsToTile(target.x, target.y);
     let compMap = [];
@@ -152,14 +142,19 @@ function aStar(map, position, target, object) {
 
         current.closed = true;
 
-        for (let dir of directions) {
+        for (let dir of CONSTANTS.DIRECTIONS) {
             const ni = current.i + dir.i;
             const nj = current.j + dir.j;
 
-            const neighbour = compMap[ni * numColumns + nj];
+            const neighbor = compMap[ni * numColumns + nj];
 
-            if (neighbour.closed) continue;
+            if (neighbor.closed) continue;
             if (!object.form.isAllowed(ni, nj)) continue;
+            if (dir.i != 0
+                && dir.j != 0
+                && !object.form.isAllowed(current.i + dir.i, current.j)
+                && !object.form.isAllowed(current.i, current.j + dir.j))
+                continue;
 
             const nCost = weightFunction(ni, nj);
             const g =
@@ -167,16 +162,16 @@ function aStar(map, position, target, object) {
                 ? current.g + nCost * 1.5
                 : current.g + nCost;
 
-            if (neighbour.visited && g >= neighbour.g) continue;
-            neighbour.pred = current;
-            neighbour.g = g;
-            neighbour.f = g + manhattan(ni, nj, targetTile.i, targetTile.j);
+            if (neighbor.visited && g >= neighbor.g) continue;
+            neighbor.pred = current;
+            neighbor.g = g;
+            neighbor.f = g + manhattan(ni, nj, targetTile.i, targetTile.j);
 
-            if (!neighbour.visited) {
-                neighbour.visited = true;
-                heap.push(neighbour);
+            if (!neighbor.visited) {
+                neighbor.visited = true;
+                heap.push(neighbor);
             } else {
-                heap.rescoreElement(neighbour);
+                heap.rescoreElement(neighbor);
             }
         }
     }

@@ -1,3 +1,5 @@
+const cameraDist = 500;
+
 let WIDTH = undefined;
 let HEIGHT = undefined;
 let VIEW_ANGLE = undefined;
@@ -26,7 +28,7 @@ export function initialize() {
     renderer.setSize(WIDTH, HEIGHT);
     document.body.appendChild(renderer.domElement);
     scene.add(camera);
-    camera.position.z = 50;
+    camera.position.z = cameraDist;
 
     window.onresize = function resize() {
         WIDTH = window.innerWidth;
@@ -76,5 +78,5 @@ export function reset() {
         removeMesh(scene.children[0]); 
     }
     scene.add(camera);
-    camera.position.z = 50;
+    camera.position.z = cameraDist;
 }

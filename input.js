@@ -1,5 +1,6 @@
 import * as SCENE from "./scene.js";
 import * as PLAYER from "./player.js";
+import * as SHADER from "./shader.js";
 import { nextLevel } from "./index.js";
 
 let mousedown = false;
@@ -78,6 +79,21 @@ export function initialize() {
             case 51://3
                 PLAYER.transform("snake");
                 break;
+            case 65://a
+                PLAYER.moveLeft();
+                break;
+            case 67://c
+                SHADER.mapUniforms.u_showCaverns.value = true;
+                break;
+            case 68://d
+                PLAYER.moveRight();
+                break;
+            case 83://s
+                PLAYER.moveDown();
+                break;
+            case 87://w
+                PLAYER.moveUp();
+                break;
             case 122:
                 if (
                     (document.fullScreenElement && document.fullScreenElement !== null) ||
@@ -104,6 +120,21 @@ export function initialize() {
                 break;
             case 40://down
                 PLAYER.stopDown();
+                break;
+            case 65://a
+                PLAYER.stopLeft();
+                break;
+            case 67://c
+                SHADER.mapUniforms.u_showCaverns.value = false;
+                break;
+            case 68://d
+                PLAYER.stopRight();
+                break;
+            case 83://s
+                PLAYER.stopDown();
+                break;
+            case 87://w
+                PLAYER.stopUp();
                 break;
         }
     });

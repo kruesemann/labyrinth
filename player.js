@@ -7,7 +7,7 @@ export function initialize() {
     if (player) {
         SCENE.removeMesh(player.form.mesh);
     }
-    player = createObject(2, 2, [1, 1, 0], 0.5, "box");
+    player = createObject(40, 40, [1, 1, 0], 0.5, "box");
 }
 
 export function center() {

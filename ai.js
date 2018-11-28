@@ -103,14 +103,14 @@ const directions = [
     { i: 1, j: 1 }
 ];
 
-function aStar(map, position, target) {
+function aStar(map, position, target, object) {
     const { tileMap, numColumns, numRows } = map;
     const startTile = MAP.coordsToTile(position.x, position.y);
     const targetTile = MAP.coordsToTile(target.x, target.y);
     let compMap = [];
   
     const weightFunction = function(i, j) {
-        if (tileMap[i * numColumns + j] == 0) return 1;
+        if (object.form.isAllowed(i, j)) return 1;
         return 2;
     };
   
@@ -119,7 +119,7 @@ function aStar(map, position, target) {
             compMap.push({
                 i: i,
                 j: j,
-                walkable: tileMap[i * numColumns + j] == 0,
+                //allowed: object.form.isAllowed(i, j),
                 visited: false,
                 closed: false,
                 pred: null,
@@ -157,10 +157,9 @@ function aStar(map, position, target) {
             const nj = current.j + dir.j;
 
             const neighbour = compMap[ni * numColumns + nj];
-            const neighbourTile = tileMap[ni * numColumns + nj];
 
             if (neighbour.closed) continue;
-            if (neighbourTile == 1) continue;
+            if (!object.form.isAllowed(ni, nj)) continue;
 
             const nCost = weightFunction(ni, nj);
             const g =
@@ -187,7 +186,7 @@ function aStar(map, position, target) {
 
 export function test(self, counter) {
     if (counter % 100 == 0) {
-        return { update: true, route: aStar(MAP.getTileMapInfo(), self.form.nodes[0], PLAYER.getPosition()) };
+        return { update: true, route: aStar(MAP.getTileMapInfo(), self.form.nodes[0], PLAYER.getPosition(), self) };
     }
     return { update: false, route: undefined };
 }

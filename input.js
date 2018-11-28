@@ -1,5 +1,6 @@
 import * as SCENE from "./scene.js";
 import * as PLAYER from "./player.js";
+import { nextLevel } from "./index.js";
 
 let mousedown = false;
 let mouse = { x: 0, y: 0 };
@@ -53,6 +54,9 @@ export function initialize() {
         }
 
         switch (event.keyCode) {
+            case 88://x
+                nextLevel();
+                break;
             case 37://left
                 PLAYER.moveLeft();
                 break;

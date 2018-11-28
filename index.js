@@ -8,8 +8,8 @@ let gameSeed = 1;
 NOISE.setSeed(gameSeed);
 
 let mapSeed = 1000 * NOISE.random();
-let mapWidth = 100;
-let mapHeight = 100;
+let mapWidth = 200;
+let mapHeight = 200;
 
 SCENE.initialize();
 INPUT.initialize();
@@ -19,17 +19,26 @@ MAP.create();
 PLAYER.initialize();
 
 let counter = 0;
+let nextLvl = false;
+
+export function nextLevel() {
+    nextLvl = true;
+}
 
 function gameloop() {
-    if (MAP.collisionWithPlayer()) {
+    let death = MAP.collisionWithPlayer();
+
+    if (death || nextLvl) {
+        if (death) {
+            alert("COLLISION!! AHHHHHH!!!");
+            //return;
+        }
+        nextLvl = false;
         SCENE.reset();
         mapSeed = 1000 * NOISE.random();
         MAP.initialize(mapSeed, mapHeight, mapWidth);
-        //MAP.initialize(Math.floor(1000 * Math.random()), Math.floor(1000 * Math.random()), mapHeight, mapWidth);
         MAP.create();
         PLAYER.initialize();
-        alert("COLLISION!! AHHHHHH!!!");
-        //return;
     }
     requestAnimationFrame(gameloop);
 

@@ -46,7 +46,10 @@ function createDotForm(x, y, color) {
             this.nodes[0].y = y + 0.5;
         },
         isBlocked: function(dx, dy) {
-            return MAP.isTileBlocked(this.nodes[0].x, this.nodes[0].y, dx, dy);
+            return !MAP.isNextTileGround(this.nodes[0].x, this.nodes[0].y, dx, dy);
+        },
+        isAllowed: function(i, j) {
+            return MAP.isTileGround(i, j);
         },
         center: function() {
             SCENE.lookAt(this.nodes[0].x, this.nodes[0].y);
@@ -134,10 +137,13 @@ function createBoxForm(x, y, color) {
             ];
         },
         isBlocked: function(dx, dy) {
-            return MAP.isTileBlocked(this.nodes[0].x, this.nodes[0].y, dx, dy)
-                || MAP.isTileBlocked(this.nodes[1].x, this.nodes[1].y, dx, dy)
-                || MAP.isTileBlocked(this.nodes[2].x, this.nodes[2].y, dx, dy)
-                || MAP.isTileBlocked(this.nodes[3].x, this.nodes[3].y, dx, dy);
+            return MAP.isNextTileWall(this.nodes[0].x, this.nodes[0].y, dx, dy)
+                || MAP.isNextTileWall(this.nodes[1].x, this.nodes[1].y, dx, dy)
+                || MAP.isNextTileWall(this.nodes[2].x, this.nodes[2].y, dx, dy)
+                || MAP.isNextTileWall(this.nodes[3].x, this.nodes[3].y, dx, dy);
+        },
+        isAllowed: function(i, j) {
+            return !MAP.isTileWall(i, j);
         },
         center: function() {
             SCENE.lookAt(this.nodes[0].x + 0.5, this.nodes[0].y + 0.5);
@@ -252,7 +258,10 @@ function createSnakeForm(x, y, color) {
             }
         },
         isBlocked: function(dx, dy) {
-            return MAP.isTileBlocked(this.nodes[0].x, this.nodes[0].y, dx, dy);
+            return MAP.isNextTileWall(this.nodes[0].x, this.nodes[0].y, dx, dy);
+        },
+        isAllowed: function(i, j) {
+            return !MAP.isTileWall(i, j);
         },
         center: function() {
             SCENE.lookAt(this.nodes[0].x, this.nodes[0].y);

@@ -341,8 +341,11 @@ export function createObject(i, j, color, speed, formName, aiName) {
             }
 
             if (dx != 0 && dy != 0 && this.form.isBlocked(dx, dy)) {
-                //dx = 0;
-                dy = 0;
+                if (this.form.isBlocked(-dx, dy)) {
+                    dx = 0;
+                } else {
+                    dy = 0;
+                }
             }
 
             if (dx != 0 || dy != 0) {

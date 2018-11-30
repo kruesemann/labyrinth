@@ -14,32 +14,31 @@ let mapHeight = 200;
 SCENE.initialize();
 INPUT.initialize();
 
-MAP.initialize(mapSeed, mapHeight, mapWidth);
-MAP.create();
-PLAYER.initialize();
-
 let counter = 0;
-let nextLvl = false;
+let nextLvl = true;
 
 export function nextLevel() {
     nextLvl = true;
 }
 
-function gameloop() {
-    let death = MAP.collisionWithPlayer();
+function loadNewMap() {
+    SCENE.reset();
+    mapSeed = 1000 * NOISE.random();
+    MAP.initialize(mapSeed, mapHeight, mapWidth);
+}
 
-    if (death || nextLvl) {
+function gameloop() {
+    if (nextLvl) {
+        nextLvl = false;
+        loadNewMap();
+    } else {
+        let death = MAP.collisionWithPlayer();
         if (death) {
             alert("COLLISION!! AHHHHHH!!!");
-            //return;
+            loadNewMap();//return;
         }
-        nextLvl = false;
-        SCENE.reset();
-        mapSeed = 1000 * NOISE.random();
-        MAP.initialize(mapSeed, mapHeight, mapWidth);
-        MAP.create();
-        PLAYER.initialize();
     }
+
     requestAnimationFrame(gameloop);
 
     if (counter == 1000) {

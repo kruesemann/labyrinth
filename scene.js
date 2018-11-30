@@ -27,8 +27,6 @@ export function initialize() {
 
     renderer.setSize(WIDTH, HEIGHT);
     document.body.appendChild(renderer.domElement);
-    scene.add(camera);
-    camera.position.z = cameraDist;
 
     window.onresize = function resize() {
         WIDTH = window.innerWidth;

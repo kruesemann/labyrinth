@@ -91,6 +91,9 @@ export function initialize() {
             case 83://s
                 PLAYER.moveDown();
                 break;
+            case 86://v
+                SHADER.mapUniforms.u_showGroundComps.value = true;
+                break;
             case 87://w
                 PLAYER.moveUp();
                 break;
@@ -132,6 +135,9 @@ export function initialize() {
                 break;
             case 83://s
                 PLAYER.stopDown();
+                break;
+            case 86://v
+                SHADER.mapUniforms.u_showGroundComps.value = false;
                 break;
             case 87://w
                 PLAYER.stopUp();

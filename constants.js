@@ -7,6 +7,7 @@ export const TILE_SHALLOWWATER  = 5;
 export const TILE_DIRT          = 6;
 export const TILE_GRASS         = 7;
 export const TILE_PAVED         = 8;
+export const TILE_EXIT          = 9;
 
 export const DIRECTIONS = [
     { i: 1, j: 0 },

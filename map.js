@@ -31,6 +31,8 @@ let numColumns = 0;
 let mesh = undefined;
 let objects = [];
 
+let groundComponents = undefined;
+
 export function getTileMapInfo() {
     return { numColumns, numRows };
 }
@@ -58,7 +60,7 @@ export function initialize(seed, rows, columns) {
 
     for (let i = 0; i < numRows; i++) {
         for (let j = 0; j < numColumns; j++) {
-            tileMap.push({ type: CONSTANTS.TILE_HIGHWALL, caveID: -1 });
+            tileMap.push({ type: CONSTANTS.TILE_HIGHWALL, caveID: -1, compIDs: [-1] });
         }
     }
 
@@ -70,6 +72,7 @@ function createMesh() {
     const vertices = [];
     const colors = []; // replace with texture coordinates
     const caves = [];
+    const groundComps = [];
 
     const caveColors = [
         [1.00, 0.00, 0.00], //red
@@ -129,6 +132,21 @@ function createMesh() {
                 }
             }
 
+            if (tile.compIDs[0] != -1) {
+                const compColor = caveColors[tile.compIDs[0] % 17];
+                for (let k = 0; k < 6; k++) {
+                    groundComps.push(compColor[0]);
+                    groundComps.push(compColor[1]);
+                    groundComps.push(compColor[2]);
+                }
+            } else {
+                for (let k = 0; k < 6; k++) {
+                    groundComps.push(0);
+                    groundComps.push(0);
+                    groundComps.push(0);
+                }
+            }
+
             if (tile.type == CONSTANTS.TILE_WALL) {
                 for (let k = 0; k < 6; k++) {
                     colors.push(noiseMap[i * numColumns + j][0] / 5);//colors.push(0.05);
@@ -184,6 +202,7 @@ function createMesh() {
     geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
     geometry.addAttribute('a_color', new THREE.BufferAttribute(new Float32Array(colors), 3));
     geometry.addAttribute('a_caveID', new THREE.BufferAttribute(new Float32Array(caves), 3));
+    geometry.addAttribute('a_groundCompID', new THREE.BufferAttribute(new Float32Array(groundComps), 3));
 
     return new THREE.Mesh(geometry, SHADER.getMapMaterial());
 }
@@ -399,6 +418,39 @@ function buildTunnel(caves, cave, caveSystems, targetCave) {
     return caveSystems;
 }
 
+function labelConnectedComponents(isAllowed, componentIndex) {
+    const components = [];
+
+    for (let i = 1; i < numRows - 1; i++) {
+        for (let j = 1; j < numColumns - 1; j++) {
+            if (isAllowed(i, j)) {
+                if (tileMap[i * numColumns + j].compIDs[componentIndex] == -1) {
+                    const compID = components.length;
+                    components.push({ i, j, ID: compID, size: 1 });
+                    const queue = [{ i, j }];
+    
+                    while (queue.length > 0) {
+                        const current = queue.pop();
+                        tileMap[current.i * numColumns + current.j].compIDs[componentIndex] = compID;
+                        components[compID].size++;
+    
+                        for (let j = 0; j < 4; j++) {
+                            const neighbor = { i: current.i + CONSTANTS.DIRECTIONS[j].i, j: current.j + CONSTANTS.DIRECTIONS[j].j };
+    
+                            if (tileMap[neighbor.i * numColumns + neighbor.j].compIDs[componentIndex] == -1
+                                && isAllowed(neighbor.i, neighbor.j)) {
+                                queue.push(neighbor);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return components;
+}
+
 function norm(x, y) {
     return Math.sqrt(x * x + y * y);
 }
@@ -498,6 +550,8 @@ function create() {
             }
         }
     }
+
+    groundComponents = labelConnectedComponents(isTileGround, 0);
 
     mesh = createMesh();
     SCENE.addMesh(mesh);

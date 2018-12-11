@@ -28,10 +28,9 @@ let tileSize = 1;
 let tileMap = [];
 let numRows = 0;
 let numColumns = 0;
+let level = undefined;
 let mesh = undefined;
 let objects = [];
-
-let groundComponents = undefined;
 
 export function getTileMapInfo() {
     return { numColumns, numRows };
@@ -45,12 +44,13 @@ export function manhattan(x1, y1, x2, y2) {
     return Math.abs(x2 - x1) + Math.abs(y2 - y1);
 }
 
-export function initialize(seed, rows, columns) {
+export function initialize(seed, rows, columns, lvl) {
     initialSeed = seed;
     tileSize = 1;
     tileMap = [];
     numRows = rows;
     numColumns = columns;
+    level = lvl;
     SCENE.removeMesh(mesh);
     mesh = undefined;
     for (let object of objects) {
@@ -60,7 +60,7 @@ export function initialize(seed, rows, columns) {
 
     for (let i = 0; i < numRows; i++) {
         for (let j = 0; j < numColumns; j++) {
-            tileMap.push({ type: CONSTANTS.TILE_HIGHWALL, caveID: -1, compIDs: [-1] });
+            tileMap.push({ type: CONSTANTS.TILE_HIGHWALL, caveID: -1, compIDs: [-1 , -1 , -1] });
         }
     }
 
@@ -68,11 +68,45 @@ export function initialize(seed, rows, columns) {
     create();
 }
 
+function create() {
+    const caverns = generateCavernCenters();
+    const caves = labelCaves(caverns);
+    connectCaves(caves);
+    const groundComponents = labelConnectedComponents(isTileGround, 0);
+    const wideComponents = labelConnectedComponents(isTileWide, 1);
+    const wideGroundComponents = labelConnectedComponents(isTileWideGround, 2);
+
+    // choose random wideGroundComponent and set start
+    // choose - if possible - exit point that is in a different component for every type
+    let index = Math.floor((wideGroundComponents.length - 1) * NOISE.random());
+    for (let i = index; i != index - 1; i = (i + 1) % (wideGroundComponents.length - 1)) {
+        if (wideGroundComponents[i].size > Math.sqrt(numRows * numColumns)) {
+            index = i;
+            break;
+        }
+    }
+    const playerComp = wideGroundComponents[index];
+    const exitComp = wideGroundComponents[(index + Math.floor(wideGroundComponents.length / 2)) % wideGroundComponents.length];
+    tileMap[exitComp.i * numColumns + exitComp.j].type = CONSTANTS.TILE_EXIT;
+
+    mesh = createMesh();
+    SCENE.addMesh(mesh);
+
+    /*const comp = wideGroundComponents[Math.floor((wideGroundComponents.length - 1) * NOISE.random())];
+    let object1 = createObject(comp.i, comp.j, [1, 0, 0], 10, "dot", "test");
+    objects.push(object1);
+    let object2 = createObject(50, 80, [1, 0, 1], 3, "snake", "test");
+    objects.push(object2);*/
+
+    PLAYER.initialize(playerComp.i, playerComp.j);
+}
+
 function createMesh() {
     const vertices = [];
     const colors = []; // replace with texture coordinates
     const caves = [];
     const groundComps = [];
+    const wideComps = [];
 
     const caveColors = [
         [1.00, 0.00, 0.00], //red
@@ -133,17 +167,32 @@ function createMesh() {
             }
 
             if (tile.compIDs[0] != -1) {
-                const compColor = caveColors[tile.compIDs[0] % 17];
+                const gcompColor = caveColors[tile.compIDs[0] % 17];
                 for (let k = 0; k < 6; k++) {
-                    groundComps.push(compColor[0]);
-                    groundComps.push(compColor[1]);
-                    groundComps.push(compColor[2]);
+                    groundComps.push(gcompColor[0]);
+                    groundComps.push(gcompColor[1]);
+                    groundComps.push(gcompColor[2]);
                 }
             } else {
                 for (let k = 0; k < 6; k++) {
                     groundComps.push(0);
                     groundComps.push(0);
                     groundComps.push(0);
+                }
+            }
+
+            if (tile.compIDs[1] != -1) {
+                const wcompColor = caveColors[tile.compIDs[1] % 17];
+                for (let k = 0; k < 6; k++) {
+                    wideComps.push(wcompColor[0]);
+                    wideComps.push(wcompColor[1]);
+                    wideComps.push(wcompColor[2]);
+                }
+            } else {
+                for (let k = 0; k < 6; k++) {
+                    wideComps.push(0);
+                    wideComps.push(0);
+                    wideComps.push(0);
                 }
             }
 
@@ -189,6 +238,12 @@ function createMesh() {
                     colors.push(0.2);
                     colors.push(0.5);
                 }
+            } else if (tile.type == CONSTANTS.TILE_EXIT) {
+                for (let k = 0; k < 6; k++) {
+                    colors.push(1.0);
+                    colors.push(0.0);
+                    colors.push(1.0);
+                }
             }
             /*for (let k = 0; k < 6; k++) {
                 colors.push(0.0);
@@ -203,8 +258,66 @@ function createMesh() {
     geometry.addAttribute('a_color', new THREE.BufferAttribute(new Float32Array(colors), 3));
     geometry.addAttribute('a_caveID', new THREE.BufferAttribute(new Float32Array(caves), 3));
     geometry.addAttribute('a_groundCompID', new THREE.BufferAttribute(new Float32Array(groundComps), 3));
+    geometry.addAttribute('a_wideCompID', new THREE.BufferAttribute(new Float32Array(wideComps), 3));
+
+    SHADER.mapUniforms.u_ambientLight.value = [1.0, 1.0, 1.0, Math.max(0.0, 3.0 - level * 0.03)];
 
     return new THREE.Mesh(geometry, SHADER.getMapMaterial());
+}
+
+function generateCavernCenters() {
+    const numZones = { i: 4, j: 4 };
+    const numCavernsPerZone = 1;
+    const caverns = [];
+    const cavernDistMin = 5;
+    const cavernSizeMin = 5;
+    const cavernSizeMaxMin = 10;
+    const cavernSizeMaxMax = 40;
+
+    for (let i = 0; i < numZones.i; i++) {
+        for (let j = 0; j < numZones.j; j++) {
+            for (let k = 0; k < numCavernsPerZone; k++) {
+                const lowerOffset = (i == 0 ? cavernSizeMaxMax : cavernDistMin)                 + i * numRows / numZones.i;
+                const upperOffset = (i == numZones.i - 1 ? cavernSizeMaxMax : cavernDistMin)    + (numZones.i - i - 1) * numRows / numZones.i;
+                const leftOffset  = (j == 0 ? cavernSizeMaxMax : cavernDistMin)                 + j * numColumns / numZones.j + 5;
+                const rightOffset = (j == numZones.j ? cavernSizeMaxMax : cavernDistMin)        + (numZones.j - j - 1) * numColumns / numZones.j + 5;
+
+                caverns.push({
+                    x: leftOffset + (numColumns - leftOffset - rightOffset) * NOISE.random(),
+                    y: lowerOffset + (numRows - lowerOffset - upperOffset) * NOISE.random(),
+                    angle: Math.PI * NOISE.random(),
+                    cavernSizeX: cavernSizeMaxMin + (cavernSizeMaxMax - cavernSizeMaxMin) * NOISE.random(),
+                    cavernSizeY: cavernSizeMaxMin + (cavernSizeMaxMax - cavernSizeMaxMin) * NOISE.random(),
+                });
+            }
+        }
+    }
+
+    for (let i = 1; i < numRows - 1; i++) {
+        for (let j = 1; j < numColumns - 1; j++) {
+            let tileCenter = tileToCenter(i, j);
+            for (let k = 0; k < caverns.length; k++) {
+                let distToCenter = dist(tileCenter.x, tileCenter.y, caverns[k].x, caverns[k].y);
+
+                if (distToCenter < cavernSizeMin) {
+                    tileMap[i * numColumns + j].type = CONSTANTS.TILE_DIRT;
+                } else {
+                    let ellipseRadius = caverns[k].cavernSizeX * caverns[k].cavernSizeY;
+                    let distToMax = ellipseRadius - ellipseDist(tileCenter.x, tileCenter.y, caverns[k].x, caverns[k].y, caverns[k].cavernSizeX, caverns[k].cavernSizeY, caverns[k].angle);
+
+                    if (noiseMap[i * numColumns + j][caveChannel] < (distToMax + 2 * cavernSizeMaxMax) / (1.5 * ellipseRadius)) {
+                        if (noiseMap[i * numColumns + j][caveChannel] < distToMax / (1.5 * ellipseRadius)) {
+                            tileMap[i * numColumns + j].type = CONSTANTS.TILE_DIRT;
+                        } else if (tileMap[i * numColumns + j].type == CONSTANTS.TILE_HIGHWALL) {
+                            tileMap[i * numColumns + j].type = CONSTANTS.TILE_WALL;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return caverns;
 }
 
 function labelCaves(caverns) {
@@ -238,19 +351,51 @@ function labelCaves(caverns) {
     return caves;
 }
 
+function connectCaves(caves) {
+    let caveSystems = [];
+    for (let i = 0; i < caves.length; i++) {
+        //tileMap[caves[i].i * numColumns + caves[i].j].type = CONSTANTS.TILE_PAVED;
+        if (caves[i].systemID == -1) {
+            caveSystems = buildTunnel(caves, caves[i], caveSystems);
+        }
+    }
+
+    while (caveSystems.length > 1) {
+        caveSystems = buildTunnel(caves, caveSystems[caveSystems.length - 1][0], caveSystems, caveSystems[caveSystems.length - 2][0]);
+    }
+
+    for (let i = 1; i < numRows - 1; i++) {
+        for (let j = 1; j < numColumns - 1; j++) {
+            if (tileMap[i * numColumns + j].type == CONSTANTS.TILE_DIRT) {
+                if (noiseMap[i * numColumns + j][terrainChannel] > 0.3) {
+                    if (noiseMap[i * numColumns + j][terrainChannel] > 0.5) {
+                        if (noiseMap[i * numColumns + j][terrainChannel] > 0.6) {
+                            tileMap[i * numColumns + j].type = CONSTANTS.TILE_DEEPWATER;
+                        } else {
+                            tileMap[i * numColumns + j].type = CONSTANTS.TILE_WATER;
+                        }
+                    }
+                } else {
+                    tileMap[i * numColumns + j].type = CONSTANTS.TILE_GRASS;
+                }
+            }
+        }
+    }
+}
+
 function buildTunnel(caves, cave, caveSystems, targetCave) {
     const weightFunction = function(i, j) {
         if (isTileWall(i, j)) return noiseMap[i * numColumns + j][tunnelChannel];
         return 10 + noiseMap[i * numColumns + j][tunnelChannel];
     };
 
-    const dig = function(i, j, thickness) {
+    const dig = function(i, j, wideness) {
         let tile = tileMap[i * numColumns + j];
         if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
             tile.type = CONSTANTS.TILE_DIRT;
             tile.caveID = caves.length;
         }
-        if (thickness > 1) {
+        if (wideness > 1) {
             if (i > 1) {
                 tile = tileMap[(i - 1) * numColumns + j];
                 if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
@@ -280,7 +425,7 @@ function buildTunnel(caves, cave, caveSystems, targetCave) {
                 }
             }
 
-            if (thickness > 2) {
+            if (wideness > 2) {
                 if (i > 2) {
                     tile = tileMap[(i - 2) * numColumns + j];
                     if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
@@ -352,15 +497,15 @@ function buildTunnel(caves, cave, caveSystems, targetCave) {
                     current = current.pred;
                 }
 
-                const thickness = NOISE.random() > 0.3 ? 2 : 1;
-                let thick = false;
+                const wideness = NOISE.random() > 0.3 ? 2 : 1;
+                let wide = false;
                 let varianceLength = 3 + Math.floor(10 * NOISE.random());
                 for (let tileNr of path) {
                     if (varianceLength == 0) {
                         varianceLength = 3 + Math.floor(10 * NOISE.random());
-                        thick = !thick;
+                        wide = !wide;
                     }
-                    dig(tileNr.i, tileNr.j, thick ? thickness + 1 : thickness);
+                    dig(tileNr.i, tileNr.j, wide ? wideness + 1 : wideness);
                     varianceLength--;
                 }
 
@@ -424,7 +569,8 @@ function labelConnectedComponents(isAllowed, componentIndex) {
     for (let i = 1; i < numRows - 1; i++) {
         for (let j = 1; j < numColumns - 1; j++) {
             if (isAllowed(i, j)) {
-                if (tileMap[i * numColumns + j].compIDs[componentIndex] == -1) {
+                if (tileMap[i * numColumns + j].compIDs[componentIndex] == -1
+                    && tileMap[i * numColumns + j].caveID != -1) {
                     const compID = components.length;
                     components.push({ i, j, ID: compID, size: 1 });
                     const queue = [{ i, j }];
@@ -465,103 +611,6 @@ function ellipseDist(x, y, mx, my, rx, ry, angle) {
     const projX = cos * (x - mx) - sin * (y - my);
     const projY = sin * (x - mx) + cos * (y - my);
     return Math.sqrt(ry * ry * projX * projX + rx * rx * projY * projY);
-}
-
-function create() {
-    const numZones = { i: 4, j: 4 };
-    const numCavernsPerZone = 1;
-    const caverns = [];
-    const cavernDistMin = 5;
-    const cavernSizeMin = 5;
-    const cavernSizeMaxMin = 10;
-    const cavernSizeMaxMax = 40;
-
-    for (let i = 0; i < numZones.i; i++) {
-        for (let j = 0; j < numZones.j; j++) {
-            for (let k = 0; k < numCavernsPerZone; k++) {
-                const lowerOffset = (i == 0 ? cavernSizeMaxMax : cavernDistMin)                 + i * numRows / numZones.i;
-                const upperOffset = (i == numZones.i - 1 ? cavernSizeMaxMax : cavernDistMin)    + (numZones.i - i - 1) * numRows / numZones.i;
-                const leftOffset  = (j == 0 ? cavernSizeMaxMax : cavernDistMin)                 + j * numColumns / numZones.j + 5;
-                const rightOffset = (j == numZones.j ? cavernSizeMaxMax : cavernDistMin)        + (numZones.j - j - 1) * numColumns / numZones.j + 5;
-
-                caverns.push({
-                    x: leftOffset + (numColumns - leftOffset - rightOffset) * NOISE.random(),
-                    y: lowerOffset + (numRows - lowerOffset - upperOffset) * NOISE.random(),
-                    angle: Math.PI * NOISE.random(),
-                    cavernSizeX: cavernSizeMaxMin + (cavernSizeMaxMax - cavernSizeMaxMin) * NOISE.random(),
-                    cavernSizeY: cavernSizeMaxMin + (cavernSizeMaxMax - cavernSizeMaxMin) * NOISE.random(),
-                });
-            }
-        }
-    }
-
-    for (let i = 1; i < numRows - 1; i++) {
-        for (let j = 1; j < numColumns - 1; j++) {
-            let tileCenter = tileToCenter(i, j);
-            for (let k = 0; k < caverns.length; k++) {
-                let distToCenter = dist(tileCenter.x, tileCenter.y, caverns[k].x, caverns[k].y);
-
-                if (distToCenter < cavernSizeMin) {
-                    tileMap[i * numColumns + j].type = CONSTANTS.TILE_DIRT;
-                } else {
-                    let ellipseRadius = caverns[k].cavernSizeX * caverns[k].cavernSizeY;
-                    let distToMax = ellipseRadius - ellipseDist(tileCenter.x, tileCenter.y, caverns[k].x, caverns[k].y, caverns[k].cavernSizeX, caverns[k].cavernSizeY, caverns[k].angle);
-
-                    if (noiseMap[i * numColumns + j][caveChannel] < (distToMax + 2 * cavernSizeMaxMax) / (1.5 * ellipseRadius)) {
-                        if (noiseMap[i * numColumns + j][caveChannel] < distToMax / (1.5 * ellipseRadius)) {
-                            tileMap[i * numColumns + j].type = CONSTANTS.TILE_DIRT;
-                        } else if (tileMap[i * numColumns + j].type == CONSTANTS.TILE_HIGHWALL) {
-                            tileMap[i * numColumns + j].type = CONSTANTS.TILE_WALL;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    const caves = labelCaves(caverns);
-
-    let caveSystems = [];
-    for (let i = 0; i < caves.length; i++) {
-        tileMap[caves[i].i * numColumns + caves[i].j].type = CONSTANTS.TILE_PAVED;
-        if (caves[i].systemID == -1) {
-            caveSystems = buildTunnel(caves, caves[i], caveSystems);
-        }
-    }
-
-    while (caveSystems.length > 1) {
-        caveSystems = buildTunnel(caves, caveSystems[caveSystems.length - 1][0], caveSystems, caveSystems[caveSystems.length - 2][0]);
-    }
-
-    for (let i = 1; i < numRows - 1; i++) {
-        for (let j = 1; j < numColumns - 1; j++) {
-            if (tileMap[i * numColumns + j].type == CONSTANTS.TILE_DIRT) {
-                if (noiseMap[i * numColumns + j][terrainChannel] > 0.3) {
-                    if (noiseMap[i * numColumns + j][terrainChannel] > 0.5) {
-                        if (noiseMap[i * numColumns + j][terrainChannel] > 0.6) {
-                            tileMap[i * numColumns + j].type = CONSTANTS.TILE_DEEPWATER;
-                        } else {
-                            tileMap[i * numColumns + j].type = CONSTANTS.TILE_WATER;
-                        }
-                    }
-                } else {
-                    tileMap[i * numColumns + j].type = CONSTANTS.TILE_GRASS;
-                }
-            }
-        }
-    }
-
-    groundComponents = labelConnectedComponents(isTileGround, 0);
-
-    mesh = createMesh();
-    SCENE.addMesh(mesh);
-
-    let object1 = createObject(10, 10, [1, 0, 0], 0.1, "dot", "test");
-    objects.push(object1);
-    let object2 = createObject(50, 80, [1, 0, 1], 0.5, "snake", "test");
-    objects.push(object2);
-
-    PLAYER.initialize();
 }
 
 export function coordsToTile(x, y) {
@@ -637,15 +686,47 @@ export function isTileWall(i, j) {
     return isTileBlocked(i, j, [CONSTANTS.TILE_HIGHWALL, CONSTANTS.TILE_WALL, CONSTANTS.TILE_BRICKWALL]);
 }
 
+export function isTileWide(i, j) {
+    return !isTileWall(i, j) && !isTileWall(i + 1, j) && !isTileWall(i, j + 1) && !isTileWall(i + 1, j + 1);
+}
+
+export function isTileWideGround(i, j) {
+    return isTileGround(i, j) && isTileGround(i + 1, j) && isTileGround(i, j + 1) && isTileGround(i + 1, j + 1);
+}
+
+export function isOnExit(pos) {
+    const vertexOffsets = [
+        { x: -0.5, y: -0.5 },
+        { x: -0.5, y: 0 },
+        { x: -0.5, y: 0.499 },
+        { x: 0, y: -0.5 },
+        { x: 0, y: 0 },
+        { x: 0, y: 0.499 },
+        { x: 0.499, y: -0.5 },
+        { x: 0.499, y: 0 },
+        { x: 0.499, y: 0.499 },
+    ];
+
+    for (let offset of vertexOffsets) {
+        const { i, j } = coordsToTile(pos.x + offset.x, pos.y + offset.y);
+        if (tileMap[i * numColumns + j].type == CONSTANTS.TILE_EXIT)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 export function planObjects(counter) {
     for (let object of objects) {
         object.plan(counter);
     }
 }
 
-export function moveObjects() {
+export function moveObjects(counter) {
     for (let object of objects) {
-        object.move();
+        object.move(counter);
     }
 }
 

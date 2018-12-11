@@ -1,4 +1,6 @@
-const cameraDist = 500;
+import * as SHADER from "./shader.js";
+
+const cameraDist = 50;
 
 let WIDTH = undefined;
 let HEIGHT = undefined;
@@ -11,6 +13,8 @@ let scrollSpeed = undefined;
 let renderer = undefined;
 let camera = undefined;
 let scene = undefined;
+
+let canvas = undefined;
 
 export function initialize() {
     WIDTH = window.innerWidth;
@@ -26,7 +30,10 @@ export function initialize() {
     scene = new THREE.Scene();
 
     renderer.setSize(WIDTH, HEIGHT);
-    document.body.appendChild(renderer.domElement);
+    canvas = document.getElementById('canvas');
+    canvas.appendChild(renderer.domElement);
+
+    SHADER.mapUniforms.u_dimensions.value = [WIDTH, HEIGHT];
 
     window.onresize = function resize() {
         WIDTH = window.innerWidth;
@@ -35,6 +42,8 @@ export function initialize() {
         camera.aspect = ASPECT;
         camera.updateProjectionMatrix();
         renderer.setSize(WIDTH, HEIGHT);
+        
+        SHADER.mapUniforms.u_dimensions.value = [WIDTH, HEIGHT];
     }
 }
 

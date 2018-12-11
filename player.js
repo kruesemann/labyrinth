@@ -1,13 +1,16 @@
 import * as SCENE from "./scene.js";
+import * as MAP from "./map.js";
 import { createObject } from "./object.js";
 
 let player = undefined;
 
-export function initialize() {
+export function initialize(i, j) {
     if (player) {
         SCENE.removeMesh(player.form.mesh);
+        player = createObject(i, j, [1, 1, 0], 2, player.form.id);
+    } else {
+        player = createObject(i, j, [1, 1, 0], 2, "dot");
     }
-    player = createObject(40, 40, [1, 1, 0], 0.5, "snake");
 }
 
 export function center() {
@@ -18,8 +21,11 @@ export function transform(form) {
     player.transform(form);
 }
 
-export function move() {
-    player.move();
+export function move(counter) {
+    if (player.move(counter)) {
+        return MAP.isOnExit(player.form.nodes[0]);
+    }
+    return false;
 }
 
 export function moveLeft() {
@@ -56,6 +62,10 @@ export function stopDown() {
 
 export function get() {
     return player;
+}
+
+export function getForm() {
+    return player.form.id;
 }
 
 export function getPosition() {

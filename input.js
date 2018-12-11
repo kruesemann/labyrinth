@@ -55,9 +55,6 @@ export function initialize() {
         }
 
         switch (event.keyCode) {
-            case 88://x
-                nextLevel();
-                break;
             case 37://left
                 PLAYER.moveLeft();
                 break;
@@ -82,6 +79,9 @@ export function initialize() {
             case 65://a
                 PLAYER.moveLeft();
                 break;
+            case 66://b
+                SHADER.mapUniforms.u_showWideComps.value = true;
+                break;
             case 67://c
                 SHADER.mapUniforms.u_showCaverns.value = true;
                 break;
@@ -96,6 +96,9 @@ export function initialize() {
                 break;
             case 87://w
                 PLAYER.moveUp();
+                break;
+            case 88://x
+                nextLevel();
                 break;
             case 122:
                 if (
@@ -126,6 +129,9 @@ export function initialize() {
                 break;
             case 65://a
                 PLAYER.stopLeft();
+                break;
+            case 66://b
+                SHADER.mapUniforms.u_showWideComps.value = false;
                 break;
             case 67://c
                 SHADER.mapUniforms.u_showCaverns.value = false;

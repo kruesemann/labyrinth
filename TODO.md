@@ -6,12 +6,26 @@
     * directly (intensity)
     * indirectly (torches)
 
-## AI
+## Obstacles
+
+* monsters
+
+* map
+    * narrow tunnels
+    * water (more further down)
+    * rising/falling water
+
+* light
+    * darker further down
+
+## Monster AI
 
 * various 'idle' behaviour
 
 * behaviour dependent on player form
     * hunt 'snake' player's tail rather than their head
+
+* behaviour with limited amount of steps until monster stops for a while
 
 * monsters attracted to light (further down?)
 
@@ -48,6 +62,9 @@
 
 * place secret rooms and secret switches in reasonable locations
     * mark reasonable locations on map
+
+* special maps on random levels
+    * preceding levels tease this with sound and objects
 
 # GUI
 

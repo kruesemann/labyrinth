@@ -2,6 +2,7 @@ import * as SCENE from "./scene.js";
 import * as MAP from "./map.js";
 import * as SHADER from "./shader.js";
 import * as AI from "./ai.js";
+import * as CONSTANTS from "./constants.js";
 
 function createDotForm(x, y, color) {
     const vertices = [
@@ -289,7 +290,9 @@ export function createObject(i, j, color, speed, formName, aiName) {
                 this.route = route;
             }
         },
-        move: function() {
+        move: function(counter) {
+            if (counter % speed != 0) return false;
+
             if (this.route) {
                 if (this.route.length > 0) {
                     if (this.form.nodes[0].x >= this.route[this.route.length - 1].x && this.form.nodes[0].x <= this.route[this.route.length - 1].x
@@ -313,11 +316,11 @@ export function createObject(i, j, color, speed, formName, aiName) {
             let dy = 0;
 
             if (this.moving.left) {
-                dx = -this.speed;
+                dx = -CONSTANTS.OBJECT_STRIDE;
             }
             if (this.moving.right) {
                 if (dx == 0) {
-                    dx = this.speed;
+                    dx = CONSTANTS.OBJECT_STRIDE;
                 } else {
                     dx = 0;
                 }
@@ -327,11 +330,11 @@ export function createObject(i, j, color, speed, formName, aiName) {
             }
 
             if (this.moving.up) {
-                dy = this.speed;
+                dy = CONSTANTS.OBJECT_STRIDE;
             }
             if (this.moving.down) {
                 if (dy == 0) {
-                    dy = -this.speed;
+                    dy = -CONSTANTS.OBJECT_STRIDE;
                 } else {
                     dy = 0;
                 }
@@ -350,7 +353,10 @@ export function createObject(i, j, color, speed, formName, aiName) {
 
             if (dx != 0 || dy != 0) {
                 this.form.move(dx, dy);
+                return true;
             }
+
+            return false;
         },
         transform: function(form, x, y) {
             let pos = undefined;

@@ -59,6 +59,7 @@ export function initialize(seed, rows, columns, lvl) {
         SCENE.removeMesh(object.form.mesh);
     }
     objects = [];
+    LIGHT.removeAllLights();
 
     for (let i = 0; i < numRows; i++) {
         for (let j = 0; j < numColumns; j++) {
@@ -88,22 +89,35 @@ function create() {
         }
     }
     const playerComp = wideGroundComponents[index];
-    const exitComp = wideGroundComponents[(index + Math.floor(wideGroundComponents.length / 2)) % wideGroundComponents.length];
+    PLAYER.initialize(playerComp.i, playerComp.j);
+    tileMap[playerComp.i * numColumns + playerComp.j].type = CONSTANTS.TILE_ENTRANCE;
+
+    let maxDist = 0;
+    let maxIndex = 0;
+    for (let i = 0; i < wideGroundComponents.length; i++) {
+        if (wideGroundComponents[i].size > Math.sqrt(numRows * numColumns)) {
+            const dist = Math.hypot(wideGroundComponents[i].i - playerComp.i, wideGroundComponents[i].j - playerComp.j, 2);
+            if (dist > maxDist) {
+                maxDist = dist;
+                maxIndex = i;
+            }
+        }
+    }
+    const exitComp = wideGroundComponents[maxIndex];
     tileMap[exitComp.i * numColumns + exitComp.j].type = CONSTANTS.TILE_EXIT;
 
     mesh = createMesh();
     SCENE.addMesh(mesh);
 
-    /*const comp = wideGroundComponents[Math.floor((wideGroundComponents.length - 1) * NOISE.random())];
-    let object1 = createObject(comp.i, comp.j, [1, 0, 0], 10, "dot", "test");
+    const comp1 = wideGroundComponents[(index + 5) % wideGroundComponents.length];
+    let object1 = createObject(comp1.i, comp1.j, [1, 0, 0], 5, "snake", "proxHunter");
     objects.push(object1);
-    let object2 = createObject(50, 80, [1, 0, 1], 3, "snake", "test");
-    objects.push(object2);*/
+    const comp2 = wideGroundComponents[(index + 10) % wideGroundComponents.length];
+    let object2 = createObject(comp2.i, comp2.j, [1, 0, 0], 3, "dot", "proxHunter");
+    objects.push(object2);
 
-    //LIGHT.createLight(100, 100, [1.0, 1.0, 1.0, 10], [-1, 0.5]);
-    //LIGHT.createLight(150, 40, [0.1, 0.2, 1.0, 5], [0.1, -0.2, -0.1]);
-
-    PLAYER.initialize(playerComp.i, playerComp.j);
+    //LIGHT.createLight(100, 100, [1.0, 1.0, 1.0, 10]);
+    //LIGHT.createLight(150, 40, [0.1, 0.2, 1.0, 5]);
 }
 
 function createMesh() {
@@ -248,6 +262,12 @@ function createMesh() {
                     colors.push(1.0);
                     colors.push(0.0);
                     colors.push(1.0);
+                }
+            } else if (tile.type == CONSTANTS.TILE_ENTRANCE) {
+                for (let k = 0; k < 6; k++) {
+                    colors.push(0.1);
+                    colors.push(0.1);
+                    colors.push(0.0);
                 }
             }
             /*for (let k = 0; k < 6; k++) {

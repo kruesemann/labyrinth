@@ -8,6 +8,7 @@ export const TILE_DIRT          = 6;
 export const TILE_GRASS         = 7;
 export const TILE_PAVED         = 8;
 export const TILE_EXIT          = 9;
+export const TILE_ENTRANCE      = 10;
 
 export const OBJECT_STRIDE      = 0.5;
 

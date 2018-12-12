@@ -91,7 +91,28 @@ function aStar(mapInfo, position, target, object) {
 
 export function test(self, counter) {
     if (counter % 100 == 0) {
-        return { update: true, route: aStar(MAP.getTileMapInfo(), self.form.nodes[0], PLAYER.getPosition(), self) };
+        return { update: true, route: aStar(MAP.getTileMapInfo(), self.form.nodes[0], PLAYER.getHead(), self) };
+    }
+    return { update: false, route: undefined };
+}
+
+export function idle(self, counter) {
+    if (counter % 100 == 0) {
+        let { x, y } = self.getHead();
+        const route = aStar(MAP.getTileMapInfo(), { x, y }, { x: x + 10 * Math.random() - 5, y: y + 10 * Math.random() - 5 }, self);
+        if (route) {
+            return { update: true, route };
+        }
+    }
+    return { update: false, route: undefined };
+}
+
+export function proxHunter(self, counter) {
+    if (counter % 100 == 0) {
+        const route = aStar(MAP.getTileMapInfo(), self.form.nodes[0], PLAYER.getTail(), self);
+        if (route && route.length < 25) {
+            return { update: true, route };
+        }
     }
     return { update: false, route: undefined };
 }

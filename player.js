@@ -68,6 +68,10 @@ export function getForm() {
     return player.form.id;
 }
 
-export function getPosition() {
-    return player.form.nodes[0];
+export function getHead() {
+    return player.getHead();
+}
+
+export function getTail() {
+    return player.getTail();
 }

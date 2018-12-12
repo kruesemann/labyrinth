@@ -90,8 +90,8 @@ export function initialize() {
                 PLAYER.moveRight();
                 break;
             case 69://e
-                let { x, y } = PLAYER.getPosition();
-                LIGHT.createLight(x, y, [1.0, 1.0, 0.8, 5], [-0.5, 0.7, -0.3, 0.5, -0.3, -0.5, 0.6, -0.2]);
+                let { x, y } = PLAYER.getHead();
+                LIGHT.createLight(x, y, [1.0, 1.0, 0.8, 5]);
                 break;
             case 81://q
                 LIGHT.removeLight(0);

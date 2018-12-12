@@ -3,8 +3,7 @@
 ## Player
 
 * player can control the light
-    * directly (intensity)
-    * indirectly (torches)
+    * dropping fading particles
 
 ## Obstacles
 
@@ -28,6 +27,7 @@
 * behaviour with limited amount of steps until monster stops for a while
 
 * monsters attracted to light (further down?)
+    * maybe attracted to different colors
 
 * monster repelled by light (single levels?)
 
@@ -37,9 +37,17 @@
     * via fixed switches with infinite uses
     * via portable switches with finite uses
 
+* forms change the light particles
+    * dot: white and dim
+    * box: green and bright
+    * snake: red and medium
+    * fish: blue and dim
+
 * 'fish' form restricted to water and movement similar to snake but more rigid
 
 * form which only gradually changes directions
+
+* form with independent but connected heads
 
 ## Goal
 

@@ -293,7 +293,7 @@ export function createObject(i, j, color, speed, formName, aiName) {
         move: function(counter) {
             if (counter % speed != 0) return false;
 
-            if (this.route) {
+            if (this.ai) {
                 if (this.route.length > 0) {
                     if (this.form.nodes[0].x >= this.route[this.route.length - 1].x && this.form.nodes[0].x <= this.route[this.route.length - 1].x
                         && this.form.nodes[0].y >= this.route[this.route.length - 1].y && this.form.nodes[0].y <= this.route[this.route.length - 1].y) {
@@ -308,7 +308,11 @@ export function createObject(i, j, color, speed, formName, aiName) {
                         this.moving = { left: false, up: false, right: false, down: false };
                     }
                 } else {
-                    this.moving = { left: false, up: false, right: false, down: false };
+                    let { update, route } = AI.idle(this, counter);
+                    if (update) {
+                        this.route = route;
+                        return this.move(counter);
+                    }
                 }
             }
 
@@ -358,6 +362,12 @@ export function createObject(i, j, color, speed, formName, aiName) {
 
             return false;
         },
+        getHead: function() {
+            return this.form.nodes[0];
+        },
+        getTail: function() {
+            return this.form.nodes[this.form.nodes.length - 1];
+        },
         transform: function(form, x, y) {
             let pos = undefined;
             if (this.form) {
@@ -389,7 +399,8 @@ export function createObject(i, j, color, speed, formName, aiName) {
     object.transform(formName, x, y);
 
     switch(aiName) {
-        case "test": object.ai = function(self, counter) { return AI.test(self, counter); }; break;
+        case "test": object.ai = function(self, counter) { return AI.test(self, counter); }; object.route = []; break;
+        case "proxHunter": object.ai = function(self, counter) { return AI.proxHunter(self, counter); }; object.route = []; break;
     }
 
     return object;

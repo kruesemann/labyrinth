@@ -3,6 +3,7 @@ import * as OVERLAY from "./overlay.js";
 import * as INPUT from "./input.js";
 import * as MAP from "./map.js";
 import * as PLAYER from "./player.js";
+import * as LIGHT from "./light.js";
 import * as NOISE from "./noise.js";
 
 let gameSeed = 1;
@@ -53,6 +54,7 @@ function gameloop() {
     
     MAP.planObjects(counter);
     MAP.moveObjects(counter);
+    LIGHT.flickerAll(counter);
     nextLvl = PLAYER.move(counter);
     PLAYER.center();
 

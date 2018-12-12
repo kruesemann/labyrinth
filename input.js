@@ -1,5 +1,6 @@
 import * as SCENE from "./scene.js";
 import * as PLAYER from "./player.js";
+import * as LIGHT from "./light.js";
 import * as SHADER from "./shader.js";
 import { nextLevel } from "./index.js";
 
@@ -87,6 +88,13 @@ export function initialize() {
                 break;
             case 68://d
                 PLAYER.moveRight();
+                break;
+            case 69://e
+                let { x, y } = PLAYER.getPosition();
+                LIGHT.createLight(x, y, [1.0, 1.0, 0.8, 5], [-0.5, 0.7, -0.3, 0.5, -0.3, -0.5, 0.6, -0.2]);
+                break;
+            case 81://q
+                LIGHT.removeLight(0);
                 break;
             case 83://s
                 PLAYER.moveDown();

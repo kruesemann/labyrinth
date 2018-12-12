@@ -11,6 +11,8 @@ export const TILE_EXIT          = 9;
 
 export const OBJECT_STRIDE      = 0.5;
 
+export const LIGHT_MAXNUM       = 16;
+
 export const DIRECTIONS = [
     { i: 1, j: 0 },
     { i: 0, j: -1 },

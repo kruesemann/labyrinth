@@ -3,6 +3,7 @@ import * as SHADER from "./shader.js";
 import * as PLAYER from "./player.js";
 import * as NOISE from "./noise.js";
 import * as CONSTANTS from "./constants.js";
+import * as LIGHT from "./light.js";
 import { createObject } from "./object.js";
 import { BinaryHeap } from "./heap.js";
 
@@ -31,6 +32,7 @@ let numColumns = 0;
 let level = undefined;
 let mesh = undefined;
 let objects = [];
+let lights = [];
 
 export function getTileMapInfo() {
     return { numColumns, numRows };
@@ -97,6 +99,9 @@ function create() {
     objects.push(object1);
     let object2 = createObject(50, 80, [1, 0, 1], 3, "snake", "test");
     objects.push(object2);*/
+
+    //LIGHT.createLight(100, 100, [1.0, 1.0, 1.0, 10], [-1, 0.5]);
+    //LIGHT.createLight(150, 40, [0.1, 0.2, 1.0, 5], [0.1, -0.2, -0.1]);
 
     PLAYER.initialize(playerComp.i, playerComp.j);
 }
@@ -260,7 +265,7 @@ function createMesh() {
     geometry.addAttribute('a_groundCompID', new THREE.BufferAttribute(new Float32Array(groundComps), 3));
     geometry.addAttribute('a_wideCompID', new THREE.BufferAttribute(new Float32Array(wideComps), 3));
 
-    SHADER.mapUniforms.u_ambientLight.value = [1.0, 1.0, 1.0, Math.max(0.0, 3.0 - level * 0.03)];
+    SHADER.mapUniforms.u_ambientLight.value = [1.0, 1.0, 1.0, Math.max(0.0, 3.0 - level * 0.3)];
 
     return new THREE.Mesh(geometry, SHADER.getMapMaterial());
 }

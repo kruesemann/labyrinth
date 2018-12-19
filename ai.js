@@ -1,6 +1,7 @@
 import * as MAP from "./map.js";
 import * as PLAYER from "./player.js";
 import * as CONSTANTS from "./constants.js";
+import * as LIGHT from "./light.js";
 import { BinaryHeap } from "./heap.js";
 
 function aStar(mapInfo, position, target, object) {
@@ -91,7 +92,7 @@ function aStar(mapInfo, position, target, object) {
 
 export function test(self, counter) {
     if (counter % 100 == 0) {
-        return { update: true, route: aStar(MAP.getTileMapInfo(), self.form.nodes[0], PLAYER.getHead(), self) };
+        return { update: true, route: aStar(MAP.getTileMapInfo(), self.getHead(), PLAYER.getHead(), self) };
     }
     return { update: false, route: undefined };
 }
@@ -109,8 +110,23 @@ export function idle(self, counter) {
 
 export function proxHunter(self, counter) {
     if (counter % 100 == 0) {
-        const route = aStar(MAP.getTileMapInfo(), self.form.nodes[0], PLAYER.getTail(), self);
+        const route = aStar(MAP.getTileMapInfo(), self.getHead(), PLAYER.getTail(), self);
         if (route && route.length < 25) {
+            return { update: true, route };
+        }
+    }
+    return { update: false, route: undefined };
+}
+
+export function lightAffine(self, counter) {
+    if (counter % 100 == 0) {
+        let route = undefined;
+        for (let light of LIGHT.lights) {
+            if (MAP.rayCast(self.getHead(), light.pos)) {
+                route = aStar(MAP.getTileMapInfo(), self.getHead(), light.pos, self);
+            }
+        }
+        if (route && route.length > 5) {
             return { update: true, route };
         }
     }

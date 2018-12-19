@@ -401,6 +401,7 @@ export function createObject(i, j, color, speed, formName, aiName) {
     switch(aiName) {
         case "test": object.ai = function(self, counter) { return AI.test(self, counter); }; object.route = []; break;
         case "proxHunter": object.ai = function(self, counter) { return AI.proxHunter(self, counter); }; object.route = []; break;
+        case "lightAffine": object.ai = function(self, counter) { return AI.lightAffine(self, counter); }; object.route = []; break;
     }
 
     return object;

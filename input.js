@@ -96,6 +96,9 @@ export function initialize() {
             case 81://q
                 LIGHT.removeLight(0);
                 break;
+            case 82://r
+                console.log(SHADER.mapUniforms.u_lightColor.value);
+                break;
             case 83://s
                 PLAYER.moveDown();
                 break;

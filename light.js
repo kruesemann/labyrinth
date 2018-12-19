@@ -1,7 +1,7 @@
 import * as CONSTANTS from "./constants.js";
 import * as SHADER from "./shader.js";
 
-const lights = [];
+export const lights = [];
 
 export function createLight(x, y, color) {
     let uniformIndex = -1;

@@ -13,8 +13,14 @@ let scrollSpeed = undefined;
 let renderer = undefined;
 let camera = undefined;
 let scene = undefined;
+let bufferCamera = undefined;
+let bufferScene = undefined;
 
 let canvas = undefined;
+
+let listener = undefined;
+let sound = undefined;
+let audioLoader = undefined;
 
 export function initialize() {
     WIDTH = window.innerWidth;
@@ -30,10 +36,26 @@ export function initialize() {
     scene = new THREE.Scene();
 
     renderer.setSize(WIDTH, HEIGHT);
+    scene.background = new THREE.Color( 0xffffff );
     canvas = document.getElementById('canvas');
     canvas.appendChild(renderer.domElement);
 
     SHADER.mapUniforms.u_dimensions.value = [WIDTH, HEIGHT];
+
+    /*listener = new THREE.AudioListener();
+    camera.add( listener );
+
+    // create a global audio source
+    sound = new THREE.Audio( listener );
+
+    // load a sound and set it as the Audio object's buffer
+    audioLoader = new THREE.AudioLoader();
+    audioLoader.load( 'assets/Erwachen.wav', function( buffer ) {
+        sound.setBuffer( buffer );
+        sound.setLoop( true );
+        sound.setVolume( 0.5 );
+        sound.play();
+    });*/
 
     window.onresize = function resize() {
         WIDTH = window.innerWidth;
@@ -77,7 +99,6 @@ export function addMesh(mesh) {
 
 export function removeMesh(mesh) {
     scene.remove(mesh);
-    //disposeHierarchy (mesh, disposeNode);
 }
 
 export function reset() {
@@ -86,4 +107,28 @@ export function reset() {
     }
     scene.add(camera);
     camera.position.z = cameraDist;
+}
+
+export function createBuffer(meshes, width, height) {
+    bufferCamera = new THREE.PerspectiveCamera(45, width / height, 1, 1000);
+    bufferScene = new THREE.Scene();
+    bufferScene.add(bufferCamera);
+
+    for (let mesh of meshes) {
+        bufferScene.add(mesh);
+    }
+}
+
+export function deleteBuffer() {
+    while(bufferScene.children.length > 0){ 
+        bufferScene.remove(bufferScene.children[0]); 
+    }
+    bufferCamera = undefined;
+    bufferScene = undefined;
+}
+
+export function renderBufferToTexture(width, height) {
+    let bufferTexture = new THREE.WebGLRenderTarget( width, height, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter});
+    renderer.render(bufferScene, bufferCamera, bufferTexture, true);
+    return bufferTexture.texture;
 }

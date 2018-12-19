@@ -109,8 +109,10 @@ function create() {
     mesh = createMesh();
     SCENE.addMesh(mesh);
 
+    createTexture();
+
     const comp1 = wideGroundComponents[(index + 5) % wideGroundComponents.length];
-    let object1 = createObject(comp1.i, comp1.j, [1, 0, 0], 5, "snake", "proxHunter");
+    let object1 = createObject(comp1.i, comp1.j, [1, 0, 0], 5, "snake", "lightAffine");
     objects.push(object1);
     const comp2 = wideGroundComponents[(index + 10) % wideGroundComponents.length];
     let object2 = createObject(comp2.i, comp2.j, [1, 0, 0], 3, "dot", "proxHunter");
@@ -120,8 +122,109 @@ function create() {
     //LIGHT.createLight(150, 40, [0.1, 0.2, 1.0, 5]);
 }
 
+////************************************************************************************** */
+function createTexture() {
+    const vertices = [];
+    const colors = []; // replace with texture coordinates
+
+    for (let i = 0; i < numRows; i++) {
+        for (let j = 0; j < numColumns; j++) {
+            vertices.push(j * tileSize);
+            vertices.push(i * tileSize);
+            vertices.push(-0.01);
+            vertices.push((j + 1) * tileSize);
+            vertices.push(i * tileSize);
+            vertices.push(-0.01);
+            vertices.push(j * tileSize);
+            vertices.push((i + 1) * tileSize);
+            vertices.push(-0.01);
+            vertices.push((j + 1) * tileSize);
+            vertices.push(i * tileSize);
+            vertices.push(-0.01);
+            vertices.push((j + 1) * tileSize);
+            vertices.push((i + 1) * tileSize);
+            vertices.push(-0.01);
+            vertices.push(j * tileSize);
+            vertices.push((i + 1) * tileSize);
+            vertices.push(-0.01);
+
+            const tile = tileMap[i * numColumns + j];
+
+            if (tile.type == CONSTANTS.TILE_WALL) {
+                for (let k = 0; k < 6; k++) {
+                    colors.push(0.05);
+                    colors.push(0.05);
+                    colors.push(0.05);
+                }
+            } else if (tile.type == CONSTANTS.TILE_DIRT) {
+                for (let k = 0; k < 6; k++) {
+                    colors.push(0.24);
+                    colors.push(0.15);
+                    colors.push(0.0);
+                }
+            } else if (tile.type == CONSTANTS.TILE_WATER) {
+                for (let k = 0; k < 6; k++) {
+                    colors.push(0.0);
+                    colors.push(0.2);
+                    colors.push(0.6);
+                }
+            } else if (tile.type == CONSTANTS.TILE_DEEPWATER) {
+                for (let k = 0; k < 6; k++) {
+                    colors.push(0.0);
+                    colors.push(0.1);
+                    colors.push(0.3);
+                }
+            } else if (tile.type == CONSTANTS.TILE_GRASS) {
+                for (let k = 0; k < 6; k++) {
+                    colors.push(0.1);
+                    colors.push(0.3);
+                    colors.push(0.0);
+                }
+            } else if (tile.type == CONSTANTS.TILE_HIGHWALL) {
+                for (let k = 0; k < 6; k++) {
+                    colors.push(0.0);
+                    colors.push(0.0);
+                    colors.push(0.0);
+                }
+            } else if (tile.type == CONSTANTS.TILE_PAVED) {
+                for (let k = 0; k < 6; k++) {
+                    colors.push(1.0);
+                    colors.push(0.2);
+                    colors.push(0.5);
+                }
+            } else if (tile.type == CONSTANTS.TILE_EXIT) {
+                for (let k = 0; k < 6; k++) {
+                    colors.push(1.0);
+                    colors.push(0.0);
+                    colors.push(1.0);
+                }
+            } else if (tile.type == CONSTANTS.TILE_ENTRANCE) {
+                for (let k = 0; k < 6; k++) {
+                    colors.push(0.1);
+                    colors.push(0.1);
+                    colors.push(0.0);
+                }
+            }
+        }
+    }
+
+    let geometry = new THREE.BufferGeometry();
+    geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+    geometry.addAttribute('a_color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+
+    SHADER.mapTextureUniforms.u_dimensions.value = [numColumns, numRows];
+
+    const mapMesh = new THREE.Mesh(geometry, SHADER.getMapTextureMaterial());
+
+    SCENE.createBuffer([mapMesh], numColumns, numRows);
+    SHADER.mapUniforms.u_texture.value = SCENE.renderBufferToTexture(numColumns, numRows);
+    SCENE.deleteBuffer();
+}
+////***************************************************************************************** */
+
 function createMesh() {
     const vertices = [];
+    const texelCoords = [];
     const colors = []; // replace with texture coordinates
     const caves = [];
     const groundComps = [];
@@ -167,6 +270,19 @@ function createMesh() {
             vertices.push(j * tileSize);
             vertices.push((i + 1) * tileSize);
             vertices.push(-0.01);
+
+            texelCoords.push(j * tileSize);
+            texelCoords.push(i * tileSize);
+            texelCoords.push((j + 1) * tileSize);
+            texelCoords.push(i * tileSize);
+            texelCoords.push(j * tileSize);
+            texelCoords.push((i + 1) * tileSize);
+            texelCoords.push((j + 1) * tileSize);
+            texelCoords.push(i * tileSize);
+            texelCoords.push((j + 1) * tileSize);
+            texelCoords.push((i + 1) * tileSize);
+            texelCoords.push(j * tileSize);
+            texelCoords.push((i + 1) * tileSize);
 
             const tile = tileMap[i * numColumns + j];
 
@@ -279,12 +395,30 @@ function createMesh() {
     }
 
     let geometry = new THREE.BufferGeometry();
-    geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+    //geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+    geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array([
+        0,0,-0.1,
+        200,0,-0.1,
+        0,200,-0.1,
+        200,0,-0.1,
+        200,200,-0.1,
+        0,200,-0.1,
+    ]), 3));
+    //geometry.addAttribute('a_texelCoords', new THREE.BufferAttribute(new Float32Array(texelCoords), 2));
+    geometry.addAttribute('a_texelCoords', new THREE.BufferAttribute(new Float32Array([
+        0,0,
+        1,0,
+        0,1,
+        1,0,
+        1,1,
+        0,1,
+    ]), 2));
     geometry.addAttribute('a_color', new THREE.BufferAttribute(new Float32Array(colors), 3));
     geometry.addAttribute('a_caveID', new THREE.BufferAttribute(new Float32Array(caves), 3));
     geometry.addAttribute('a_groundCompID', new THREE.BufferAttribute(new Float32Array(groundComps), 3));
     geometry.addAttribute('a_wideCompID', new THREE.BufferAttribute(new Float32Array(wideComps), 3));
 
+    SHADER.mapUniforms.u_dimensions.value = [numColumns, numRows];
     SHADER.mapUniforms.u_ambientLight.value = [1.0, 1.0, 1.0, Math.max(0.0, 3.0 - level * 0.3)];
 
     return new THREE.Mesh(geometry, SHADER.getMapMaterial());
@@ -781,4 +915,47 @@ export function collisionWithPlayer() {
     }
 
     return false;
+}
+
+export function rayCast(start, target) {
+    const startTile = coordsToTile(start.x, start.y);
+    const targetTile = coordsToTile(target.x, target.y);
+
+    let di = Math.abs(targetTile.i - startTile.i);
+    let dj = Math.abs(targetTile.j - startTile.j);
+    let i = startTile.i;
+    let j = startTile.j;
+    let n = 1 + di + dj;
+    const i_inc = (targetTile.i > startTile.i) ? 1 : -1;
+    const j_inc = (targetTile.j > startTile.j) ? 1 : -1;
+    let error = di - dj;
+    di *= 2;
+    dj *= 2;
+
+    for (; n > 0; --n)
+    {
+        if (isTileWall(i, j)) {
+            return false;
+        }
+
+        if (error > 0)
+        {
+            i += i_inc;
+            error -= dj;
+        }
+        else if (error < 0)
+        {
+            j += j_inc;
+            error += di;
+        }
+        else if (error == 0) {
+            i += i_inc;
+            j += j_inc;
+            error -= dj;
+            error += di;
+            --n;
+        }
+    }
+
+    return true;
 }

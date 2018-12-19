@@ -49,6 +49,8 @@
 
 * form with independent but connected heads
 
+* form with night vision
+
 ## Goal
 
 * find exit

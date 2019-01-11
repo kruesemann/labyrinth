@@ -54,7 +54,7 @@ function gameloop() {
     
     MAP.planObjects(counter);
     MAP.moveObjects(counter);
-    LIGHT.flickerAll(counter);
+    LIGHT.renderLighting(counter);
     nextLvl = PLAYER.move(counter);
     PLAYER.center();
 

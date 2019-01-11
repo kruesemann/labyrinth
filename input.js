@@ -80,18 +80,12 @@ export function initialize() {
             case 65://a
                 PLAYER.moveLeft();
                 break;
-            case 66://b
-                SHADER.mapUniforms.u_showWideComps.value = true;
-                break;
-            case 67://c
-                SHADER.mapUniforms.u_showCaverns.value = true;
-                break;
             case 68://d
                 PLAYER.moveRight();
                 break;
             case 69://e
                 let { x, y } = PLAYER.getHead();
-                LIGHT.createLight(x, y, [1.0, 1.0, 0.8, 5]);
+                LIGHT.createLight(Math.floor(x) + 0.5, Math.floor(y) + 0.5, [1.0, 1.0, 0.8, 5]);
                 break;
             case 81://q
                 LIGHT.removeLight(0);
@@ -101,9 +95,6 @@ export function initialize() {
                 break;
             case 83://s
                 PLAYER.moveDown();
-                break;
-            case 86://v
-                SHADER.mapUniforms.u_showGroundComps.value = true;
                 break;
             case 87://w
                 PLAYER.moveUp();
@@ -141,20 +132,11 @@ export function initialize() {
             case 65://a
                 PLAYER.stopLeft();
                 break;
-            case 66://b
-                SHADER.mapUniforms.u_showWideComps.value = false;
-                break;
-            case 67://c
-                SHADER.mapUniforms.u_showCaverns.value = false;
-                break;
             case 68://d
                 PLAYER.stopRight();
                 break;
             case 83://s
                 PLAYER.stopDown();
-                break;
-            case 86://v
-                SHADER.mapUniforms.u_showGroundComps.value = false;
                 break;
             case 87://w
                 PLAYER.stopUp();

@@ -13,6 +13,7 @@ export const TILE_ENTRANCE      = 10;
 export const OBJECT_STRIDE      = 0.5;
 
 export const LIGHT_MAXNUM       = 16;
+export const LIGHT_MAXDIST      = 50;
 
 export const DIRECTIONS = [
     { i: 1, j: 0 },

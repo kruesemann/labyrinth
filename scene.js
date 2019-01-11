@@ -36,13 +36,11 @@ export function initialize() {
     scene = new THREE.Scene();
 
     renderer.setSize(WIDTH, HEIGHT);
-    scene.background = new THREE.Color( 0xffffff );
+    //scene.background = new THREE.Color( 0xffffff );
     canvas = document.getElementById('canvas');
     canvas.appendChild(renderer.domElement);
 
-    SHADER.mapUniforms.u_dimensions.value = [WIDTH, HEIGHT];
-
-    /*listener = new THREE.AudioListener();
+    listener = new THREE.AudioListener();
     camera.add( listener );
 
     // create a global audio source
@@ -55,7 +53,7 @@ export function initialize() {
         sound.setLoop( true );
         sound.setVolume( 0.5 );
         sound.play();
-    });*/
+    });
 
     window.onresize = function resize() {
         WIDTH = window.innerWidth;
@@ -64,8 +62,6 @@ export function initialize() {
         camera.aspect = ASPECT;
         camera.updateProjectionMatrix();
         renderer.setSize(WIDTH, HEIGHT);
-        
-        SHADER.mapUniforms.u_dimensions.value = [WIDTH, HEIGHT];
     }
 }
 

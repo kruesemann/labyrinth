@@ -122,7 +122,6 @@ function create() {
     //LIGHT.createLight(150, 40, [0.1, 0.2, 1.0, 5]);
 }
 
-////************************************************************************************** */
 function createTexture() {
     const vertices = [];
     const colors = []; // replace with texture coordinates
@@ -215,17 +214,15 @@ function createTexture() {
     SHADER.mapTextureUniforms.u_dimensions.value = [numColumns, numRows];
 
     const mapMesh = new THREE.Mesh(geometry, SHADER.getMapTextureMaterial());
-
     SCENE.createBuffer([mapMesh], numColumns, numRows);
-    SHADER.mapUniforms.u_texture.value = SCENE.renderBufferToTexture(numColumns, numRows);
+    SHADER.mapLightingUniforms.u_texture.value = SCENE.renderBufferToTexture(numColumns, numRows);
     SCENE.deleteBuffer();
+
+    LIGHT.initializeLighting(numRows, numColumns, level);
 }
-////***************************************************************************************** */
 
 function createMesh() {
-    const vertices = [];
     const texelCoords = [];
-    const colors = []; // replace with texture coordinates
     const caves = [];
     const groundComps = [];
     const wideComps = [];
@@ -252,24 +249,6 @@ function createMesh() {
 
     for (let i = 0; i < numRows; i++) {
         for (let j = 0; j < numColumns; j++) {
-            vertices.push(j * tileSize);
-            vertices.push(i * tileSize);
-            vertices.push(-0.01);
-            vertices.push((j + 1) * tileSize);
-            vertices.push(i * tileSize);
-            vertices.push(-0.01);
-            vertices.push(j * tileSize);
-            vertices.push((i + 1) * tileSize);
-            vertices.push(-0.01);
-            vertices.push((j + 1) * tileSize);
-            vertices.push(i * tileSize);
-            vertices.push(-0.01);
-            vertices.push((j + 1) * tileSize);
-            vertices.push((i + 1) * tileSize);
-            vertices.push(-0.01);
-            vertices.push(j * tileSize);
-            vertices.push((i + 1) * tileSize);
-            vertices.push(-0.01);
 
             texelCoords.push(j * tileSize);
             texelCoords.push(i * tileSize);
@@ -331,7 +310,7 @@ function createMesh() {
                 }
             }
 
-            if (tile.type == CONSTANTS.TILE_WALL) {
+            /*if (tile.type == CONSTANTS.TILE_WALL) {
                 for (let k = 0; k < 6; k++) {
                     colors.push(noiseMap[i * numColumns + j][0] / 5);//colors.push(0.05);
                     colors.push(noiseMap[i * numColumns + j][0] / 5);//colors.push(0.05);
@@ -385,7 +364,7 @@ function createMesh() {
                     colors.push(0.1);
                     colors.push(0.0);
                 }
-            }
+            }*/
             /*for (let k = 0; k < 6; k++) {
                 colors.push(0.0);
                 colors.push(noiseMap[i * numColumns + j][0]);
@@ -395,16 +374,14 @@ function createMesh() {
     }
 
     let geometry = new THREE.BufferGeometry();
-    //geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
     geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array([
-        0,0,-0.1,
-        200,0,-0.1,
-        0,200,-0.1,
-        200,0,-0.1,
-        200,200,-0.1,
-        0,200,-0.1,
+                 0,       0, -0.1,
+        numColumns,       0, -0.1,
+                 0, numRows, -0.1,
+        numColumns,       0, -0.1,
+        numColumns, numRows, -0.1,
+                 0, numRows, -0.1,
     ]), 3));
-    //geometry.addAttribute('a_texelCoords', new THREE.BufferAttribute(new Float32Array(texelCoords), 2));
     geometry.addAttribute('a_texelCoords', new THREE.BufferAttribute(new Float32Array([
         0,0,
         1,0,
@@ -413,13 +390,9 @@ function createMesh() {
         1,1,
         0,1,
     ]), 2));
-    geometry.addAttribute('a_color', new THREE.BufferAttribute(new Float32Array(colors), 3));
     geometry.addAttribute('a_caveID', new THREE.BufferAttribute(new Float32Array(caves), 3));
     geometry.addAttribute('a_groundCompID', new THREE.BufferAttribute(new Float32Array(groundComps), 3));
     geometry.addAttribute('a_wideCompID', new THREE.BufferAttribute(new Float32Array(wideComps), 3));
-
-    SHADER.mapUniforms.u_dimensions.value = [numColumns, numRows];
-    SHADER.mapUniforms.u_ambientLight.value = [1.0, 1.0, 1.0, Math.max(0.0, 3.0 - level * 0.3)];
 
     return new THREE.Mesh(geometry, SHADER.getMapMaterial());
 }

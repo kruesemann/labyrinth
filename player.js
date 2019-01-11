@@ -7,9 +7,9 @@ let player = undefined;
 export function initialize(i, j) {
     if (player) {
         SCENE.removeMesh(player.form.mesh);
-        player = createObject(i, j, [1, 1, 0], 2, player.form.id);
+        player = createObject(i, j, [0.1, 0.1, 0], 2, player.form.id);
     } else {
-        player = createObject(i, j, [1, 1, 0], 2, "dot");
+        player = createObject(i, j, [0.1, 0.1, 0], 2, "dot");
     }
 }
 
@@ -22,10 +22,7 @@ export function transform(form) {
 }
 
 export function move(counter) {
-    if (player.move(counter)) {
-        return MAP.isOnExit(player.form.nodes[0]);
-    }
-    return false;
+    return player.move(counter) && MAP.isOnExit(player.form.nodes[0]);
 }
 
 export function moveLeft() {

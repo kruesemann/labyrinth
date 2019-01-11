@@ -20,7 +20,6 @@ function aStar(mapInfo, position, target, object) {
             compMap.push({
                 i: i,
                 j: j,
-                //allowed: object.form.isAllowed(i, j),
                 visited: false,
                 closed: false,
                 pred: null,

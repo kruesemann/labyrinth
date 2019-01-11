@@ -1,5 +1,90 @@
 import * as CONSTANTS from "./constants.js";
 
+const RAYCAST = `
+bool compleq(vec2 a, vec2 b) {
+    return a.x <= b.x && a.y <= b.y;
+}
+
+bool compleq(vec3 a, vec3 b) {
+    return a.x <= b.x && a.y <= b.y && a.z <= b.z;
+}
+
+bool rayCast(vec2 start, vec2 target) {
+    ivec2 startTile = ivec2(ceil(start));
+    ivec2 targetTile = ivec2(ceil(target));
+
+    int di = 0;
+    int dj = 0;
+    int i_inc = 0;
+    int j_inc = 0;
+
+    if (targetTile.x > startTile.x) {
+        di = targetTile.x - startTile.x;
+        i_inc = 1;
+    } else {
+        di = startTile.x - targetTile.x;
+        i_inc = -1;
+    }
+
+    if (targetTile.y > startTile.y) {
+        dj = targetTile.y - startTile.y;
+        j_inc = 1;
+    } else {
+        dj = startTile.y - targetTile.y;
+        j_inc = -1;
+    }
+
+    int i = startTile.x;
+    int j = startTile.y;
+    int error = di - dj;
+
+    bool skip = false;
+
+    // skip start tile
+    if (error > 0) {
+        i += i_inc;
+        error -= dj;
+    } else if (error < 0) {
+        j += j_inc;
+        error += di;
+    } else if (error == 0) {
+        i += i_inc;
+        j += j_inc;
+        error -= dj;
+        error += di;
+        skip = true;
+    }
+
+    for (int n = MAXDIST + 1; n > 1; --n) {
+        if (n <= 1 + di + dj) {
+            if (skip) {
+                skip = false;
+            } else {
+                if (compleq(texture2D(u_texture, vec2(float(i), float(j)) / u_dimensions).rgb, vec3(0.035))) {
+                    return false;
+                }
+
+                if (error > 0) {
+                    i += i_inc;
+                    error -= dj;
+                } else if (error < 0) {
+                    j += j_inc;
+                    error += di;
+                } else if (error == 0) {
+                    i += i_inc;
+                    j += j_inc;
+                    error -= dj;
+                    error += di;
+                    skip = true;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+`;
+
 const mapTextureVSrc = `
 attribute vec4 a_color;
 
@@ -53,6 +138,7 @@ void main(void) {
 const mapLightingFSrc = `
 #define MAXNUM ${CONSTANTS.LIGHT_MAXNUM}
 #define MAXDIST ${CONSTANTS.LIGHT_MAXDIST}
+#define DISTEXP ${CONSTANTS.LIGHT_DISTEXP}
 
 varying vec2 v_texelCoords;
 
@@ -62,75 +148,7 @@ uniform vec4 u_ambientLight;
 uniform vec2 u_lightPos[MAXNUM];
 uniform vec4 u_lightColor[MAXNUM];
 
-bool compleq(vec2 a, vec2 b) {
-    return a.x <= b.x && a.y <= b.y;
-}
-
-bool compleq(vec3 a, vec3 b) {
-    return a.x <= b.x && a.y <= b.y && a.z <= b.z;
-}
-
-bool rayCast(vec2 start, vec2 target) {
-    ivec2 startTile = ivec2(ceil(start));
-    ivec2 targetTile = ivec2(ceil(target));
-
-    int di = 0;
-    int dj = 0;
-    int i_inc = 0;
-    int j_inc = 0;
-
-    if (targetTile.x > startTile.x) {
-        di = targetTile.x - startTile.x;
-        i_inc = 1;
-    } else {
-        di = startTile.x - targetTile.x;
-        i_inc = -1;
-    }
-
-    if (targetTile.y > startTile.y) {
-        dj = targetTile.y - startTile.y;
-        j_inc = 1;
-    } else {
-        dj = startTile.y - targetTile.y;
-        j_inc = -1;
-    }
-
-    int i = startTile.x;
-    int j = startTile.y;
-    int error = di - dj;
-    //di *= 2;
-    //dj *= 2;
-
-    bool skip = false;
-
-    for (int n = MAXDIST + 1; n > 0; --n) {
-        if (n <= 1 + di + dj) {
-            if (skip) {
-                skip = false;
-            } else {
-                if (compleq(texture2D(u_texture, vec2(float(i), float(j)) / u_dimensions).rgb, vec3(0.055))) {
-                    return false;
-                }
-
-                if (error > 0) {
-                    i += i_inc;
-                    error -= dj;
-                } else if (error < 0) {
-                    j += j_inc;
-                    error += di;
-                } else if (error == 0) {
-                    i += i_inc;
-                    j += j_inc;
-                    error -= dj;
-                    error += di;
-                    skip = true;
-                }
-            }
-        }
-    }
-
-    return true;
-}
+${RAYCAST}
 
 void main(void) {
     vec4 color = texture2D(u_texture, v_texelCoords);
@@ -144,13 +162,13 @@ void main(void) {
 
             if (dist < float(MAXDIST)) {
                 if (rayCast(mapCoords, u_lightPos[i])) {
-                    RGB += u_lightColor[i].a * u_lightColor[i].rgb / pow(dist, 1.0);
+                    RGB += u_lightColor[i].a * u_lightColor[i].rgb / pow(dist, float(DISTEXP));
                 }
             }
         }
     }
 
-    gl_FragColor.rgb = 0.5 * color.rgb * max(u_ambientLight.a * u_ambientLight.rgb, RGB);
+    gl_FragColor.rgb = color.rgb * max(u_ambientLight.a * u_ambientLight.rgb, RGB);
     gl_FragColor.a = color.a;
 }
 `;
@@ -214,23 +232,59 @@ export function getMapMaterial() {
 const objectVSrc = `
 attribute vec4 a_color;
 
+varying vec4 v_pos;
 varying vec4 v_color;
 
 void main() {
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    v_pos = modelMatrix * vec4(position, 1.0);
     v_color = a_color;
 }
 `;
 
 const objectFSrc = `
+#define MAXNUM ${CONSTANTS.LIGHT_MAXNUM}
+#define MAXDIST ${CONSTANTS.LIGHT_MAXDIST}
+#define DISTEXP ${CONSTANTS.LIGHT_DISTEXP}
+
+varying vec4 v_pos;
 varying vec4 v_color;
 
+uniform sampler2D u_texture;
+uniform vec2 u_dimensions;
+uniform vec4 u_ambientLight;
+uniform vec2 u_lightPos[MAXNUM];
+uniform vec4 u_lightColor[MAXNUM];
+
+${RAYCAST}
+
 void main() {
-    gl_FragColor = v_color;
+    vec3 RGB = vec3(0.0);
+
+    for (int i = 0; i < MAXNUM; i++) {
+        if (u_lightColor[i].a > 0.0) {
+
+            float dist = distance(v_pos.xy, u_lightPos[i]);
+
+            if (dist < float(MAXDIST)) {
+                if (rayCast(v_pos.xy, u_lightPos[i])) {
+                    RGB += u_lightColor[i].a * u_lightColor[i].rgb / pow(dist, float(DISTEXP));
+                }
+            }
+        }
+    }
+
+    gl_FragColor.rgb = v_color.rgb * max(u_ambientLight.a * u_ambientLight.rgb, RGB);
+    gl_FragColor.a = v_color.a;
 }
 `;
 
 export let objectUniforms = {
+    u_texture: { type: 'sampler2D', value: undefined },
+    u_dimensions: { type: 'vec2', value: new Float32Array(2) },
+    u_ambientLight: { type: 'vec3', value: new Float32Array([1.0, 1.0, 1.0, 1.0]) },
+    u_lightPos: { type: 'vec2', value: new Float32Array(2 * CONSTANTS.LIGHT_MAXNUM) },
+    u_lightColor: { type: 'vec4', value: new Float32Array(4 * CONSTANTS.LIGHT_MAXNUM) },
 };
 
 let objectShaderMaterial = new THREE.ShaderMaterial({

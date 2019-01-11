@@ -32,7 +32,6 @@ let numColumns = 0;
 let level = undefined;
 let mesh = undefined;
 let objects = [];
-let lights = [];
 
 export function getTileMapInfo() {
     return { numColumns, numRows };
@@ -112,14 +111,11 @@ function create() {
     createTexture();
 
     const comp1 = wideGroundComponents[(index + 5) % wideGroundComponents.length];
-    let object1 = createObject(comp1.i, comp1.j, [1, 0, 0], 5, "snake", "lightAffine");
+    let object1 = createObject(comp1.i, comp1.j, [0.1, 0, 0], 5, "snake", "lightAffine");
     objects.push(object1);
     const comp2 = wideGroundComponents[(index + 10) % wideGroundComponents.length];
-    let object2 = createObject(comp2.i, comp2.j, [1, 0, 0], 3, "dot", "proxHunter");
+    let object2 = createObject(comp2.i, comp2.j, [0.1, 0, 0], 3, "dot", "proxHunter");
     objects.push(object2);
-
-    //LIGHT.createLight(100, 100, [1.0, 1.0, 1.0, 10]);
-    //LIGHT.createLight(150, 40, [0.1, 0.2, 1.0, 5]);
 }
 
 function createTexture() {
@@ -151,170 +147,9 @@ function createTexture() {
 
             if (tile.type == CONSTANTS.TILE_WALL) {
                 for (let k = 0; k < 6; k++) {
-                    colors.push(0.05);
-                    colors.push(0.05);
-                    colors.push(0.05);
-                }
-            } else if (tile.type == CONSTANTS.TILE_DIRT) {
-                for (let k = 0; k < 6; k++) {
-                    colors.push(0.24);
-                    colors.push(0.15);
-                    colors.push(0.0);
-                }
-            } else if (tile.type == CONSTANTS.TILE_WATER) {
-                for (let k = 0; k < 6; k++) {
-                    colors.push(0.0);
-                    colors.push(0.2);
-                    colors.push(0.6);
-                }
-            } else if (tile.type == CONSTANTS.TILE_DEEPWATER) {
-                for (let k = 0; k < 6; k++) {
-                    colors.push(0.0);
-                    colors.push(0.1);
-                    colors.push(0.3);
-                }
-            } else if (tile.type == CONSTANTS.TILE_GRASS) {
-                for (let k = 0; k < 6; k++) {
-                    colors.push(0.1);
-                    colors.push(0.3);
-                    colors.push(0.0);
-                }
-            } else if (tile.type == CONSTANTS.TILE_HIGHWALL) {
-                for (let k = 0; k < 6; k++) {
-                    colors.push(0.0);
-                    colors.push(0.0);
-                    colors.push(0.0);
-                }
-            } else if (tile.type == CONSTANTS.TILE_PAVED) {
-                for (let k = 0; k < 6; k++) {
-                    colors.push(1.0);
-                    colors.push(0.2);
-                    colors.push(0.5);
-                }
-            } else if (tile.type == CONSTANTS.TILE_EXIT) {
-                for (let k = 0; k < 6; k++) {
-                    colors.push(1.0);
-                    colors.push(0.0);
-                    colors.push(1.0);
-                }
-            } else if (tile.type == CONSTANTS.TILE_ENTRANCE) {
-                for (let k = 0; k < 6; k++) {
-                    colors.push(0.1);
-                    colors.push(0.1);
-                    colors.push(0.0);
-                }
-            }
-        }
-    }
-
-    let geometry = new THREE.BufferGeometry();
-    geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
-    geometry.addAttribute('a_color', new THREE.BufferAttribute(new Float32Array(colors), 3));
-
-    SHADER.mapTextureUniforms.u_dimensions.value = [numColumns, numRows];
-
-    const mapMesh = new THREE.Mesh(geometry, SHADER.getMapTextureMaterial());
-    SCENE.createBuffer([mapMesh], numColumns, numRows);
-    SHADER.mapLightingUniforms.u_texture.value = SCENE.renderBufferToTexture(numColumns, numRows);
-    SCENE.deleteBuffer();
-
-    LIGHT.initializeLighting(numRows, numColumns, level);
-}
-
-function createMesh() {
-    const texelCoords = [];
-    const caves = [];
-    const groundComps = [];
-    const wideComps = [];
-
-    const caveColors = [
-        [1.00, 0.00, 0.00], //red
-        [0.00, 1.00, 0.00], //lime
-        [0.00, 0.00, 1.00], //blue
-        [1.00, 1.00, 0.00], //yellow
-        [1.00, 0.00, 1.00], //fuchsia
-        [0.00, 1.00, 1.00], //aqua
-        [0.50, 0.00, 0.00], //maroon
-        [0.00, 0.50, 0.00], //green
-        [0.00, 0.00, 0.50], //navy
-        [0.50, 0.50, 0.00], //olive
-        [0.50, 0.00, 0.50], //purple
-        [0.00, 0.50, 0.50], //teal
-        [1.00, 0.65, 0.00], //orange
-        [1.00, 1.00, 1.00], //white
-        [0.50, 0.50, 0.50], //grey
-        [0.75, 0.75, 0.75], //silver
-        [0.25, 0.25, 0.25], //anthracite
-    ];
-
-    for (let i = 0; i < numRows; i++) {
-        for (let j = 0; j < numColumns; j++) {
-
-            texelCoords.push(j * tileSize);
-            texelCoords.push(i * tileSize);
-            texelCoords.push((j + 1) * tileSize);
-            texelCoords.push(i * tileSize);
-            texelCoords.push(j * tileSize);
-            texelCoords.push((i + 1) * tileSize);
-            texelCoords.push((j + 1) * tileSize);
-            texelCoords.push(i * tileSize);
-            texelCoords.push((j + 1) * tileSize);
-            texelCoords.push((i + 1) * tileSize);
-            texelCoords.push(j * tileSize);
-            texelCoords.push((i + 1) * tileSize);
-
-            const tile = tileMap[i * numColumns + j];
-
-            if (tile.caveID != -1) {
-                const caveColor = caveColors[tile.caveID];
-                for (let k = 0; k < 6; k++) {
-                    caves.push(caveColor[0]);
-                    caves.push(caveColor[1]);
-                    caves.push(caveColor[2]);
-                }
-            } else {
-                for (let k = 0; k < 6; k++) {
-                    caves.push(0);
-                    caves.push(0);
-                    caves.push(0);
-                }
-            }
-
-            if (tile.compIDs[0] != -1) {
-                const gcompColor = caveColors[tile.compIDs[0] % 17];
-                for (let k = 0; k < 6; k++) {
-                    groundComps.push(gcompColor[0]);
-                    groundComps.push(gcompColor[1]);
-                    groundComps.push(gcompColor[2]);
-                }
-            } else {
-                for (let k = 0; k < 6; k++) {
-                    groundComps.push(0);
-                    groundComps.push(0);
-                    groundComps.push(0);
-                }
-            }
-
-            if (tile.compIDs[1] != -1) {
-                const wcompColor = caveColors[tile.compIDs[1] % 17];
-                for (let k = 0; k < 6; k++) {
-                    wideComps.push(wcompColor[0]);
-                    wideComps.push(wcompColor[1]);
-                    wideComps.push(wcompColor[2]);
-                }
-            } else {
-                for (let k = 0; k < 6; k++) {
-                    wideComps.push(0);
-                    wideComps.push(0);
-                    wideComps.push(0);
-                }
-            }
-
-            /*if (tile.type == CONSTANTS.TILE_WALL) {
-                for (let k = 0; k < 6; k++) {
-                    colors.push(noiseMap[i * numColumns + j][0] / 5);//colors.push(0.05);
-                    colors.push(noiseMap[i * numColumns + j][0] / 5);//colors.push(0.05);
-                    colors.push(noiseMap[i * numColumns + j][0] / 5);//colors.push(0.05);
+                    colors.push(Math.min(0.03, noiseMap[i * numColumns + j][0] / 10));//colors.push(0.05);
+                    colors.push(Math.min(0.03, noiseMap[i * numColumns + j][0] / 10));//colors.push(0.05);
+                    colors.push(Math.min(0.03, noiseMap[i * numColumns + j][0] / 10));//colors.push(0.05);
                 }
             } else if (tile.type == CONSTANTS.TILE_DIRT) {
                 for (let k = 0; k < 6; k++) {
@@ -364,15 +199,27 @@ function createMesh() {
                     colors.push(0.1);
                     colors.push(0.0);
                 }
-            }*/
-            /*for (let k = 0; k < 6; k++) {
-                colors.push(0.0);
-                colors.push(noiseMap[i * numColumns + j][0]);
-                colors.push(0.0);
-            }*/
+            }
         }
     }
 
+    let geometry = new THREE.BufferGeometry();
+    geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+    geometry.addAttribute('a_color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+
+    SHADER.mapTextureUniforms.u_dimensions.value = [numColumns, numRows];
+
+    const mapMesh = new THREE.Mesh(geometry, SHADER.getMapTextureMaterial());
+    SCENE.createBuffer([mapMesh], numColumns, numRows);
+    SHADER.mapLightingUniforms.u_texture.value = SCENE.renderBufferToTexture(numColumns, numRows);
+    SHADER.objectUniforms.u_texture.value = SHADER.mapLightingUniforms.u_texture.value;
+    SHADER.objectUniforms.u_dimensions.value = [numColumns, numRows];
+    SCENE.deleteBuffer();
+
+    LIGHT.initializeLighting(numRows, numColumns, level);
+}
+
+function createMesh() {
     let geometry = new THREE.BufferGeometry();
     geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array([
                  0,       0, -0.1,
@@ -390,9 +237,6 @@ function createMesh() {
         1,1,
         0,1,
     ]), 2));
-    geometry.addAttribute('a_caveID', new THREE.BufferAttribute(new Float32Array(caves), 3));
-    geometry.addAttribute('a_groundCompID', new THREE.BufferAttribute(new Float32Array(groundComps), 3));
-    geometry.addAttribute('a_wideCompID', new THREE.BufferAttribute(new Float32Array(wideComps), 3));
 
     return new THREE.Mesh(geometry, SHADER.getMapMaterial());
 }
@@ -486,7 +330,6 @@ function labelCaves(caverns) {
 function connectCaves(caves) {
     let caveSystems = [];
     for (let i = 0; i < caves.length; i++) {
-        //tileMap[caves[i].i * numColumns + caves[i].j].type = CONSTANTS.TILE_PAVED;
         if (caves[i].systemID == -1) {
             caveSystems = buildTunnel(caves, caves[i], caveSystems);
         }

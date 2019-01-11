@@ -35,25 +35,39 @@ export function createLight(x, y, color) {
             this.color = newColor;
             for (let i = 0; i < 4; i++) {
                 SHADER.mapLightingUniforms.u_lightColor.value[4 * this.uniformIndex + i] = newColor[i];
+                
+                SHADER.objectUniforms.u_lightColor.value[4 * this.uniformIndex + i] = newColor[i];
             }
         },
         move: function(dx, dy) {
             this.pos.x += dx;
             this.pos.y += dy;
-            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex] = this.pos.x;
-            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex + 1] = this.pos.y;
+
+            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex] = CONSTANTS.LIGHTMAP_PRECISION * this.pos.x;
+            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex + 1] = CONSTANTS.LIGHTMAP_PRECISION * this.pos.y;
+
+            SHADER.objectUniforms.u_lightPos.value[2 * this.uniformIndex] = this.pos.x;
+            SHADER.objectUniforms.u_lightPos.value[2 * this.uniformIndex + 1] = this.pos.y;
         },
         set: function(x, y) {
             this.pos = { x, y };
-            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex] = this.pos.x;
-            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex + 1] = this.pos.y;
+
+            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex] = CONSTANTS.LIGHTMAP_PRECISION * this.pos.x;
+            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex + 1] = CONSTANTS.LIGHTMAP_PRECISION * this.pos.y;
+            
+            SHADER.objectUniforms.u_lightPos.value[2 * this.uniformIndex] = this.pos.x;
+            SHADER.objectUniforms.u_lightPos.value[2 * this.uniformIndex + 1] = this.pos.y;
         },
         flicker: function() {
-            SHADER.mapLightingUniforms.u_lightColor.value[4 * this.uniformIndex + 3] = this.color[3] + Math.random() - 0.5;
+            const rand = CONSTANTS.LIGHTPARTICLE_FLICKER * (Math.random() - 0.5);
+
+            SHADER.mapLightingUniforms.u_lightColor.value[4 * this.uniformIndex + 3] = this.color[3] + rand;
+
+            SHADER.objectUniforms.u_lightColor.value[4 * this.uniformIndex + 3] = this.color[3] + rand;
         },
         die: function() {
-            this.color[3] -= 0.1;
-            return this.color[3] <= 2.5;
+            this.color[3] -= CONSTANTS.LIGHTPARTICLE_DECAY;
+            return this.color[3] <= CONSTANTS.LIGHTPARTICLE_DEATH;
         },
     };
     
@@ -67,12 +81,21 @@ export function removeLight(index) {
     if (index >= lights.length) return;
 
     const uniformIndex = lights[index].uniformIndex;
+
     SHADER.mapLightingUniforms.u_lightPos.value[2 * uniformIndex] = 0;
     SHADER.mapLightingUniforms.u_lightPos.value[2 * uniformIndex + 1] = 0;
     SHADER.mapLightingUniforms.u_lightColor.value[4 * uniformIndex] = 0;
     SHADER.mapLightingUniforms.u_lightColor.value[4 * uniformIndex + 1] = 0;
     SHADER.mapLightingUniforms.u_lightColor.value[4 * uniformIndex + 2] = 0;
     SHADER.mapLightingUniforms.u_lightColor.value[4 * uniformIndex + 3] = 0;
+    
+    SHADER.objectUniforms.u_lightPos.value[2 * uniformIndex] = 0;
+    SHADER.objectUniforms.u_lightPos.value[2 * uniformIndex + 1] = 0;
+    SHADER.objectUniforms.u_lightColor.value[4 * uniformIndex] = 0;
+    SHADER.objectUniforms.u_lightColor.value[4 * uniformIndex + 1] = 0;
+    SHADER.objectUniforms.u_lightColor.value[4 * uniformIndex + 2] = 0;
+    SHADER.objectUniforms.u_lightColor.value[4 * uniformIndex + 3] = 0;
+
     lights.splice(index, 1);
 }
 
@@ -87,6 +110,13 @@ export function removeLastLight() {
     SHADER.mapLightingUniforms.u_lightColor.value[4 * light.uniformIndex + 1] = 0;
     SHADER.mapLightingUniforms.u_lightColor.value[4 * light.uniformIndex + 2] = 0;
     SHADER.mapLightingUniforms.u_lightColor.value[4 * light.uniformIndex + 3] = 0;
+
+    SHADER.objectUniforms.u_lightPos.value[2 * light.uniformIndex] = 0;
+    SHADER.objectUniforms.u_lightPos.value[2 * light.uniformIndex + 1] = 0;
+    SHADER.objectUniforms.u_lightColor.value[4 * light.uniformIndex] = 0;
+    SHADER.objectUniforms.u_lightColor.value[4 * light.uniformIndex + 1] = 0;
+    SHADER.objectUniforms.u_lightColor.value[4 * light.uniformIndex + 2] = 0;
+    SHADER.objectUniforms.u_lightColor.value[4 * light.uniformIndex + 3] = 0;
 }
 
 export function removeAllLights() {
@@ -112,7 +142,7 @@ export function flickerAll(counter) {
 }
 
 export function initializeLighting(numRows, numColumns, level) {
-    dimensions = [numColumns, numRows];
+    dimensions = [CONSTANTS.LIGHTMAP_PRECISION * numColumns, CONSTANTS.LIGHTMAP_PRECISION * numRows];
 
     let lightGeometry = new THREE.BufferGeometry();
     lightGeometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array([
@@ -134,6 +164,7 @@ export function initializeLighting(numRows, numColumns, level) {
 
     SHADER.mapLightingUniforms.u_dimensions.value = dimensions;
     SHADER.mapLightingUniforms.u_ambientLight.value = [1.0, 1.0, 1.0, Math.max(0.0, 3.0 - level * 0.3)];
+    SHADER.objectUniforms.u_ambientLight.value = SHADER.mapLightingUniforms.u_ambientLight.value;
     mapLightingMesh = new THREE.Mesh(lightGeometry, SHADER.getMapLightingMaterial());
 }
 

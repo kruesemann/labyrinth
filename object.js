@@ -288,6 +288,9 @@ export function createObject(i, j, color, speed, formName, aiName) {
             let { update, route } = this.ai(this, counter);
             if (update) {
                 this.route = route;
+                if (this.sound.isPlaying) {
+                    this.sound.stop();
+                }
                 this.sound.play();
             }
         },

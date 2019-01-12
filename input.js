@@ -11,7 +11,6 @@ let mouse = { x: 0, y: 0 };
 let particleSound = undefined;
 
 function enterFullscreen() {
-    document.getElementById("canvas").style.cursor = "none";
     if (document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen();
     } else if (document.documentElement.mozRequestFullScreen) {
@@ -24,7 +23,6 @@ function enterFullscreen() {
 }
 
 function exitFullscreen() {
-    document.getElementById("canvas").style.cursor = "auto";
     if (document.exitFullscreen) {
         document.exitFullscreen();
     } else if (document.mozCancelFullScreen) {
@@ -47,6 +45,7 @@ export function initialize() {
     SCENE.audioLoader.load('assets/ding01.wav', function(buffer) {
         particleSound = new THREE.Audio(SCENE.audioListener);
         particleSound.setBuffer(buffer);
+        particleSound.setVolume(0.1);
     });
 
     document.addEventListener("mousedown", event => {
@@ -105,6 +104,9 @@ export function initialize() {
             case 69://e
                 let { x, y } = PLAYER.getHead();
                 LIGHT.createLight(x - 0.25, y - 0.25, [1.0, 1.0, 0.8, CONSTANTS.LIGHTPARTICLE_BRIGHTNESS]);
+                if (particleSound.isPlaying) {
+                    particleSound.stop();
+                }
                 particleSound.play();
                 break;
             case 81://q

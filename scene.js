@@ -59,6 +59,13 @@ export function initialize() {
         camera.aspect = ASPECT;
         camera.updateProjectionMatrix();
         renderer.setSize(WIDTH, HEIGHT);
+
+        if ((document.fullScreenElement && document.fullScreenElement !== null)
+        || (document.mozFullScreen || document.webkitIsFullScreen)) {
+            document.getElementById("canvas").style.cursor = "none";
+        } else {
+            document.getElementById("canvas").style.cursor = "auto";
+        }
     }
 }
 

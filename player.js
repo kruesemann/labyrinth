@@ -1,8 +1,10 @@
 import * as SCENE from "./scene.js";
 import * as MAP from "./map.js";
+import * as LIGHT from "./light.js";
 import { createObject } from "./object.js";
 
 let player = undefined;
+let light = undefined;
 
 export function initialize(i, j) {
     if (player) {
@@ -11,6 +13,8 @@ export function initialize(i, j) {
     } else {
         player = createObject(i, j, [0.1, 0.1, 0], 2, "dot");
     }
+    const { x, y } = MAP.tileToCenter(i, j);
+    light = LIGHT.createLight(x, y, [1, 1, 1, 5]);
 }
 
 export function center() {
@@ -22,7 +26,12 @@ export function transform(form) {
 }
 
 export function move(counter) {
-    return player.move(counter) && MAP.isOnExit(player.form.nodes[0]);
+    if (player.move(counter)) {
+        const { x, y } = getHead();
+        light.set(x, y);
+        return MAP.isOnExit(player.form.nodes[0]);
+    }
+    return false;
 }
 
 export function moveLeft() {

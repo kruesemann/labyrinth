@@ -3,6 +3,7 @@ import * as SHADER from "./shader.js";
 import * as SCENE from "./scene.js";
 
 export const lights = [];
+const particles = [];
 
 let mapLightingMesh = undefined;
 let dimensions = undefined;
@@ -75,6 +76,12 @@ export function createLight(x, y, color) {
     light.set(x, y);
 
     lights.push(light);
+
+    return light;
+}
+
+export function createParticle(x, y, color) {
+    particles.push(createLight(x, y, color));
 }
 
 export function removeLight(index) {
@@ -127,13 +134,13 @@ export function removeAllLights() {
 
 export function flickerAll(counter) {
     if (counter % 4 == 0) {
-        for (let light of lights) {
-            light.flicker();
+        for (let particle of particles) {
+            particle.flicker();
         }
     }
     if (counter % 10 == 0) {
-        for (let i = 0; i < lights.length; i++) {
-            if (lights[i].die()) {
+        for (let i = 0; i < particles.length; i++) {
+            if (particles[i].die()) {
                 removeLight(i);
                 i--;
             }

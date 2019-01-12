@@ -8,6 +8,8 @@ import { nextLevel } from "./index.js";
 let mousedown = false;
 let mouse = { x: 0, y: 0 };
 
+let particleSound = undefined;
+
 function enterFullscreen() {
     document.getElementById("canvas").style.cursor = "none";
     if (document.documentElement.requestFullscreen) {
@@ -42,6 +44,11 @@ export function toggleFullscreen() {
 }
 
 export function initialize() {
+    SCENE.audioLoader.load('assets/ding01.wav', function(buffer) {
+        particleSound = new THREE.Audio(SCENE.audioListener);
+        particleSound.setBuffer(buffer);
+    });
+
     document.addEventListener("mousedown", event => {
         mousedown = true;
         mouse.x = event.clientX;
@@ -98,6 +105,7 @@ export function initialize() {
             case 69://e
                 let { x, y } = PLAYER.getHead();
                 LIGHT.createLight(x - 0.25, y - 0.25, [1.0, 1.0, 0.8, CONSTANTS.LIGHTPARTICLE_BRIGHTNESS]);
+                particleSound.play();
                 break;
             case 81://q
                 LIGHT.removeLight(0);

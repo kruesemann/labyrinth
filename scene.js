@@ -16,9 +16,10 @@ let bufferScene = undefined;
 
 let canvas = undefined;
 
-let listener = undefined;
-let sound = undefined;
-let audioLoader = undefined;
+export let audioListener = undefined;
+export let audioLoader = undefined;
+let volume = 0;
+let music = undefined;
 
 export function initialize() {
     WIDTH = window.innerWidth;
@@ -38,18 +39,18 @@ export function initialize() {
     canvas = document.getElementById('canvas');
     canvas.appendChild(renderer.domElement);
 
-    listener = new THREE.AudioListener();
-    camera.add( listener );
+    audioListener = new THREE.AudioListener();
+    audioListener.setMasterVolume(volume);
+    camera.add(audioListener);
 
-    sound = new THREE.Audio( listener );
+    music = new THREE.Audio(audioListener);
     audioLoader = new THREE.AudioLoader();
     
-    /*audioLoader.load( 'assets/Erwachen.wav', function( buffer ) {
-        sound.setBuffer( buffer );
-        sound.setLoop( true );
-        sound.setVolume( 0.5 );
-        sound.play();
-    });*/
+    audioLoader.load('assets/Erwachen.wav', function(buffer) {
+        music.setBuffer(buffer);
+        music.setLoop(true);
+        music.play();
+    });
 
     window.onresize = function resize() {
         WIDTH = window.innerWidth;
@@ -123,4 +124,13 @@ export function renderBufferToTexture(width, height) {
     let bufferTexture = new THREE.WebGLRenderTarget( width, height, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter});
     renderer.render(bufferScene, bufferCamera, bufferTexture, true);
     return bufferTexture.texture;
+}
+
+export function toggleSound() {
+    if (volume !== 0) {
+        volume = 0;
+    } else {
+        volume = 1;
+    }
+    audioListener.setMasterVolume(volume);
 }

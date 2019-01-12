@@ -288,6 +288,7 @@ export function createObject(i, j, color, speed, formName, aiName) {
             let { update, route } = this.ai(this, counter);
             if (update) {
                 this.route = route;
+                this.sound.play();
             }
         },
         move: function(counter) {
@@ -399,9 +400,31 @@ export function createObject(i, j, color, speed, formName, aiName) {
     object.transform(formName, x, y);
 
     switch(aiName) {
-        case "test": object.ai = function(self, counter) { return AI.test(self, counter); }; object.route = []; break;
-        case "proxHunter": object.ai = function(self, counter) { return AI.proxHunter(self, counter); }; object.route = []; break;
-        case "lightAffine": object.ai = function(self, counter) { return AI.lightAffine(self, counter); }; object.route = []; break;
+        case "test":
+            object.ai = function(self, counter) {
+                return AI.test(self, counter);
+            };
+            object.route = [];
+            break;
+        case "proxHunter":
+            object.ai = function(self, counter) {
+                return AI.proxHunter(self, counter);
+            };
+            object.route = [];
+            break;
+        case "lightAffine":
+            object.ai = function(self, counter) {
+                return AI.lightAffine(self, counter);
+            };
+            object.route = [];
+            break;
+    }
+
+    if (aiName) {
+        SCENE.audioLoader.load('assets/ghost01.wav', function(buffer) {
+            object.sound = new THREE.Audio(SCENE.audioListener);
+            object.sound.setBuffer(buffer);
+        });
     }
 
     return object;

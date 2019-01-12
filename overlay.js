@@ -1,3 +1,4 @@
+import * as SCENE from "./scene.js";
 import * as INPUT from "./input.js";
 import { loadSpecificLevel } from "./index.js";
 
@@ -16,6 +17,10 @@ export function initialize() {
 
     document.getElementById("info-fc").addEventListener("click", _ => {
         INPUT.toggleFullscreen();
+    });
+
+    document.getElementById("info-sound").addEventListener("click", _ => {
+        SCENE.toggleSound();
     });
 }
 

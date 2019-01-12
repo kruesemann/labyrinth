@@ -13,12 +13,12 @@ function noise(gen, nx, ny) {
     return gen.noise2D(nx, ny)/2 + 0.5;
 }
 
-export function doubleNoise2D(seed, numChannels, height, width, noiseColors, noiseExponents) {
+export function doubleNoise2D(mapSeed, numChannels, height, width, noiseColors, noiseExponents) {
     const gens = [];
     const centers = [];
 
     for (let i = 0; i < numChannels; i++) {
-        const rngSeed = Math.abs(seed - 1000 * random());
+        const rngSeed = Math.abs(mapSeed - 1000 * random());
         const rng = PM_PRNG.create(rngSeed);
         gens.push(new SimplexNoise(rng.nextDouble.bind(rng)));
         centers.push({ x: random(), y: random() });

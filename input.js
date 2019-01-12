@@ -3,7 +3,7 @@ import * as SCENE from "./scene.js";
 import * as PLAYER from "./player.js";
 import * as LIGHT from "./light.js";
 import * as SHADER from "./shader.js";
-import { nextLevel } from "./index.js";
+import { loadSpecificLevel, nextLevel } from "./index.js";
 
 let mousedown = false;
 let mouse = { x: 0, y: 0 };

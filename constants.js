@@ -18,6 +18,9 @@ export const LIGHT_MAXNUM               = 16;
 export const LIGHT_MAXDIST              = 50 * LIGHTMAP_PRECISION;
 export const LIGHT_DISTEXP              = 1;
 
+export const LIGHT_AMBIENT_INITIAL      = 3;
+export const LIGHT_AMBIENT_DECREASE     = 0.03;
+
 export const LIGHTPARTICLE_BRIGHTNESS   = 10 * LIGHTMAP_PRECISION;
 export const LIGHTPARTICLE_FLICKER      = LIGHTMAP_PRECISION;
 export const LIGHTPARTICLE_DECAY        = 0.15 * LIGHTMAP_PRECISION;

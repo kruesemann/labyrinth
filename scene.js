@@ -46,12 +46,12 @@ export function initialize() {
     sound = new THREE.Audio( listener );
     audioLoader = new THREE.AudioLoader();
     
-    audioLoader.load( 'assets/Erwachen.wav', function( buffer ) {
+    /*audioLoader.load( 'assets/Erwachen.wav', function( buffer ) {
         sound.setBuffer( buffer );
         sound.setLoop( true );
         sound.setVolume( 0.5 );
         sound.play();
-    });
+    });*/
 
     window.onresize = function resize() {
         WIDTH = window.innerWidth;

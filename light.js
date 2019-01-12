@@ -163,7 +163,7 @@ export function initializeLighting(numRows, numColumns, level) {
     ]), 2));
 
     SHADER.mapLightingUniforms.u_dimensions.value = dimensions;
-    SHADER.mapLightingUniforms.u_ambientLight.value = [1.0, 1.0, 1.0, Math.max(0.0, 3.0 - level * 0.3)];
+    SHADER.mapLightingUniforms.u_ambientLight.value = [1.0, 1.0, 1.0, Math.max(0.0, CONSTANTS.LIGHT_AMBIENT_INITIAL - level * CONSTANTS.LIGHT_AMBIENT_DECREASE)];
     SHADER.objectUniforms.u_ambientLight.value = SHADER.mapLightingUniforms.u_ambientLight.value;
     mapLightingMesh = new THREE.Mesh(lightGeometry, SHADER.getMapLightingMaterial());
 }

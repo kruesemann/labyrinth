@@ -7,19 +7,28 @@ import * as LIGHT from "./light.js";
 import * as NOISE from "./noise.js";
 
 let gameSeed = 1;
-NOISE.setSeed(gameSeed);
+let level = 0;
+let score = 0;
 
-let mapSeed = 1000 * NOISE.random();
+let mapSeed = 0;
 let mapWidth = 200;
 let mapHeight = 200;
 
 SCENE.initialize();
 OVERLAY.initialize();
+OVERLAY.set(gameSeed, level, score);
 INPUT.initialize();
 
 let counter = 0;
-let level = 0;
 let nextLvl = true;
+
+export function loadSpecificLevel(_gameSeed, _level) {
+    gameSeed = _gameSeed;
+    level = _level;
+    OVERLAY.initialize(gameSeed);
+    OVERLAY.setLevel(level);
+    loadNextMap();
+}
 
 export function nextLevel() {
     nextLvl = true;
@@ -27,7 +36,8 @@ export function nextLevel() {
 
 function loadNextMap() {
     SCENE.reset();
-    mapSeed = 1000 * NOISE.random();
+    NOISE.setSeed(gameSeed + 200 * (level - 1));
+    mapSeed = NOISE.random();
     MAP.initialize(mapSeed, mapHeight, mapWidth, level);
 }
 

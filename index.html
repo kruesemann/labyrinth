@@ -4,22 +4,27 @@
         <meta charset="utf-8">
         <title>Labyrinth</title>
         <style>
+            * {
+                box-sizing: border-box;
+            }
+
             body {
                 overflow: hidden;
                 padding: 0;
                 margin: 0;
             }
 
-            .window {
-                box-shadow: 1px 1px 3px 0px rgba(0, 0, 0, 0.75);
+            .info-block {
+                display: inline-block;
+                padding: 0 10px 0 0;
             }
 
-            #level {
-                background-color: rgba(128, 128, 128, 0.5);
-                padding: 5pt;
+            #info {
+                display: block;
+                padding: 5px 0 5px 10px;
                 position: absolute;
                 z-index: 100;
-                display:block;
+                background-color: rgba(128, 128, 128, 0.5);
                 color: rgba(255, 255, 255, 1.0);
                 font-weight: bold;
             }
@@ -34,7 +39,17 @@
     </head>
 
     <body>
-        <div id="level"></div>
+        <div id="info">
+            <label for="info-seed">Seed:</label>
+            <!--<div class="info-block" id="info-seed"></div>-->
+            <input type="number" min="1" style="width:50px" id="info-seed">
+            <label for="info-level">Level:</label>
+            <!--<div class="info-block" id="info-level"></div>-->
+            <input type="number" min="1" style="width:50px" id="info-level">
+            <input type="button" value="set" id="info-set">
+            <label for="info-score">Score:</label>
+            <div class="info-block" id="info-score"></div>
+        </div>
         <div id="canvas"></div>
     </body>
 

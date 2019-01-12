@@ -74,9 +74,13 @@ function create() {
     const caverns = generateCavernCenters();
     const caves = labelCaves(caverns);
     connectCaves(caves);
-    const groundComponents = labelConnectedComponents(isTileGround, 0);
-    const wideComponents = labelConnectedComponents(isTileWide, 1);
-    const wideGroundComponents = labelConnectedComponents(isTileWideGround, 2);
+    
+    // build graph of connected components
+    const groundComponents = labelConnectedComponents(isTileGround, 0); // temp
+    const wideComponents = labelConnectedComponents(isTileWide, 1); // temp
+    const wideGroundComponents = labelConnectedComponents(isTileWideGround, 2); // nodes in the graph
+    // waterComponents: type I edges in the graph
+    // narrowComponents: type II edges in the graph ... but how?
 
     // choose random wideGroundComponent and set start
     // choose - if possible - exit point that is in a different component for every type

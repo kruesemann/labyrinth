@@ -217,7 +217,8 @@ function createTexture() {
     SCENE.createBuffer([mapMesh], numColumns, numRows);
     SHADER.mapLightingUniforms.u_texture.value = SCENE.renderBufferToTexture(numColumns, numRows);
     SHADER.objectUniforms.u_texture.value = SHADER.mapLightingUniforms.u_texture.value;
-    SHADER.objectUniforms.u_dimensions.value = [numColumns, numRows];
+    SHADER.objectUniforms.u_dimensions.value = [CONSTANTS.LIGHTMAP_PRECISION * numColumns, CONSTANTS.LIGHTMAP_PRECISION * numRows];
+    SHADER.objectUniforms.u_lightPrecision.value = CONSTANTS.LIGHTMAP_PRECISION;
     SCENE.deleteBuffer();
 
     LIGHT.initializeLighting(numRows, numColumns, level);

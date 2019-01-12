@@ -232,12 +232,14 @@ export function getMapMaterial() {
 const objectVSrc = `
 attribute vec4 a_color;
 
+uniform float u_lightPrecision;
+
 varying vec4 v_pos;
 varying vec4 v_color;
 
 void main() {
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    v_pos = modelMatrix * vec4(position, 1.0);
+    v_pos = u_lightPrecision * modelMatrix * vec4(position, 1.0);
     v_color = a_color;
 }
 `;
@@ -255,6 +257,7 @@ uniform vec2 u_dimensions;
 uniform vec4 u_ambientLight;
 uniform vec2 u_lightPos[MAXNUM];
 uniform vec4 u_lightColor[MAXNUM];
+uniform float u_lightPrecision;
 
 ${RAYCAST}
 
@@ -263,11 +266,10 @@ void main() {
 
     for (int i = 0; i < MAXNUM; i++) {
         if (u_lightColor[i].a > 0.0) {
-
-            float dist = distance(v_pos.xy, u_lightPos[i]);
+            float dist = distance(v_pos.xy, u_lightPrecision * u_lightPos[i]);
 
             if (dist < float(MAXDIST)) {
-                if (rayCast(v_pos.xy, u_lightPos[i])) {
+                if (rayCast(v_pos.xy, u_lightPrecision * u_lightPos[i])) {
                     RGB += u_lightColor[i].a * u_lightColor[i].rgb / pow(dist, float(DISTEXP));
                 }
             }
@@ -285,6 +287,7 @@ export let objectUniforms = {
     u_ambientLight: { type: 'vec3', value: new Float32Array([1.0, 1.0, 1.0, 1.0]) },
     u_lightPos: { type: 'vec2', value: new Float32Array(2 * CONSTANTS.LIGHT_MAXNUM) },
     u_lightColor: { type: 'vec4', value: new Float32Array(4 * CONSTANTS.LIGHT_MAXNUM) },
+    u_lightPrecision: { type: 'float', value: 1 },
 };
 
 let objectShaderMaterial = new THREE.ShaderMaterial({

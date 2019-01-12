@@ -97,7 +97,7 @@ export function initialize() {
                 break;
             case 69://e
                 let { x, y } = PLAYER.getHead();
-                LIGHT.createLight(Math.floor(x) + 0.25, Math.floor(y) + 0.25, [1.0, 1.0, 0.8, CONSTANTS.LIGHTPARTICLE_BRIGHTNESS]);
+                LIGHT.createLight(x - 0.25, y - 0.25, [1.0, 1.0, 0.8, CONSTANTS.LIGHTPARTICLE_BRIGHTNESS]);
                 break;
             case 81://q
                 LIGHT.removeLight(0);

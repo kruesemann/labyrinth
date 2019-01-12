@@ -1,3 +1,4 @@
+import * as INPUT from "./input.js";
 import { loadSpecificLevel } from "./index.js";
 
 let seedDisplay = undefined;
@@ -11,6 +12,10 @@ export function initialize() {
 
     document.getElementById("info-set").addEventListener("click", _ => {
         loadSpecificLevel(Number(seedDisplay.value), Number(levelDisplay.value));
+    });
+
+    document.getElementById("info-fc").addEventListener("click", _ => {
+        INPUT.toggleFullscreen();
     });
 }
 

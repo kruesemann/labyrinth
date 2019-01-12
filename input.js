@@ -3,10 +3,43 @@ import * as SCENE from "./scene.js";
 import * as PLAYER from "./player.js";
 import * as LIGHT from "./light.js";
 import * as SHADER from "./shader.js";
-import { loadSpecificLevel, nextLevel } from "./index.js";
+import { nextLevel } from "./index.js";
 
 let mousedown = false;
 let mouse = { x: 0, y: 0 };
+
+function enterFullscreen() {
+    document.getElementById("canvas").style.cursor = "none";
+    if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+    } else if (document.documentElement.mozRequestFullScreen) {
+        document.documentElement.mozRequestFullScreen();
+    } else if (document.documentElement.msRequestFullscreen) {
+        document.documentElement.msRequestFullscreen();
+    } else if (document.documentElement.webkitRequestFullscreen) {
+        document.documentElement.webkitRequestFullscreen();
+    }
+}
+
+function exitFullscreen() {
+    document.getElementById("canvas").style.cursor = "auto";
+    if (document.exitFullscreen) {
+        document.exitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+    } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+    }
+}
+
+export function toggleFullscreen() {
+    if ((document.fullScreenElement && document.fullScreenElement !== null)
+    || (document.mozFullScreen || document.webkitIsFullScreen)) {
+        exitFullscreen();
+    } else {
+        enterFullscreen();
+    }
+}
 
 export function initialize() {
     document.addEventListener("mousedown", event => {
@@ -34,28 +67,6 @@ export function initialize() {
     document.addEventListener("DOMMouseScroll", wheelHandler);
 
     window.addEventListener("keydown", event => {
-        function enterFullscreen() {
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen();
-            } else if (document.documentElement.mozRequestFullScreen) {
-                document.documentElement.mozRequestFullScreen();
-            } else if (document.documentElement.msRequestFullscreen) {
-                document.documentElement.msRequestFullscreen();
-            } else if (document.documentElement.webkitRequestFullscreen) {
-                document.documentElement.webkitRequestFullscreen();
-            }
-        }
-    
-        function exitFullscreen() {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.mozCancelFullScreen) {
-                document.mozCancelFullScreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            }
-        }
-
         switch (event.keyCode) {
             case 37://left
                 PLAYER.moveLeft();
@@ -104,15 +115,9 @@ export function initialize() {
                 nextLevel();
                 break;
             case 122:
-                if (
-                    (document.fullScreenElement && document.fullScreenElement !== null) ||
-                    (document.mozFullScreen || document.webkitIsFullScreen)
-                ) {
-                    exitFullscreen();
-                } else {
-                    enterFullscreen();
-                }
+                toggleFullscreen();
                 event.preventDefault();
+                break;
         }
     });
 

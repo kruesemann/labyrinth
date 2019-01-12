@@ -1,5 +1,3 @@
-import * as SHADER from "./shader.js";
-
 const cameraDist = 50;
 
 let WIDTH = undefined;

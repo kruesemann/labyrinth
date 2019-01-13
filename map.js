@@ -66,6 +66,7 @@ export function initialize(seed, rows, columns, lvl) {
         }
     }
 
+    // one noise map for walls, one for water, one for grass & wall-coloring
     noiseMap = NOISE.doubleNoise2D(initialSeed, numNoiseChannels, numRows, numColumns, noiseColors, noiseExponents);
     create();
 }
@@ -73,7 +74,7 @@ export function initialize(seed, rows, columns, lvl) {
 function create() {
     const caverns = generateCavernCenters();
     const caves = labelCaves(caverns);
-    connectCaves(caves);
+    connectCaves(caves); // TODO: place walls (not highwalls) at tunnel boundaries
     
     // build graph of connected components
     const groundComponents = labelConnectedComponents(isTileGround, 0); // temp
@@ -108,6 +109,8 @@ function create() {
     }
     const exitComp = wideGroundComponents[maxIndex];
     tileMap[exitComp.i * numColumns + exitComp.j].type = CONSTANTS.TILE_EXIT;
+    
+    const { locationGrid, gridRows, gridColumns } = findFreeLocations(); // entries of locationGrid may be 0
 
     mesh = createMesh();
     SCENE.addMesh(mesh);
@@ -550,7 +553,7 @@ function labelConnectedComponents(isAllowed, componentIndex) {
         for (let j = 1; j < numColumns - 1; j++) {
             if (isAllowed(i, j)) {
                 if (tileMap[i * numColumns + j].compIDs[componentIndex] == -1
-                    && tileMap[i * numColumns + j].caveID != -1) {
+                && tileMap[i * numColumns + j].caveID != -1) {
                     const compID = components.length;
                     components.push({ i, j, ID: compID, size: 1 });
                     const queue = [{ i, j }];
@@ -575,6 +578,116 @@ function labelConnectedComponents(isAllowed, componentIndex) {
     }
 
     return components;
+}
+
+function findFreeLocations() {
+    const fineRows = Math.floor(numRows / CONSTANTS.LOCATION_RADIUS);
+    const fineColumns = Math.floor(numColumns / CONSTANTS.LOCATION_RADIUS);
+    const coarseRows = Math.floor(numRows / CONSTANTS.LOCATION_DIST);
+    const coarseColumns = Math.floor(numColumns / CONSTANTS.LOCATION_DIST);
+    const fineGrid = [];
+    const coarseGrid = [];
+
+    for (let i = 0; i < fineRows * fineColumns; i++) {
+        fineGrid.push(0);
+        if (i < coarseRows * coarseColumns) {
+            coarseGrid.push(0);
+        }
+    }
+
+    function round(x) {
+        const result = Math.round(x);
+        return { result, dir: result == Math.floor(x) ? 1 : -1 };
+    }
+
+    for (let i = CONSTANTS.LOCATION_RADIUS + 1; i < numRows - CONSTANTS.LOCATION_RADIUS - 1; i++) {
+        for (let j = CONSTANTS.LOCATION_RADIUS + 1; j < numColumns - CONSTANTS.LOCATION_RADIUS - 1; j++) {
+            const row = round(i / CONSTANTS.LOCATION_RADIUS);
+            const column = round(j / CONSTANTS.LOCATION_RADIUS);
+
+            let validIndex = 0;
+            let index = (row.result + row.dir) * fineColumns + column.result + column.dir;
+            if (index < fineRows * fineColumns) {
+                if (fineGrid[index] !== 0) continue;
+                validIndex = index;
+            }
+            index = (row.result + row.dir) * fineColumns + column.result;
+            if (index < fineRows * fineColumns) {
+                if (fineGrid[index] !== 0) continue;
+                validIndex = index;
+            }
+            index = row.result * fineColumns + column.result + column.dir;
+            if (index < fineRows * fineColumns) {
+                if (fineGrid[index] !== 0) continue;
+                validIndex = index;
+            }
+            index = row.result * fineColumns + column.result;
+            if (index < fineRows * fineColumns) {
+                if (fineGrid[index] !== 0) continue;
+                validIndex = index;
+            }
+
+            if (isTileGround(i, j)
+            && isTileGround(i + CONSTANTS.LOCATION_RADIUS, j)
+            && isTileGround(i - CONSTANTS.LOCATION_RADIUS, j)
+            && isTileGround(i, j + CONSTANTS.LOCATION_RADIUS)
+            && isTileGround(i, j - CONSTANTS.LOCATION_RADIUS)) {
+                fineGrid[validIndex] = { i, j };
+            }
+        }
+    }
+
+    function areNeighborsFree(i, j) {
+        for (let k = 0; k < CONSTANTS.LOCATION_RADIUS; k++) {
+            for (let l = 0; l < CONSTANTS.LOCATION_RADIUS - k; l++) {
+                if (!isTileGround(i + k, j + l)
+                || !isTileGround(i + k, j - l)
+                || !isTileGround(i - k, j + l)
+                || !isTileGround(i - k, j - l)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    for (let k = 0; k < fineRows; k++) {
+        for (let l = 0; l < fineColumns; l++) {
+            let tile = fineGrid[k * fineColumns + l];
+            if (tile !== 0) {
+                const row = round(tile.i / CONSTANTS.LOCATION_DIST);
+                const column = round(tile.j / CONSTANTS.LOCATION_DIST);
+
+                let validIndex = 0;
+                let index = (row.result + row.dir) * coarseColumns + column.result + column.dir;
+                if (index < coarseRows * coarseColumns) {
+                    if (coarseGrid[index] !== 0) continue;
+                    validIndex = index;
+                }
+                index = (row.result + row.dir) * coarseColumns + column.result;
+                if (index < coarseRows * coarseColumns) {
+                    if (coarseGrid[index] !== 0) continue;
+                    validIndex = index;
+                }
+                index = row.result * coarseColumns + column.result + column.dir;
+                if (index < coarseRows * coarseColumns) {
+                    if (coarseGrid[index] !== 0) continue;
+                    validIndex = index;
+                }
+                index = row.result * coarseColumns + column.result;
+                if (index < coarseRows * coarseColumns) {
+                    if (coarseGrid[index] !== 0) continue;
+                    validIndex = index;
+                }
+
+                if (areNeighborsFree(tile.i, tile.j)) {
+                    coarseGrid[validIndex] = tile;
+                }
+            }
+        }
+    }
+
+    return { locationGrid: coarseGrid, gridRows: coarseRows, gridColumns: coarseColumns };
 }
 
 function norm(x, y) {
@@ -674,7 +787,7 @@ export function isTileWideGround(i, j) {
     return isTileGround(i, j) && isTileGround(i + 1, j) && isTileGround(i, j + 1) && isTileGround(i + 1, j + 1);
 }
 
-export function isOnExit(pos) {
+export function isOnExit(x, y) {
     const vertexOffsets = [
         { x: -0.5, y: -0.5 },
         { x: -0.5, y: 0 },
@@ -688,7 +801,7 @@ export function isOnExit(pos) {
     ];
 
     for (let offset of vertexOffsets) {
-        const { i, j } = coordsToTile(pos.x + offset.x, pos.y + offset.y);
+        const { i, j } = coordsToTile(x + offset.x, y + offset.y);
         if (tileMap[i * numColumns + j].type == CONSTANTS.TILE_EXIT)
         {
             return true;

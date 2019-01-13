@@ -13,8 +13,8 @@ export function initialize(i, j) {
     } else {
         player = createObject(i, j, [0.1, 0.1, 0], 2, "dot");
     }
-    const { x, y } = MAP.tileToCenter(i, j);
-    light = LIGHT.createLight(x, y, [1, 1, 1, 5]);
+    const center = getCenter();
+    light = LIGHT.createLight(center.x, center.y, [1, 1, 1, 5]);
 }
 
 export function center() {
@@ -27,9 +27,10 @@ export function transform(form) {
 
 export function move(counter) {
     if (player.move(counter)) {
-        const { x, y } = getHead();
-        light.set(x, y);
-        return MAP.isOnExit(player.form.nodes[0]);
+        const center = getCenter();
+        light.set(center.x, center.y);
+        const head = getHead();
+        return MAP.isOnExit(head.x, head.y);
     }
     return false;
 }
@@ -80,4 +81,8 @@ export function getHead() {
 
 export function getTail() {
     return player.getTail();
+}
+
+export function getCenter() {
+    return player.getCenter();
 }

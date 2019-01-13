@@ -10,6 +10,9 @@ export const TILE_PAVED                 = 8;
 export const TILE_EXIT                  = 9;
 export const TILE_ENTRANCE              = 10;
 
+export const LOCATION_RADIUS            = 5;
+export const LOCATION_DIST              = 10;
+
 export const OBJECT_STRIDE              = 0.5;
 
 export const LIGHTMAP_PRECISION         = 2;

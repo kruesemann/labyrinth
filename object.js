@@ -52,8 +52,12 @@ function createDotForm(x, y, color) {
         isAllowed: function(i, j) {
             return MAP.isTileGround(i, j);
         },
+        getCenter: function() {
+            return this.nodes[0];
+        },
         center: function() {
-            SCENE.lookAt(this.nodes[0].x, this.nodes[0].y);
+            const { x, y } = this.getCenter();
+            SCENE.lookAt(x, y);
         }
     };
 
@@ -146,8 +150,12 @@ function createBoxForm(x, y, color) {
         isAllowed: function(i, j) {
             return !MAP.isTileWall(i, j);
         },
+        getCenter: function() {
+            return { x: this.nodes[0].x + 0.5, y: this.nodes[0].y + 0.5 };
+        },
         center: function() {
-            SCENE.lookAt(this.nodes[0].x + 0.5, this.nodes[0].y + 0.5);
+            const { x, y } = this.getCenter();
+            SCENE.lookAt(x, y);
         }
     };
 
@@ -264,8 +272,12 @@ function createSnakeForm(x, y, color) {
         isAllowed: function(i, j) {
             return !MAP.isTileWall(i, j);
         },
+        getCenter: function() {
+            return this.nodes[0];
+        },
         center: function() {
-            SCENE.lookAt(this.nodes[0].x, this.nodes[0].y);
+            const { x, y } = this.getCenter();
+            SCENE.lookAt(x, y);
         }
     };
 
@@ -371,6 +383,9 @@ export function createObject(i, j, color, speed, formName, aiName) {
         },
         getTail: function() {
             return this.form.nodes[this.form.nodes.length - 1];
+        },
+        getCenter: function() {
+            return this.form.getCenter();
         },
         transform: function(form, x, y) {
             let pos = undefined;

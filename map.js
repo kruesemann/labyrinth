@@ -373,69 +373,97 @@ function buildTunnel(caves, cave, caveSystems, targetCave) {
     };
 
     const dig = function(i, j, wideness) {
+        // first layer
         let tile = tileMap[i * numColumns + j];
         if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
             tile.type = CONSTANTS.TILE_DIRT;
             tile.caveID = caves.length;
         }
-        if (wideness > 1) {
-            if (i > 1) {
-                tile = tileMap[(i - 1) * numColumns + j];
-                if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
-                    tile.type = CONSTANTS.TILE_DIRT;
-                    tile.caveID = caves.length;
-                }
+        
+        // second layer
+        if (i > 1) {
+            tile = tileMap[(i - 1) * numColumns + j];
+            if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
+                tile.type = wideness > 1 ? CONSTANTS.TILE_DIRT : CONSTANTS.TILE_WALL;
+                tile.caveID = wideness > 1 ? caves.length : -1;
             }
-            if (i < numRows - 2) {
-                tile = tileMap[(i + 1) * numColumns + j];
-                if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
-                    tile.type = CONSTANTS.TILE_DIRT;
-                    tile.caveID = caves.length;
-                }
+        }
+        if (i < numRows - 2) {
+            tile = tileMap[(i + 1) * numColumns + j];
+            if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
+                tile.type = wideness > 1 ? CONSTANTS.TILE_DIRT : CONSTANTS.TILE_WALL;
+                tile.caveID = wideness > 1 ? caves.length : -1;
             }
-            if (j > 1) {
-                tile = tileMap[i * numColumns + (j - 1)];
-                if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
-                    tile.type = CONSTANTS.TILE_DIRT;
-                    tile.caveID = caves.length;
-                }
+        }
+        if (j > 1) {
+            tile = tileMap[i * numColumns + (j - 1)];
+            if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
+                tile.type = wideness > 1 ? CONSTANTS.TILE_DIRT : CONSTANTS.TILE_WALL;
+                tile.caveID = wideness > 1 ? caves.length : -1;
             }
-            if (j < numColumns - 2) {
-                tile = tileMap[i * numColumns + (j + 1)];
-                if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
-                    tile.type = CONSTANTS.TILE_DIRT;
-                    tile.caveID = caves.length;
-                }
+        }
+        if (j < numColumns - 2) {
+            tile = tileMap[i * numColumns + (j + 1)];
+            if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
+                tile.type = wideness > 1 ? CONSTANTS.TILE_DIRT : CONSTANTS.TILE_WALL;
+                tile.caveID = wideness > 1 ? caves.length : -1;
             }
+        }
 
-            if (wideness > 2) {
-                if (i > 2) {
-                    tile = tileMap[(i - 2) * numColumns + j];
-                    if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
-                        tile.type = CONSTANTS.TILE_DIRT;
-                        tile.caveID = caves.length;
-                    }
+        // third layer
+        if (i > 2) {
+            tile = tileMap[(i - 2) * numColumns + j];
+            if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
+                tile.type = wideness > 2 ? CONSTANTS.TILE_DIRT : CONSTANTS.TILE_WALL;
+                tile.caveID = wideness > 2 ? caves.length : -1;
+            }
+        }
+        if (i < numRows - 3) {
+            tile = tileMap[(i + 2) * numColumns + j];
+            if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
+                tile.type = wideness > 2 ? CONSTANTS.TILE_DIRT : CONSTANTS.TILE_WALL;
+                tile.caveID = wideness > 2 ? caves.length : -1;
+            }
+        }
+        if (j > 2) {
+            tile = tileMap[i * numColumns + (j - 2)];
+            if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
+                tile.type = wideness > 2 ? CONSTANTS.TILE_DIRT : CONSTANTS.TILE_WALL;
+                tile.caveID = wideness > 2 ? caves.length : -1;
+            }
+        }
+        if (j < numColumns - 3) {
+            tile = tileMap[i * numColumns + (j + 2)];
+            if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
+                tile.type = wideness > 2 ? CONSTANTS.TILE_DIRT : CONSTANTS.TILE_WALL;
+                tile.caveID = wideness > 2 ? caves.length : -1;
+            }
+        }
+
+        // last layer
+        if (wideness > 2) {
+            if (i > 3) {
+                tile = tileMap[(i - 3) * numColumns + j];
+                if (tile.type == CONSTANTS.TILE_HIGHWALL) {
+                    tile.type = CONSTANTS.TILE_WALL;
                 }
-                if (i < numRows - 3) {
-                    tile = tileMap[(i + 2) * numColumns + j];
-                    if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
-                        tile.type = CONSTANTS.TILE_DIRT;
-                        tile.caveID = caves.length;
-                    }
+            }
+            if (i < numRows - 4) {
+                tile = tileMap[(i + 3) * numColumns + j];
+                if (tile.type == CONSTANTS.TILE_HIGHWALL) {
+                    tile.type = CONSTANTS.TILE_WALL;
                 }
-                if (j > 2) {
-                    tile = tileMap[i * numColumns + (j - 2)];
-                    if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
-                        tile.type = CONSTANTS.TILE_DIRT;
-                        tile.caveID = caves.length;
-                    }
+            }
+            if (j > 3) {
+                tile = tileMap[i * numColumns + (j - 3)];
+                if (tile.type == CONSTANTS.TILE_HIGHWALL) {
+                    tile.type = CONSTANTS.TILE_WALL;
                 }
-                if (j < numColumns - 3) {
-                    tile = tileMap[i * numColumns + (j + 2)];
-                    if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
-                        tile.type = CONSTANTS.TILE_DIRT;
-                        tile.caveID = caves.length;
-                    }
+            }
+            if (j < numColumns - 4) {
+                tile = tileMap[i * numColumns + (j + 3)];
+                if (tile.type == CONSTANTS.TILE_HIGHWALL) {
+                    tile.type = CONSTANTS.TILE_WALL;
                 }
             }
         }

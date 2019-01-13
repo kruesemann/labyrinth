@@ -103,11 +103,12 @@ export function initialize() {
                 break;
             case 69://e
                 let { x, y } = PLAYER.getHead();
-                LIGHT.createLight(x - 0.25, y - 0.25, [1.0, 1.0, 0.8, CONSTANTS.LIGHTPARTICLE_BRIGHTNESS]);
-                if (particleSound.isPlaying) {
-                    particleSound.stop();
-                }
-                particleSound.play();
+                if (LIGHT.createParticle(x - 0.25, y - 0.25, [1.0, 1.0, 0.8, CONSTANTS.LIGHTPARTICLE_BRIGHTNESS]) !== null) {
+                    if (particleSound.isPlaying) {
+                        particleSound.stop();
+                    }
+                    particleSound.play();
+                };
                 break;
             case 81://q
                 LIGHT.removeLight(0);

@@ -95,3 +95,5 @@
     * everything without light is completely black (further down?)
 
 * monster eyes glow (further down?)
+
+* different water (/terrain) colors for different levels

@@ -62,7 +62,7 @@ export function initialize(seed, rows, columns, lvl) {
 
     for (let i = 0; i < numRows; i++) {
         for (let j = 0; j < numColumns; j++) {
-            tileMap.push({ type: CONSTANTS.TILE_HIGHWALL, caveID: -1, compIDs: [-1 , -1 , -1] });
+            tileMap.push({ type: CONSTANTS.TILE_HIGHWALL, caveID: -1, tunnelID: -1, compIDs: [-1 , -1 , -1] });
         }
     }
 
@@ -72,9 +72,17 @@ export function initialize(seed, rows, columns, lvl) {
 }
 
 function create() {
-    const caverns = generateCavernCenters();
+    /**
+     * generate caverns
+     * label caves
+     * connect caves (label tunnels plus width)
+     * label connected components (water and ground)
+     * for every tile look at neighbor to the right and above and find edges that way
+     */
+
+    const caverns = generateCaverns();
     const caves = labelCaves(caverns);
-    connectCaves(caves); // TODO: place walls (not highwalls) at tunnel boundaries
+    connectCaves(caves);
     
     // build graph of connected components
     const groundComponents = labelConnectedComponents(isTileGround, 0); // temp
@@ -111,6 +119,8 @@ function create() {
     tileMap[exitComp.i * numColumns + exitComp.j].type = CONSTANTS.TILE_EXIT;
     
     const { locationGrid, gridRows, gridColumns } = findFreeLocations(); // entries of locationGrid may be 0
+
+    rayCast({x:4, y:19}, {x:20,y:20});
 
     mesh = createMesh();
     SCENE.addMesh(mesh);
@@ -166,15 +176,15 @@ function createTexture() {
                 }
             } else if (tile.type == CONSTANTS.TILE_WATER) {
                 for (let k = 0; k < 6; k++) {
-                    colors.push(noiseMap[i * numColumns + j][0] / 3);//colors.push(0.0);
-                    colors.push(noiseMap[i * numColumns + j][0] / 2);//colors.push(0.2);
-                    colors.push(noiseMap[i * numColumns + j][1] / 2);//colors.push(0.6);
+                    colors.push(noiseMap[i * numColumns + j][0] / 3);//noiseMap[i * numColumns + j][0] / 10 //colors.push(0.0);
+                    colors.push(noiseMap[i * numColumns + j][0] / 2);//noiseMap[i * numColumns + j][1] / 8 //colors.push(0.2);
+                    colors.push(noiseMap[i * numColumns + j][1] / 2);//noiseMap[i * numColumns + j][1] / 5 //colors.push(0.6);
                 }
             } else if (tile.type == CONSTANTS.TILE_DEEPWATER) {
                 for (let k = 0; k < 6; k++) {
                     colors.push(0.0);
-                    colors.push(noiseMap[i * numColumns + j][0] / 4);//colors.push(0.1);
-                    colors.push(noiseMap[i * numColumns + j][0] / 1.5);//colors.push(0.3);
+                    colors.push(noiseMap[i * numColumns + j][0] / 4);//noiseMap[i * numColumns + j][0] / 4 //colors.push(0.1);
+                    colors.push(noiseMap[i * numColumns + j][0] / 1.5);//noiseMap[i * numColumns + j][0] / 3 //colors.push(0.3);
                 }
             } else if (tile.type == CONSTANTS.TILE_GRASS) {
                 for (let k = 0; k < 6; k++) {
@@ -249,7 +259,7 @@ function createMesh() {
     return new THREE.Mesh(geometry, SHADER.getMapMaterial());
 }
 
-function generateCavernCenters() {
+function generateCaverns() {
     const numZones = { i: 4, j: 4 };
     const numCavernsPerZone = 1;
     const caverns = [];
@@ -323,7 +333,7 @@ function labelCaves(caverns) {
                     const neighbor = { i: current.i + CONSTANTS.DIRECTIONS[j].i, j: current.j + CONSTANTS.DIRECTIONS[j].j };
 
                     if (tileMap[neighbor.i * numColumns + neighbor.j].caveID == -1
-                        && !isTileWall(neighbor.i, neighbor.j)) {
+                    && !isTileWall(neighbor.i, neighbor.j)) {
                         queue.push(neighbor);
                     }
                 }
@@ -368,111 +378,71 @@ function connectCaves(caves) {
 
 function buildTunnel(caves, cave, caveSystems, targetCave) {
     const weightFunction = function(i, j) {
-        if (isTileWall(i, j)) return noiseMap[i * numColumns + j][tunnelChannel];
-        return 10 + noiseMap[i * numColumns + j][tunnelChannel];
+        const noiseWeight = noiseMap[i * numColumns + j][tunnelChannel];
+        return isTileWall(i, j) ? noiseWeight : 10 + noiseWeight;
     };
 
-    const dig = function(i, j, wideness) {
-        // first layer
-        let tile = tileMap[i * numColumns + j];
-        if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
-            tile.type = CONSTANTS.TILE_DIRT;
-            tile.caveID = caves.length;
+    function dig(i, j, width) {
+        function digTile(i, j) {
+            if (i < 1 || i > numRows - 2 || j < 1 || j > numColumns - 2) return;
+
+            const tile = tileMap[i * numColumns + j];
+            if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
+                tile.type = CONSTANTS.TILE_DIRT;
+                tile.caveID = caves.length;
+            }
+        }
+
+        function makeWall(i, j) {
+            if (i < 1 || i > numRows - 2 || j < 1 || j > numColumns - 2) return;
+            
+            const tile = tileMap[(i - 1) * numColumns + j];
+            if (tile.type == CONSTANTS.TILE_HIGHWALL) {
+                tile.type = CONSTANTS.TILE_WALL;
+            }
+        }
+
+        digTile(i, j); // first layer
+        
+        if (width > 1) {
+            digTile(i - 1, j);// second layer
+            digTile(i + 1, j);
+            digTile(i, j - 1);
+            digTile(i, j + 1);
+
+            if (width > 2) {
+                digTile(i - 2, j); // third layer
+                digTile(i + 2, j);
+                digTile(i, j - 2);
+                digTile(i, j + 2);
+            } else {
+                makeWall(i - 2, j); // third layer
+                makeWall(i + 2, j);
+                makeWall(i, j - 2);
+                makeWall(i, j + 2);
+            }
+        } else {
+            makeWall(i - 1, j);// second layer
+            makeWall(i + 1, j);
+            makeWall(i, j - 1);
+            makeWall(i, j + 1);
+
+            makeWall(i - 2, j); // third layer
+            makeWall(i + 2, j);
+            makeWall(i, j - 2);
+            makeWall(i, j + 2);
         }
         
-        // second layer
-        if (i > 1) {
-            tile = tileMap[(i - 1) * numColumns + j];
-            if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
-                tile.type = wideness > 1 ? CONSTANTS.TILE_DIRT : CONSTANTS.TILE_WALL;
-                tile.caveID = wideness > 1 ? caves.length : -1;
-            }
-        }
-        if (i < numRows - 2) {
-            tile = tileMap[(i + 1) * numColumns + j];
-            if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
-                tile.type = wideness > 1 ? CONSTANTS.TILE_DIRT : CONSTANTS.TILE_WALL;
-                tile.caveID = wideness > 1 ? caves.length : -1;
-            }
-        }
-        if (j > 1) {
-            tile = tileMap[i * numColumns + (j - 1)];
-            if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
-                tile.type = wideness > 1 ? CONSTANTS.TILE_DIRT : CONSTANTS.TILE_WALL;
-                tile.caveID = wideness > 1 ? caves.length : -1;
-            }
-        }
-        if (j < numColumns - 2) {
-            tile = tileMap[i * numColumns + (j + 1)];
-            if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
-                tile.type = wideness > 1 ? CONSTANTS.TILE_DIRT : CONSTANTS.TILE_WALL;
-                tile.caveID = wideness > 1 ? caves.length : -1;
-            }
-        }
-
-        // third layer
-        if (i > 2) {
-            tile = tileMap[(i - 2) * numColumns + j];
-            if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
-                tile.type = wideness > 2 ? CONSTANTS.TILE_DIRT : CONSTANTS.TILE_WALL;
-                tile.caveID = wideness > 2 ? caves.length : -1;
-            }
-        }
-        if (i < numRows - 3) {
-            tile = tileMap[(i + 2) * numColumns + j];
-            if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
-                tile.type = wideness > 2 ? CONSTANTS.TILE_DIRT : CONSTANTS.TILE_WALL;
-                tile.caveID = wideness > 2 ? caves.length : -1;
-            }
-        }
-        if (j > 2) {
-            tile = tileMap[i * numColumns + (j - 2)];
-            if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
-                tile.type = wideness > 2 ? CONSTANTS.TILE_DIRT : CONSTANTS.TILE_WALL;
-                tile.caveID = wideness > 2 ? caves.length : -1;
-            }
-        }
-        if (j < numColumns - 3) {
-            tile = tileMap[i * numColumns + (j + 2)];
-            if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
-                tile.type = wideness > 2 ? CONSTANTS.TILE_DIRT : CONSTANTS.TILE_WALL;
-                tile.caveID = wideness > 2 ? caves.length : -1;
-            }
-        }
-
-        // last layer
-        if (wideness > 2) {
-            if (i > 3) {
-                tile = tileMap[(i - 3) * numColumns + j];
-                if (tile.type == CONSTANTS.TILE_HIGHWALL) {
-                    tile.type = CONSTANTS.TILE_WALL;
-                }
-            }
-            if (i < numRows - 4) {
-                tile = tileMap[(i + 3) * numColumns + j];
-                if (tile.type == CONSTANTS.TILE_HIGHWALL) {
-                    tile.type = CONSTANTS.TILE_WALL;
-                }
-            }
-            if (j > 3) {
-                tile = tileMap[i * numColumns + (j - 3)];
-                if (tile.type == CONSTANTS.TILE_HIGHWALL) {
-                    tile.type = CONSTANTS.TILE_WALL;
-                }
-            }
-            if (j < numColumns - 4) {
-                tile = tileMap[i * numColumns + (j + 3)];
-                if (tile.type == CONSTANTS.TILE_HIGHWALL) {
-                    tile.type = CONSTANTS.TILE_WALL;
-                }
-            }
-        }
+        makeWall(i - 3, j);  // last layer
+        makeWall(i + 3, j);
+        makeWall(i, j - 3);
+        makeWall(i, j + 3);
     }
 
-    const compMap = [];
+    const searchMap = [];
     for (let i = 0; i < numColumns; i++) {
         for (let j = 0; j < numRows; j++) {
-            compMap.push({
+            searchMap.push({
                 i: i,
                 j: j,
                 visited: false,
@@ -486,7 +456,7 @@ function buildTunnel(caves, cave, caveSystems, targetCave) {
   
     let heap = new BinaryHeap(node => node.f);
   
-    const start = compMap[cave.i * numColumns + cave.j];
+    const start = searchMap[cave.i * numColumns + cave.j];
     start.g = 0;
     start.f = targetCave ? manhattan(cave.i, cave.j, targetCave.i, targetCave.j) : 0;
   
@@ -501,14 +471,15 @@ function buildTunnel(caves, cave, caveSystems, targetCave) {
             const currentCaveSystemID = currentCave.systemID;
 
             if ((!targetCave && cave.ID != currentCaveID)
-                || (targetCave && targetCave.systemID == currentCaveSystemID)) {
+            || (targetCave && targetCave.systemID == currentCaveSystemID)) {
+                // target found, build tunnel
                 let path = [];
                 while (current) {
                     path.push({ i: current.i, j: current.j });
                     current = current.pred;
                 }
 
-                const wideness = NOISE.random() > 0.3 ? 2 : 1;
+                const width = NOISE.random() > 0.3 ? 2 : 1;
                 let wide = false;
                 let varianceLength = 3 + Math.floor(10 * NOISE.random());
                 for (let tileNr of path) {
@@ -516,7 +487,7 @@ function buildTunnel(caves, cave, caveSystems, targetCave) {
                         varianceLength = 3 + Math.floor(10 * NOISE.random());
                         wide = !wide;
                     }
-                    dig(tileNr.i, tileNr.j, wide ? wideness + 1 : wideness);
+                    dig(tileNr.i, tileNr.j, wide ? width + 1 : width);
                     varianceLength--;
                 }
 
@@ -546,7 +517,7 @@ function buildTunnel(caves, cave, caveSystems, targetCave) {
         current.closed = true;
 
         for (let j = 0; j < 4; j++) {
-            const neighbor = compMap[(current.i + CONSTANTS.DIRECTIONS[j].i) * numColumns + current.j + CONSTANTS.DIRECTIONS[j].j];
+            const neighbor = searchMap[(current.i + CONSTANTS.DIRECTIONS[j].i) * numColumns + current.j + CONSTANTS.DIRECTIONS[j].j];
 
             if (neighbor.closed) continue;
             if (neighbor.i == 0 || neighbor.i == numRows - 1 || neighbor.j == 0 || neighbor.j == numColumns - 1) continue;
@@ -579,25 +550,24 @@ function labelConnectedComponents(isAllowed, componentIndex) {
 
     for (let i = 1; i < numRows - 1; i++) {
         for (let j = 1; j < numColumns - 1; j++) {
-            if (isAllowed(i, j)) {
-                if (tileMap[i * numColumns + j].compIDs[componentIndex] == -1
-                && tileMap[i * numColumns + j].caveID != -1) {
-                    const compID = components.length;
-                    components.push({ i, j, ID: compID, size: 1 });
-                    const queue = [{ i, j }];
-    
-                    while (queue.length > 0) {
-                        const current = queue.pop();
-                        tileMap[current.i * numColumns + current.j].compIDs[componentIndex] = compID;
-                        components[compID].size++;
-    
-                        for (let j = 0; j < 4; j++) {
-                            const neighbor = { i: current.i + CONSTANTS.DIRECTIONS[j].i, j: current.j + CONSTANTS.DIRECTIONS[j].j };
-    
-                            if (tileMap[neighbor.i * numColumns + neighbor.j].compIDs[componentIndex] == -1
-                                && isAllowed(neighbor.i, neighbor.j)) {
-                                queue.push(neighbor);
-                            }
+            if (isAllowed(i, j)
+            && tileMap[i * numColumns + j].compIDs[componentIndex] == -1
+            && tileMap[i * numColumns + j].caveID != -1) {
+                const compID = components.length;
+                components.push({ i, j, ID: compID, size: 1 });
+                const queue = [{ i, j }];
+
+                while (queue.length > 0) {
+                    const current = queue.pop();
+                    tileMap[current.i * numColumns + current.j].compIDs[componentIndex] = compID;
+                    components[compID].size++;
+
+                    for (let j = 0; j < 4; j++) {
+                        const neighbor = { i: current.i + CONSTANTS.DIRECTIONS[j].i, j: current.j + CONSTANTS.DIRECTIONS[j].j };
+
+                        if (tileMap[neighbor.i * numColumns + neighbor.j].compIDs[componentIndex] == -1
+                        && isAllowed(neighbor.i, neighbor.j)) {
+                            queue.push(neighbor);
                         }
                     }
                 }
@@ -894,23 +864,18 @@ export function rayCast(start, target) {
     di *= 2;
     dj *= 2;
 
-    for (; n > 0; --n)
-    {
+    for (; n > 0; --n) {
         if (isTileWall(i, j)) {
             return false;
         }
 
-        if (error > 0)
-        {
+        if (error > 0) {
             i += i_inc;
             error -= dj;
-        }
-        else if (error < 0)
-        {
+        } else if (error < 0) {
             j += j_inc;
             error += di;
-        }
-        else if (error == 0) {
+        } else {
             i += i_inc;
             j += j_inc;
             error -= dj;

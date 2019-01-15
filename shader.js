@@ -1,11 +1,11 @@
 import * as CONSTANTS from "./constants.js";
 
 const RAYCAST = `
-bool compleq(vec2 a, vec2 b) {
+bool compLEQ(vec2 a, vec2 b) {
     return a.x <= b.x && a.y <= b.y;
 }
 
-bool compleq(vec3 a, vec3 b) {
+bool compLEQ(vec3 a, vec3 b) {
     return a.x <= b.x && a.y <= b.y && a.z <= b.z;
 }
 
@@ -60,7 +60,7 @@ bool rayCast(vec2 start, vec2 target) {
             if (skip) {
                 skip = false;
             } else {
-                if (compleq(texture2D(u_texture, vec2(float(i), float(j)) / u_dimensions).rgb, vec3(0.035))) {
+                if (compLEQ(texture2D(u_texture, vec2(float(i) - 0.5, float(j) - 0.5) / u_dimensions).rgb, vec3(0.035))) {
                     return false;
                 }
 
@@ -70,7 +70,7 @@ bool rayCast(vec2 start, vec2 target) {
                 } else if (error < 0) {
                     j += j_inc;
                     error += di;
-                } else if (error == 0) {
+                } else {
                     i += i_inc;
                     j += j_inc;
                     error -= dj;
@@ -266,12 +266,11 @@ void main() {
 
     for (int i = 0; i < MAXNUM; i++) {
         if (u_lightColor[i].a > 0.0) {
-            float dist = distance(v_pos.xy, u_lightPrecision * u_lightPos[i]);
+            float dist = distance(floor(v_pos.xy + vec2(0.5)), u_lightPrecision * u_lightPos[i]);
 
-            if (dist < float(MAXDIST)) {
-                if (rayCast(v_pos.xy, u_lightPrecision * u_lightPos[i])) {
-                    RGB += u_lightColor[i].a * u_lightColor[i].rgb / pow(dist, float(DISTEXP));
-                }
+            if (dist < float(MAXDIST)
+            && rayCast(v_pos.xy, u_lightPrecision * u_lightPos[i])) {
+                RGB += u_lightColor[i].a * u_lightColor[i].rgb / pow(dist, float(DISTEXP));
             }
         }
     }

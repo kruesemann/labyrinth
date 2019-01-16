@@ -1,4 +1,5 @@
 import * as SCENE from "./scene.js";
+import * as SOUND from "./sound.js";
 import * as MAP from "./map.js";
 import * as SHADER from "./shader.js";
 import * as AI from "./ai.js";
@@ -300,10 +301,10 @@ export function createObject(i, j, color, speed, formName, aiName) {
             let { update, route } = this.ai(this, counter);
             if (update) {
                 this.route = route;
-                if (this.sound.isPlaying) {
-                    this.sound.stop();
+                if (SOUND.enemySound.isPlaying) {
+                    SOUND.enemySound.stop();
                 }
-                this.sound.play();
+                SOUND.enemySound.play();
             }
         },
         move: function(counter) {
@@ -436,13 +437,6 @@ export function createObject(i, j, color, speed, formName, aiName) {
             };
             object.route = [];
             break;
-    }
-
-    if (aiName) {
-        SCENE.audioLoader.load('assets/ghost01.wav', function(buffer) {
-            object.sound = new THREE.Audio(SCENE.audioListener);
-            object.sound.setBuffer(buffer);
-        });
     }
 
     return object;

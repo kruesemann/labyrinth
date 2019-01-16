@@ -1,5 +1,6 @@
 import * as CONSTANTS from "./constants.js";
 import * as SCENE from "./scene.js";
+import * as SOUND from "./sound.js";
 import * as PLAYER from "./player.js";
 import * as LIGHT from "./light.js";
 import * as SHADER from "./shader.js";
@@ -7,8 +8,6 @@ import { nextLevel } from "./index.js";
 
 let mousedown = false;
 let mouse = { x: 0, y: 0 };
-
-let particleSound = undefined;
 
 function enterFullscreen() {
     if (document.documentElement.requestFullscreen) {
@@ -42,12 +41,6 @@ export function toggleFullscreen() {
 }
 
 export function initialize() {
-    SCENE.audioLoader.load('assets/ding01.wav', function(buffer) {
-        particleSound = new THREE.Audio(SCENE.audioListener);
-        particleSound.setBuffer(buffer);
-        particleSound.setVolume(0.1);
-    });
-
     document.addEventListener("mousedown", event => {
         mousedown = true;
         mouse.x = event.clientX;
@@ -104,10 +97,10 @@ export function initialize() {
             case 69://e
                 let { x, y } = PLAYER.getHead();
                 if (LIGHT.createParticle(x - 0.25, y - 0.25, [1.0, 1.0, 0.8, CONSTANTS.LIGHTPARTICLE_BRIGHTNESS]) !== null) {
-                    if (particleSound.isPlaying) {
-                        particleSound.stop();
+                    if (SOUND.particleSound.isPlaying) {
+                        SOUND.particleSound.stop();
                     }
-                    particleSound.play();
+                    SOUND.particleSound.play();
                 };
                 break;
             case 81://q

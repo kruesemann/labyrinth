@@ -1,4 +1,5 @@
 import * as SCENE from "./scene.js";
+import * as SOUND from "./sound.js";
 import * as INPUT from "./input.js";
 import { loadSpecificLevel } from "./index.js";
 
@@ -20,7 +21,7 @@ export function initialize() {
     });
 
     document.getElementById("info-sound").addEventListener("click", _ => {
-        SCENE.toggleSound();
+        SOUND.toggle();
     });
 }
 

@@ -1,9 +1,11 @@
 import * as SCENE from "./scene.js";
+import * as SOUND from "./sound.js";
 import * as OVERLAY from "./overlay.js";
 import * as INPUT from "./input.js";
 import * as MAP from "./map.js";
 import * as PLAYER from "./player.js";
 import * as LIGHT from "./light.js";
+import * as ITEM from "./item.js";
 import * as NOISE from "./noise.js";
 
 let gameSeed = 1;
@@ -15,6 +17,7 @@ let mapWidth = 200;
 let mapHeight = 200;
 
 SCENE.initialize();
+SOUND.initialize();
 OVERLAY.initialize();
 OVERLAY.set(gameSeed, level, score);
 INPUT.initialize();
@@ -32,6 +35,10 @@ export function loadSpecificLevel(_gameSeed, _level) {
 
 export function nextLevel() {
     nextLvl = true;
+}
+
+export function increaseScore() {
+    OVERLAY.setScore(++score);
 }
 
 function loadNextMap() {
@@ -62,6 +69,7 @@ function gameloop() {
         counter++;
     }
     
+    ITEM.collectItemsUnderPlayer();
     MAP.planObjects(counter);
     MAP.moveObjects(counter);
     LIGHT.renderLighting(counter);

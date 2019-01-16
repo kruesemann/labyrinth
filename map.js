@@ -4,6 +4,7 @@ import * as PLAYER from "./player.js";
 import * as NOISE from "./noise.js";
 import * as CONSTANTS from "./constants.js";
 import * as LIGHT from "./light.js";
+import * as ITEM from "./item.js";
 import { createObject } from "./object.js";
 import { BinaryHeap } from "./heap.js";
 
@@ -66,10 +67,16 @@ export function initialize(seed, rows, columns, lvl) {
     }
     objects = [];
     LIGHT.removeAllLights();
+    ITEM.removeAllItems();
     caves = [];
     tunnels = [];
     numberBiomeTypes = 4; // temporary init
-    biomeTypes = [CONSTANTS.WIDE_GROUND_BIOME, CONSTANTS.NARROW_GROUND_BIOME, CONSTANTS.WIDE_WATER_BIOME, CONSTANTS.NARROW_WATER_BIOME];
+    biomeTypes = [
+        { type: CONSTANTS.WIDE_GROUND_BIOME, isAllowed: isTileWideGround },
+        { type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGround },
+        { type: CONSTANTS.WIDE_WATER_BIOME, isAllowed: isTileWideWater },
+        { type: CONSTANTS.NARROW_WATER_BIOME, isAllowed: isTileNarrowWater }
+    ]; // temporary init
     biomeGraph = { biomes: [], adjMatrix: [] };
 
     for (let i = 0; i < numRows; i++) {
@@ -100,10 +107,11 @@ function create() {
     labelCaves(caverns);
     connectCaves();
     
-    const wideGroundBiomes = labelBiomes(isTileWideGround, CONSTANTS.WIDE_GROUND_BIOME);
-    const narrowGroundBiomes = labelBiomes(isTileNarrowGround, CONSTANTS.NARROW_GROUND_BIOME);
-    const wideWaterBiomes = labelBiomes(isTileWideWater, CONSTANTS.WIDE_WATER_BIOME);
-    const narrowWaterBiomes = labelBiomes(isTileNarrowWater, CONSTANTS.NARROW_WATER_BIOME);
+    const typeBiomes = [];
+    for (let biomeType of biomeTypes) {
+        typeBiomes.push(labelBiomes(biomeType.isAllowed, biomeType.type));
+    }
+    const wideGroundBiomes = typeBiomes[0];
 
     buildBiomeGraph();
 
@@ -137,6 +145,12 @@ function create() {
     const pathToExit = findBiomePath(tileMap[playerBiome.i * numColumns + playerBiome.j], tileMap[exitBiome.i * numColumns + exitBiome.j]);
     
     const { locationGrid, gridRows, gridColumns } = findFreeLocations(); // entries of locationGrid may be 0
+
+    for (let biome of pathToExit) {
+        if (biome.locations.length > 0) {
+            ITEM.createCoin(biome.locations[0].j, biome.locations[0].i);
+        }
+    }
 
     mesh = createMesh();
     SCENE.addMesh(mesh);

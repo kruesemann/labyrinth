@@ -47,7 +47,7 @@ function createDotForm(x, y, color) {
             this.nodes[0].y = y + 0.5;
         },
         isBlocked: function(dx, dy) {
-            return !MAP.isNextTileGround(this.nodes[0].x, this.nodes[0].y, dx, dy);
+            return MAP.isNextTileOfType(this.nodes[0].x, this.nodes[0].y, dx, dy, CONSTANTS.FORBIDDEN_DOT_TILES);
         },
         isAllowed: function(i, j) {
             return MAP.isTileGround(i, j);
@@ -142,10 +142,10 @@ function createBoxForm(x, y, color) {
             ];
         },
         isBlocked: function(dx, dy) {
-            return MAP.isNextTileWall(this.nodes[0].x, this.nodes[0].y, dx, dy)
-                || MAP.isNextTileWall(this.nodes[1].x, this.nodes[1].y, dx, dy)
-                || MAP.isNextTileWall(this.nodes[2].x, this.nodes[2].y, dx, dy)
-                || MAP.isNextTileWall(this.nodes[3].x, this.nodes[3].y, dx, dy);
+            return MAP.isNextTileOfType(this.nodes[0].x, this.nodes[0].y, dx, dy, CONSTANTS.FORBIDDEN_BOX_TILES)
+                || MAP.isNextTileOfType(this.nodes[1].x, this.nodes[1].y, dx, dy, CONSTANTS.FORBIDDEN_BOX_TILES)
+                || MAP.isNextTileOfType(this.nodes[2].x, this.nodes[2].y, dx, dy, CONSTANTS.FORBIDDEN_BOX_TILES)
+                || MAP.isNextTileOfType(this.nodes[3].x, this.nodes[3].y, dx, dy, CONSTANTS.FORBIDDEN_BOX_TILES);
         },
         isAllowed: function(i, j) {
             return !MAP.isTileWall(i, j);
@@ -267,7 +267,7 @@ function createSnakeForm(x, y, color) {
             }
         },
         isBlocked: function(dx, dy) {
-            return MAP.isNextTileWall(this.nodes[0].x, this.nodes[0].y, dx, dy);
+            return MAP.isNextTileOfType(this.nodes[0].x, this.nodes[0].y, dx, dy, CONSTANTS.FORBIDDEN_SNAKE_TILES);
         },
         isAllowed: function(i, j) {
             return !MAP.isTileWall(i, j);

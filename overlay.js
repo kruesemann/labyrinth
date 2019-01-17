@@ -7,12 +7,16 @@ let levelDisplay = undefined;
 let scoreDisplay = undefined;
 
 export function reset(seed, level, score) {
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("info").style.display = "block";
+    document.getElementById("canvas").style.display = "block";
+
     seedDisplay = document.getElementById('info-seed');
     levelDisplay = document.getElementById('info-level');
     scoreDisplay = document.getElementById('info-score');
 
-    document.getElementById("info-set").removeEventListener("click", setLevel);
-    document.getElementById("info-set").addEventListener("click", setLevel);
+    document.getElementById("info-set").removeEventListener("click", loadLevel);
+    document.getElementById("info-set").addEventListener("click", loadLevel);
 
     document.getElementById("info-fc").removeEventListener("click", INPUT.toggleFullscreen);
     document.getElementById("info-fc").addEventListener("click", INPUT.toggleFullscreen);
@@ -25,7 +29,7 @@ export function reset(seed, level, score) {
     setScore(score);
 }
 
-function setLevel() {
+function loadLevel() {
     loadSpecificLevel(Number(seedDisplay.value), Number(levelDisplay.value));
 }
 

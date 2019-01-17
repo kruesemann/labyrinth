@@ -1,6 +1,5 @@
 import * as CONSTANTS from "./constants.js";
 import * as STAGE from "./stage.js";
-import * as SOUND from "./sound.js";
 import * as OVERLAY from "./overlay.js";
 import * as INPUT from "./input.js";
 import * as MAP from "./map.js";
@@ -12,7 +11,6 @@ import * as NOISE from "./noise.js";
 let game = undefined;
 
 export function reset() {
-    console.log("hello there");
     game = {
         seed: 1,
         level: 0,
@@ -22,12 +20,16 @@ export function reset() {
         nextLevel: true,
     };
 
-    STAGE.reset();
-    OVERLAY.reset(game.gameSeed, game.level, game.score);
-    INPUT.reset();
+    document.removeEventListener("soundReady", setup);
+    document.addEventListener("soundReady", setup);
 
-    document.removeEventListener("soundReady", gameloop);
-    document.addEventListener("soundReady", gameloop);
+    STAGE.reset();
+}
+
+function setup() {
+    OVERLAY.reset(game.seed, game.level, game.score);
+    INPUT.reset();
+    gameloop();
 }
 
 export function loadSpecificLevel(gameSeed, level) {
@@ -39,7 +41,7 @@ export function loadSpecificLevel(gameSeed, level) {
 }
 
 export function nextLevel() {
-    game.nextLvl = true;
+    game.nextLevel = true;
 }
 
 export function increaseScore() {
@@ -54,12 +56,12 @@ function loadNextMap() {
 }
 
 function gameloop() {
-    if (game.nextLvl) {
-        game.nextLvl = false;
+    if (game.nextLevel) {
+        game.nextLevel = false;
         OVERLAY.setLevel(++game.level);
         loadNextMap();
     } else {
-        let death = MAP.collisionWithPlayer();
+        const death = MAP.collisionWithPlayer();
         if (death) {
             alert("COLLISION!! AHHHHHH!!!");
             return;
@@ -75,12 +77,12 @@ function gameloop() {
     }
     
     ITEM.collectItemsUnderPlayer();
-    MAP.planObjects(counter);
-    MAP.moveObjects(counter);
-    LIGHT.renderLighting(counter);
-    game.nextLvl = PLAYER.move(counter);
+    MAP.planObjects(game.counter);
+    MAP.moveObjects(game.counter);
+    game.nextLevel = PLAYER.move(game.counter);
     PLAYER.center();
 
+    LIGHT.renderLighting(game.counter);
     STAGE.render();
 }
 //gameloop();

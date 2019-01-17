@@ -1,6 +1,5 @@
-import * as STAGE from "./stage.js";
-
 let audio = undefined;
+const readyEvent = new Event("soundReady");
 
 export function reset() {
     audio = {
@@ -10,9 +9,7 @@ export function reset() {
         sounds: {},
     }
     
-    audio.listener.setMasterVolume(masterVolume);
-
-    new Event("soundReady");
+    audio.listener.setMasterVolume(audio.masterVolume);
 
     const soundsData = [
         { id: "music", url: "assets/Erwachen.wav", volume: 0, loop: true, play: true },
@@ -39,7 +36,7 @@ function loadSounds(soundsData, i) {
         if (i < soundsData.length - 1) {
             loadSounds(soundsData, i + 1);
         } else {
-            document.dispatchEvent("soundReady");
+            document.dispatchEvent(readyEvent);
         }
     });
 }
@@ -74,6 +71,11 @@ export function repeat(sound, volume) {
 }
 
 export function setVolume(sound, volume) {
+    if (!audio.sounds[sound]) {
+        console.log("Unknown sound");
+        return;
+    }
+
     if (volume !== 0) {
         audio.sounds[sound].setVolume(volume);
         return true;
@@ -89,7 +91,7 @@ export function toggle() {
     } else {
         audio.masterVolume = 1;
     }
-    audioListener.setMasterVolume(audio.masterVolume);
+    audio.listener.setMasterVolume(audio.masterVolume);
 
     return audio.masterVolume === 1;
 }

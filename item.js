@@ -28,7 +28,7 @@ function createItem(x, y, color) {
         colors.push(color[2]);
     }
 
-    let geometry = new THREE.BufferGeometry();
+    const geometry = new THREE.BufferGeometry();
     geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
     geometry.addAttribute('a_color', new THREE.BufferAttribute(new Float32Array(colors), 3));
 
@@ -67,15 +67,12 @@ export function createCoin(x, y) {
 }
 
 export function removeAllItems() {
-    for (let item of items) {
-        STAGE.removeMesh(item.mesh);
-    }
     items = [];
 }
 
 export function collectItemsUnderPlayer() {
     const itemSize = 1;
-    let pNodes = PLAYER.get().form.nodes;
+    const pNodes = PLAYER.get().form.nodes;
 
     for (let pNode of pNodes) {
         for (let item of items) {

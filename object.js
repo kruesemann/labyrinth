@@ -24,7 +24,7 @@ function createDotForm(x, y, color) {
         colors.push(color[2]);
     }
 
-    let geometry = new THREE.BufferGeometry();
+    const geometry = new THREE.BufferGeometry();
     geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
     geometry.addAttribute('a_color', new THREE.BufferAttribute(new Float32Array(colors), 3));
 
@@ -108,7 +108,7 @@ function createBoxForm(x, y, color) {
         colors.push(color[2]);
     }
 
-    let geometry = new THREE.BufferGeometry();
+    const geometry = new THREE.BufferGeometry();
     geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
     geometry.addAttribute('a_color', new THREE.BufferAttribute(new Float32Array(colors), 3));
 
@@ -203,7 +203,7 @@ function createSnakeForm(x, y, color) {
         colors.push(color[2]);
     }
 
-    let geometry = new THREE.BufferGeometry();
+    const geometry = new THREE.BufferGeometry();
     geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
     geometry.addAttribute('a_color', new THREE.BufferAttribute(new Float32Array(colors), 3));
 
@@ -289,9 +289,9 @@ function createSnakeForm(x, y, color) {
 }
 
 export function createObject(i, j, color, speed, formName, aiName) {
-    let { x, y } = MAP.tileToCoords(i, j);
+    const { x, y } = MAP.tileToCoords(i, j);
 
-    let object = {
+    const object = {
         form: undefined,
         speed: speed,
         moving: { left: false, up: false, right: false, down: false },

@@ -1,4 +1,3 @@
-import * as STAGE from "./stage.js";
 import * as MAP from "./map.js";
 import * as LIGHT from "./light.js";
 import { createObject } from "./object.js";

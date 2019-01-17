@@ -8,7 +8,7 @@ function aStar(mapInfo, position, target, object) {
     const { numColumns, numRows } = mapInfo;
     const startTile = MAP.coordsToTile(position.x, position.y);
     const targetTile = MAP.coordsToTile(target.x, target.y);
-    let compMap = [];
+    const compMap = [];
   
     const weightFunction = function(i, j) {
         if (object.form.isAllowed(i, j)) return 1;
@@ -29,9 +29,9 @@ function aStar(mapInfo, position, target, object) {
         }
     }
   
-    let heap = new BinaryHeap(node => node.f);
+    const heap = new BinaryHeap(node => node.f);
   
-    let start = compMap[startTile.i * numColumns + startTile.j];
+    const start = compMap[startTile.i * numColumns + startTile.j];
     start.g = 0;
     start.f = MAP.manhattan(startTile.i, startTile.j, targetTile.i, targetTile.j);
   
@@ -41,7 +41,7 @@ function aStar(mapInfo, position, target, object) {
         let current = heap.pop();
 
         if (current.i == targetTile.i && current.j == targetTile.j) {
-            let path = [];
+            const path = [];
             while (current) {
                 path.push(MAP.tileToCenter(current.i, current.j));
                 current = current.pred;

@@ -7,8 +7,33 @@ export const lights = [];
 let mapLightingMesh = undefined;
 let dimensions = undefined;
 
-export function reset() {
+export function reset(numRows, numColumns, level) {
     removeAllLights();
+
+    dimensions = [CONSTANTS.LIGHTMAP_PRECISION * numColumns, CONSTANTS.LIGHTMAP_PRECISION * numRows];
+
+    const lightGeometry = new THREE.BufferGeometry();
+    lightGeometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array([
+                    0,             0, 0,
+        dimensions[0],             0, 0,
+                    0, dimensions[1], 0,
+        dimensions[0],             0, 0,
+        dimensions[0], dimensions[1], 0,
+                    0, dimensions[1], 0,
+    ]), 3));
+    lightGeometry.addAttribute('a_texelCoords', new THREE.BufferAttribute(new Float32Array([
+        0, 0,
+        1, 0,
+        0, 1,
+        1, 0,
+        1, 1,
+        0, 1,
+    ]), 2));
+
+    SHADER.mapLightingUniforms.u_dimensions.value = dimensions;
+    SHADER.mapLightingUniforms.u_ambientLight.value = [1.0, 1.0, 1.0, Math.max(0.0, CONSTANTS.LIGHT_AMBIENT_INITIAL - level * CONSTANTS.LIGHT_AMBIENT_DECREASE)];
+    SHADER.objectUniforms.u_ambientLight.value = SHADER.mapLightingUniforms.u_ambientLight.value;
+    mapLightingMesh = new THREE.Mesh(lightGeometry, SHADER.getMapLightingMaterial());
 }
 
 export function createLight(x, y, color) {
@@ -156,36 +181,7 @@ export function flickerAll(counter) {
     }
 }
 
-export function initializeLighting(numRows, numColumns, level) {
-    dimensions = [CONSTANTS.LIGHTMAP_PRECISION * numColumns, CONSTANTS.LIGHTMAP_PRECISION * numRows];
-
-    let lightGeometry = new THREE.BufferGeometry();
-    lightGeometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array([
-        0,0,-0.1,
-        dimensions[0],0,-0.1,
-        0,dimensions[1],-0.1,
-        dimensions[0],0,-0.1,
-        dimensions[0],dimensions[1],-0.1,
-        0,dimensions[1],-0.1,
-    ]), 3));
-    lightGeometry.addAttribute('a_texelCoords', new THREE.BufferAttribute(new Float32Array([
-        0,0,
-        1,0,
-        0,1,
-        1,0,
-        1,1,
-        0,1,
-    ]), 2));
-
-    SHADER.mapLightingUniforms.u_dimensions.value = dimensions;
-    SHADER.mapLightingUniforms.u_ambientLight.value = [1.0, 1.0, 1.0, Math.max(0.0, CONSTANTS.LIGHT_AMBIENT_INITIAL - level * CONSTANTS.LIGHT_AMBIENT_DECREASE)];
-    SHADER.objectUniforms.u_ambientLight.value = SHADER.mapLightingUniforms.u_ambientLight.value;
-    mapLightingMesh = new THREE.Mesh(lightGeometry, SHADER.getMapLightingMaterial());
-}
-
 export function renderLighting(counter) {
     flickerAll(counter);
-    STAGE.createBuffer([mapLightingMesh], dimensions[0], dimensions[1]);
-    SHADER.mapUniforms.u_texture.value = STAGE.renderBufferToTexture(dimensions[0], dimensions[1]);
-    STAGE.deleteBuffer();
+    SHADER.mapUniforms.u_texture.value = STAGE.renderToTexture([mapLightingMesh], dimensions[0], dimensions[1]);
 }

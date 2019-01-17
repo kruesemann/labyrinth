@@ -107,11 +107,11 @@ void main(void) {
 }
 `;
 
-export let mapTextureUniforms = {
+export const mapTextureUniforms = {
     u_dimensions: { type: 'vec2', value: new Float32Array(2) },
 };
 
-let mapTextureShaderMaterial = new THREE.ShaderMaterial({
+const mapTextureShaderMaterial = new THREE.ShaderMaterial({
     uniforms: mapTextureUniforms,
     vertexShader:   mapTextureVSrc,
     fragmentShader: mapTextureFSrc,
@@ -173,7 +173,7 @@ void main(void) {
 }
 `;
 
-export let mapLightingUniforms = {
+export const mapLightingUniforms = {
     u_texture: { type: 'sampler2D', value: undefined },
     u_dimensions: { type: 'vec2', value: new Float32Array(2) },
     u_ambientLight: { type: 'vec3', value: new Float32Array([1.0, 1.0, 1.0, 1.0]) },
@@ -181,7 +181,7 @@ export let mapLightingUniforms = {
     u_lightColor: { type: 'vec4', value: new Float32Array(4 * CONSTANTS.LIGHT_MAXNUM) },
 };
 
-let mapLightingShaderMaterial = new THREE.ShaderMaterial({
+const mapLightingShaderMaterial = new THREE.ShaderMaterial({
     uniforms: mapLightingUniforms,
     vertexShader:   mapLightingVSrc,
     fragmentShader: mapLightingFSrc,
@@ -215,11 +215,11 @@ void main(void) {
 }
 `;
 
-export let mapUniforms = {
+export const mapUniforms = {
     u_texture: { type: 'sampler2D', value: undefined },
 };
 
-let mapShaderMaterial = new THREE.ShaderMaterial({
+const mapShaderMaterial = new THREE.ShaderMaterial({
     uniforms: mapUniforms,
     vertexShader:   mapVSrc,
     fragmentShader: mapFSrc,
@@ -280,7 +280,7 @@ void main() {
 }
 `;
 
-export let objectUniforms = {
+export const objectUniforms = {
     u_texture: { type: 'sampler2D', value: undefined },
     u_dimensions: { type: 'vec2', value: new Float32Array(2) },
     u_ambientLight: { type: 'vec3', value: new Float32Array([1.0, 1.0, 1.0, 1.0]) },
@@ -289,7 +289,7 @@ export let objectUniforms = {
     u_lightPrecision: { type: 'float', value: 1 },
 };
 
-let objectShaderMaterial = new THREE.ShaderMaterial({
+const objectShaderMaterial = new THREE.ShaderMaterial({
     uniforms: objectUniforms,
     vertexShader:   objectVSrc,
     fragmentShader: objectFSrc,

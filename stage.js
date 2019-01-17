@@ -1,4 +1,5 @@
-import { LIGHTMAP_PRECISION } from "./constants";
+import * as CONSTANTS from "./constants.js";
+import * as SOUND from "./sound.js";
 
 let stage = undefined;
 
@@ -9,33 +10,39 @@ export function reset() {
                 removeMesh(stage.camera.children[0]); 
             }
         }
-        resetScene();
+        if (stage.scene) {
+            while(stage.scene.children.length > 0){ 
+                removeMesh(stage.scene.children[0]); 
+            }
+        }
     }
 
     stage = {
         width: window.innerWidth,
         height: window.innerHeight,
         renderer: new THREE.WebGLRenderer(),
+        canvas: document.getElementById("canvas"),
         camera: new THREE.PerspectiveCamera(CONSTANTS.CAMERA_FOV, window.innerWidth / window.innerHeight, CONSTANTS.CAMERA_NEAR, CONSTANTS.CAMERA_FAR),
         scene: new THREE.Scene(),
-        canvas: document.getElementById('canvas'),
         bufferCamera: undefined,
         bufferScene: undefined,
     };
 
     stage.renderer.setSize(stage.width, stage.height);
-    //stage.scene.background = new THREE.Color( 0xffffff );
-    stage.canvas.appendChild(renderer.domElement);
+    stage.canvas.appendChild(stage.renderer.domElement);
 
     stage.camera.add(SOUND.reset());
-    MAP.reset();
+    stage.camera.position.z = CONSTANTS.CAMERA_DIST;
+
+    stage.scene.add(stage.camera);
+    //stage.scene.background = new THREE.Color( 0xffffff );
 
     window.onresize = function resize() {
         stage.width = window.innerWidth;
         stage.height = window.innerHeight;
+        stage.renderer.setSize(stage.width, stage.height);
         stage.camera.aspect = stage.width / stage.height;
         stage.camera.updateProjectionMatrix();
-        stage.renderer.setSize(stage.width, stage.height);
 
         if ((document.fullScreenElement && document.fullScreenElement !== null)
         || (document.mozFullScreen || document.webkitIsFullScreen)) {
@@ -79,14 +86,10 @@ export function removeMesh(mesh) {
 }
 
 export function resetScene() {
-    if (!stage) return;
-    if (!stage.scene) return;
-
     while(stage.scene.children.length > 0){ 
         removeMesh(stage.scene.children[0]); 
     }
     stage.scene.add(stage.camera);
-    stage.camera.position.z = CONSTANTS.CAMERA_DIST;
 }
 
 function createBuffer(meshes, width, height) {
@@ -108,9 +111,9 @@ function deleteBuffer() {
 }
 
 function renderBufferToTexture(width, height) {
-    let bufferTexture = new THREE.WebGLRenderTarget( width, height, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter});
-    stage.renderer.render(stage.bufferScene, stage.bufferCamera, stage.bufferTexture, true);
-    return bufferTexture.texture;
+    const target = new THREE.WebGLRenderTarget( width, height, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter});
+    stage.renderer.render(stage.bufferScene, stage.bufferCamera, target, true);
+    return target.texture;
 }
 
 export function renderToTexture(meshes, width, height) {

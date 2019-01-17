@@ -1,16 +1,18 @@
-import * as SCENE from "./scene.js";
+import * as STAGE from "./stage.js";
 
-let audioListener = undefined;
-let audioLoader = undefined;
-let masterVolume = 1;
+let audio = undefined;
 
-const sounds = {};
+export function reset() {
+    audio = {
+        listener: new THREE.AudioListener(),
+        loader: new THREE.AudioLoader(),
+        masterVolume: 1,
+        sounds: {},
+    }
+    
+    audio.listener.setMasterVolume(masterVolume);
 
-export function initialize() {
-    audioListener = new THREE.AudioListener();
-    audioListener.setMasterVolume(masterVolume);
-    SCENE.addToCamera(audioListener);
-    audioLoader = new THREE.AudioLoader();
+    new Event("soundReady");
 
     const soundsData = [
         { id: "music", url: "assets/Erwachen.wav", volume: 0, loop: true, play: true },
@@ -22,68 +24,72 @@ export function initialize() {
     ];
     
     loadSounds(soundsData, 0);
+
+    return audio.listener;
 }
 
 function loadSounds(soundsData, i) {
-    if (i < soundsData.length) {
-        audioLoader.load(soundsData[i].url, function(buffer) {
-            const sound = new THREE.Audio(audioListener);
-            sound.setBuffer(buffer);
-            sound.setVolume(soundsData[i].volume);
-            sound.setLoop(soundsData[i].loop);
-            sounds[soundsData[i].id] = sound;
-            if (soundsData[i].play) sound.play();
+    audio.loader.load(soundsData[i].url, function(buffer) {
+        const sound = new THREE.Audio(audio.listener);
+        sound.setBuffer(buffer);
+        sound.setVolume(soundsData[i].volume);
+        sound.setLoop(soundsData[i].loop);
+        audio.sounds[soundsData[i].id] = sound;
+        if (soundsData[i].play) sound.play();
+        if (i < soundsData.length - 1) {
             loadSounds(soundsData, i + 1);
-        });
-    }
+        } else {
+            document.dispatchEvent("soundReady");
+        }
+    });
 }
 
 export function play(sound, volume) {
-    if (!sounds[sound]) {
+    if (!audio.sounds[sound]) {
         console.log("Unknown sound");
         return;
     }
 
     if (volume) {
-        sounds[sound].setVolume(1);
+        audio.sounds[sound].setVolume(1);
     }
 
-    if (sounds[sound].isPlaying) {
-        sounds[sound].stop();
+    if (audio.sounds[sound].isPlaying) {
+        audio.sounds[sound].stop();
     }
-    sounds[sound].play();
+    audio.sounds[sound].play();
 }
 
 export function repeat(sound, volume) {
-    if (!sounds[sound]) {
+    if (!audio.sounds[sound]) {
         console.log("Unknown sound");
         return;
     }
 
     if (volume) {
-        sounds[sound].setVolume(1);
+        audio.sounds[sound].setVolume(1);
     }
 
-    if (!sounds[sound].isPlaying) sounds[sound].play();
+    if (!audio.sounds[sound].isPlaying) audio.sounds[sound].play();
 }
 
 export function setVolume(sound, volume) {
     if (volume !== 0) {
-        sounds[sound].setVolume(volume);
+        audio.sounds[sound].setVolume(volume);
         return true;
     }
     
-    sounds[sound].stop();
+    audio.sounds[sound].stop();
     return false;
 }
 
 export function toggle() {
-    if (masterVolume !== 0) {
-        masterVolume = 0;
+    if (audio.masterVolume !== 0) {
+        audio.masterVolume = 0;
     } else {
-        masterVolume = 1;
+        audio.masterVolume = 1;
     }
-    audioListener.setMasterVolume(masterVolume);
+    audioListener.setMasterVolume(audio.masterVolume);
 
-    return masterVolume === 1;
+    return audio.masterVolume === 1;
 }

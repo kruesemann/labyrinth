@@ -1,10 +1,14 @@
 import * as SHADER from "./shader.js";
-import * as SCENE from "./scene.js";
+import * as STAGE from "./stage.js";
 import * as SOUND from "./sound.js";
 import * as PLAYER from "./player.js";
 import { increaseScore } from "./index.js";
 
 let items = [];
+
+export function reset() {
+    removeAllItems();
+}
 
 function createItem(x, y, color) {
     const vertices = [
@@ -40,13 +44,13 @@ function createItem(x, y, color) {
             this.y = y + 0.5;
         },
         remove: function() {
-            SCENE.removeMesh(this.mesh);
+            STAGE.removeMesh(this.mesh);
             items.splice(this.index, 1);
         }
     };
 
     item.set(x, y);
-    SCENE.addMesh(item.mesh);
+    STAGE.addMesh(item.mesh);
 
     items.push(item);
     return item;
@@ -64,7 +68,7 @@ export function createCoin(x, y) {
 
 export function removeAllItems() {
     for (let item of items) {
-        SCENE.removeMesh(item.mesh);
+        STAGE.removeMesh(item.mesh);
     }
     items = [];
 }

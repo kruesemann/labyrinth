@@ -35,7 +35,8 @@
 ## Forms
 
 * player can switch forms
-    * via fixed switches with infinite uses
+    * via fixed switches with infinite uses for one form
+    * via fixed switches with infinite uses for an arbitrary form
     * via portable switches with finite uses
 
 * forms change the light particles

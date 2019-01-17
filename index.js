@@ -1,5 +1,5 @@
 import * as CONSTANTS from "./constants.js";
-import * as SCENE from "./scene.js";
+import * as STAGE from "./stage.js";
 import * as SOUND from "./sound.js";
 import * as OVERLAY from "./overlay.js";
 import * as INPUT from "./input.js";
@@ -9,50 +9,54 @@ import * as LIGHT from "./light.js";
 import * as ITEM from "./item.js";
 import * as NOISE from "./noise.js";
 
-let gameSeed = 1;
-let level = 0;
-let score = 0;
+let game = undefined;
 
-let mapSeed = 0;
-let mapWidth = 200;
-let mapHeight = 200;
+export function reset() {
+    console.log("hello there");
+    game = {
+        seed: 1,
+        level: 0,
+        score: 0,
+        mapSeed: 0,
+        counter: 0,
+        nextLevel: true,
+    };
 
-SCENE.initialize();
-SOUND.initialize();
-OVERLAY.initialize();
-OVERLAY.set(gameSeed, level, score);
-INPUT.initialize();
+    STAGE.reset();
+    OVERLAY.reset(game.gameSeed, game.level, game.score);
+    INPUT.reset();
 
-let counter = 0;
-let nextLvl = true;
+    document.removeEventListener("soundReady", gameloop);
+    document.addEventListener("soundReady", gameloop);
+}
 
-export function loadSpecificLevel(_gameSeed, _level) {
-    gameSeed = _gameSeed;
-    level = _level;
-    OVERLAY.initialize(gameSeed);
-    OVERLAY.setLevel(level);
+export function loadSpecificLevel(gameSeed, level) {
+    game.seed = gameSeed;
+    game.level = level;
+    OVERLAY.setSeed(game.seed);
+    OVERLAY.setLevel(game.level);
     loadNextMap();
 }
 
 export function nextLevel() {
-    nextLvl = true;
+    game.nextLvl = true;
 }
 
 export function increaseScore() {
-    OVERLAY.setScore(++score);
+    OVERLAY.setScore(++game.score);
 }
 
 function loadNextMap() {
-    SCENE.reset();
-    NOISE.setSeed(gameSeed + 200 * (level - 1));
-    mapSeed = NOISE.random();
-    MAP.initialize(mapSeed, mapHeight, mapWidth, level);
+    STAGE.resetScene();
+    NOISE.setSeed(game.seed + 200 * (game.level - 1));
+    game.mapSeed = NOISE.random();
+    MAP.reset(game.mapSeed, 200, 200, game.level);
 }
 
 function gameloop() {
-    if (nextLvl) {
-        nextLvl = false;
-        OVERLAY.setLevel(++level);
+    if (game.nextLvl) {
+        game.nextLvl = false;
+        OVERLAY.setLevel(++game.level);
         loadNextMap();
     } else {
         let death = MAP.collisionWithPlayer();
@@ -64,19 +68,21 @@ function gameloop() {
 
     requestAnimationFrame(gameloop);
 
-    if (counter == CONSTANTS.MAX_COUNTER) {
-        counter = 0;
+    if (game.counter == CONSTANTS.MAX_COUNTER) {
+        game.counter = 0;
     } else {
-        counter++;
+        game.counter++;
     }
     
     ITEM.collectItemsUnderPlayer();
     MAP.planObjects(counter);
     MAP.moveObjects(counter);
     LIGHT.renderLighting(counter);
-    nextLvl = PLAYER.move(counter);
+    game.nextLvl = PLAYER.move(counter);
     PLAYER.center();
 
-    SCENE.render();
+    STAGE.render();
 }
-gameloop();
+//gameloop();
+
+reset();

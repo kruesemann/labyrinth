@@ -1,11 +1,15 @@
 import * as CONSTANTS from "./constants.js";
 import * as SHADER from "./shader.js";
-import * as SCENE from "./scene.js";
+import * as STAGE from "./stage.js";
 
 export const lights = [];
 
 let mapLightingMesh = undefined;
 let dimensions = undefined;
+
+export function reset() {
+    removeAllLights();
+}
 
 export function createLight(x, y, color) {
     let uniformIndex = -1;
@@ -181,7 +185,7 @@ export function initializeLighting(numRows, numColumns, level) {
 
 export function renderLighting(counter) {
     flickerAll(counter);
-    SCENE.createBuffer([mapLightingMesh], dimensions[0], dimensions[1]);
-    SHADER.mapUniforms.u_texture.value = SCENE.renderBufferToTexture(dimensions[0], dimensions[1]);
-    SCENE.deleteBuffer();
+    STAGE.createBuffer([mapLightingMesh], dimensions[0], dimensions[1]);
+    SHADER.mapUniforms.u_texture.value = STAGE.renderBufferToTexture(dimensions[0], dimensions[1]);
+    STAGE.deleteBuffer();
 }

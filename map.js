@@ -1,4 +1,4 @@
-import * as SCENE from "./scene.js";
+import * as STAGE from "./stage.js";
 import * as SHADER from "./shader.js";
 import * as PLAYER from "./player.js";
 import * as NOISE from "./noise.js";
@@ -7,6 +7,8 @@ import * as LIGHT from "./light.js";
 import * as ITEM from "./item.js";
 import { createObject } from "./object.js";
 import { BinaryHeap } from "./heap.js";
+
+let map = undefined;
 
 const numNoiseChannels = 3;
 const caveChannel = 0;
@@ -25,72 +27,69 @@ const noiseExponents = [
 ];
 let noiseMap = [];
 
-let initialSeed = 0;
-let tileSize = 1;
-let tileMap = [];
-let numRows = 0;
-let numColumns = 0;
-let level = 0;
-let mesh = {};
-let objects = [];
-let caves = [];
-let tunnels = [];
-
-let numberBiomeTypes = 0;
-let biomeTypes = [];
-let biomeGraph = { biomes: [], adjMatrix: [] };
-
-
-export function getTileMapInfo() {
-    return { numColumns, numRows };
-}
-
-export function getTileSize() {
-    return tileSize;
-}
-
 export function manhattan(x1, y1, x2, y2) {
     return Math.abs(x2 - x1) + Math.abs(y2 - y1);
 }
 
-export function initialize(seed, rows, columns, lvl) {
-    initialSeed = seed;
-    tileSize = 1;
-    tileMap = [];
-    numRows = rows;
-    numColumns = columns;
-    level = lvl;
-    SCENE.removeMesh(mesh);
-    mesh = undefined;
-    for (let object of objects) {
-        SCENE.removeMesh(object.form.mesh);
-    }
-    objects = [];
-    LIGHT.removeAllLights();
-    ITEM.removeAllItems();
-    caves = [];
-    tunnels = [];
-    numberBiomeTypes = 4; // temporary init
-    biomeTypes = [
+export function reset(seed, numRows, numColumns, level) {
+    LIGHT.reset();
+    ITEM.reset();
+
+    map = {
+        seed,
+        tileSize: 1,
+        tileMap: [],
+        numRows,
+        numColumns,
+        mesh: undefined,
+        objects: [],
+        caves: [],
+        tunnels: [],
+        numberBiomeTypes: 0,
+        biomeTypes: [],
+        biomeGraph: { biomes: [], adjMatrix: [] },
+        start: { i: -1, j: -1 },
+    };
+
+    create(seed, numRows, numColumns, level);
+
+    PLAYER.reset(map.start.i, map.start.j);
+}
+
+export function getTileMapInfo() {
+    return { numColumns: map.numColumns, numRows: map.numRows };
+}
+
+export function getTileSize() {
+    return map.tileSize;
+}
+
+export function getTile(i, j) {
+    return map.tileMap[i * map.numColumns + j];
+}
+
+function create(seed, numRows, numColumns, level) {
+    map.numberBiomeTypes = 4; // temporary init
+    map.biomeTypes = [
         { type: CONSTANTS.WIDE_GROUND_BIOME, isAllowed: isTileWideGround },
         { type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGround },
         { type: CONSTANTS.WIDE_WATER_BIOME, isAllowed: isTileWideWater },
         { type: CONSTANTS.NARROW_WATER_BIOME, isAllowed: isTileNarrowWater }
     ]; // temporary init
-    biomeGraph = { biomes: [], adjMatrix: [] };
 
+    createRandomMap(seed, numRows, numColumns, level);
+
+    LIGHT.initializeLighting(numRows, numColumns, level);
+}
+
+function createRandomMap(seed, numRows, numColumns, level) {
     for (let i = 0; i < numRows; i++) {
         for (let j = 0; j < numColumns; j++) {
             tileMap.push({ type: CONSTANTS.TILE_HIGHWALL, caveID: -1, tunnelID: -1, biomeID: -1 });
         }
     }
-
     // one noise map for walls, one for water, one for grass & wall-coloring
-    noiseMap = NOISE.doubleNoise2D(initialSeed, numNoiseChannels, numRows, numColumns, noiseColors, noiseExponents);
-    create();
-}
-
-function create() {
+    noiseMap = NOISE.doubleNoise2D(seed, numNoiseChannels, numRows, numColumns, noiseColors, noiseExponents);
     /**
      * generate caverns
      * label caves
@@ -108,7 +107,7 @@ function create() {
     connectCaves();
     
     const typeBiomes = [];
-    for (let biomeType of biomeTypes) {
+    for (let biomeType of map.biomeTypes) {
         typeBiomes.push(labelBiomes(biomeType.isAllowed, biomeType.type));
     }
     const wideGroundBiomes = typeBiomes[0];
@@ -125,8 +124,8 @@ function create() {
         }
     }
     const playerBiome = wideGroundBiomes[index];
-    PLAYER.initialize(playerBiome.i, playerBiome.j);
-    tileMap[playerBiome.i * numColumns + playerBiome.j].type = CONSTANTS.TILE_ENTRANCE;
+    map.start = { i: playerBiome.i, j: playerBiome.j };
+    getTile(playerBiome.i, playerBiome.j).type = CONSTANTS.TILE_ENTRANCE;
 
     let maxDist = 0;
     let maxIndex = 0;
@@ -140,9 +139,9 @@ function create() {
         }
     }
     const exitBiome = wideGroundBiomes[maxIndex];
-    tileMap[exitBiome.i * numColumns + exitBiome.j].type = CONSTANTS.TILE_EXIT;
+    getTile(exitBiome.i, exitBiome.j).type = CONSTANTS.TILE_EXIT;
     
-    const pathToExit = findBiomePath(tileMap[playerBiome.i * numColumns + playerBiome.j], tileMap[exitBiome.i * numColumns + exitBiome.j]);
+    const pathToExit = findBiomePath(getTile(playerBiome.i, playerBiome.j), getTile(exitBiome.i, exitBiome.j));
     
     const { locationGrid, gridRows, gridColumns } = findFreeLocations(); // entries of locationGrid may be 0
 
@@ -152,20 +151,21 @@ function create() {
         }
     }
 
-    mesh = createMesh();
-    SCENE.addMesh(mesh);
+    map.mesh = createMesh();
+    STAGE.addMesh(mesh);
 
     createTexture();
 
     const biome1 = wideGroundBiomes[(index + 5) % wideGroundBiomes.length];
     let object1 = createObject(biome1.i, biome1.j, [0.1, 0, 0], 5, "snake", "lightAffine");
-    objects.push(object1);
+    map.objects.push(object1);
     const biome2 = wideGroundBiomes[(index + 10) % wideGroundBiomes.length];
     let object2 = createObject(biome2.i, biome2.j, [0.1, 0, 0], 3, "dot", "proxHunter");
-    objects.push(object2);
+    map.objects.push(object2);
 }
 
 function createTexture() {
+    const { numRows, numColumns, tileSize } = map;
     const vertices = [];
     const colors = []; // replace with texture coordinates
 
@@ -190,7 +190,7 @@ function createTexture() {
             vertices.push((i + 1) * tileSize);
             vertices.push(-0.01);
 
-            const tile = tileMap[i * numColumns + j];
+            const tile = getTile(i, j);
 
             if (tile.type == CONSTANTS.TILE_WALL) {
                 for (let k = 0; k < 6; k++) {
@@ -257,25 +257,21 @@ function createTexture() {
     SHADER.mapTextureUniforms.u_dimensions.value = [numColumns, numRows];
 
     const mapMesh = new THREE.Mesh(geometry, SHADER.getMapTextureMaterial());
-    SCENE.createBuffer([mapMesh], numColumns, numRows);
-    SHADER.mapLightingUniforms.u_texture.value = SCENE.renderBufferToTexture(numColumns, numRows);
+    SHADER.mapLightingUniforms.u_texture.value = STAGE.renderToTexture([mapMesh], numColumns, numRows);
     SHADER.objectUniforms.u_texture.value = SHADER.mapLightingUniforms.u_texture.value;
     SHADER.objectUniforms.u_dimensions.value = [CONSTANTS.LIGHTMAP_PRECISION * numColumns, CONSTANTS.LIGHTMAP_PRECISION * numRows];
     SHADER.objectUniforms.u_lightPrecision.value = CONSTANTS.LIGHTMAP_PRECISION;
-    SCENE.deleteBuffer();
-
-    LIGHT.initializeLighting(numRows, numColumns, level);
 }
 
 function createMesh() {
     let geometry = new THREE.BufferGeometry();
     geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array([
-                 0,       0, -0.1,
-        numColumns,       0, -0.1,
-                 0, numRows, -0.1,
-        numColumns,       0, -0.1,
-        numColumns, numRows, -0.1,
-                 0, numRows, -0.1,
+                     0,           0, -0.1,
+        map.numColumns,           0, -0.1,
+                     0, map.numRows, -0.1,
+        map.numColumns,           0, -0.1,
+        map.numColumns, map.numRows, -0.1,
+                     0, map.numRows, -0.1,
     ]), 3));
     geometry.addAttribute('a_texelCoords', new THREE.BufferAttribute(new Float32Array([
         0,0,
@@ -301,14 +297,14 @@ function generateCaverns() {
     for (let i = 0; i < numZones.i; i++) {
         for (let j = 0; j < numZones.j; j++) {
             for (let k = 0; k < numCavernsPerZone; k++) {
-                const lowerOffset = (i == 0 ? cavernSizeMaxMax : cavernDistMin)                 + i * numRows / numZones.i;
-                const upperOffset = (i == numZones.i - 1 ? cavernSizeMaxMax : cavernDistMin)    + (numZones.i - i - 1) * numRows / numZones.i;
-                const leftOffset  = (j == 0 ? cavernSizeMaxMax : cavernDistMin)                 + j * numColumns / numZones.j + 5;
-                const rightOffset = (j == numZones.j ? cavernSizeMaxMax : cavernDistMin)        + (numZones.j - j - 1) * numColumns / numZones.j + 5;
+                const lowerOffset = (i == 0 ? cavernSizeMaxMax : cavernDistMin)                 + i * map.numRows / numZones.i;
+                const upperOffset = (i == numZones.i - 1 ? cavernSizeMaxMax : cavernDistMin)    + (numZones.i - i - 1) * map.numRows / numZones.i;
+                const leftOffset  = (j == 0 ? cavernSizeMaxMax : cavernDistMin)                 + j * map.numColumns / numZones.j + 5;
+                const rightOffset = (j == numZones.j ? cavernSizeMaxMax : cavernDistMin)        + (numZones.j - j - 1) * map.numColumns / numZones.j + 5;
 
                 caverns.push({
-                    x: leftOffset + (numColumns - leftOffset - rightOffset) * NOISE.random(),
-                    y: lowerOffset + (numRows - lowerOffset - upperOffset) * NOISE.random(),
+                    x: leftOffset + (map.numColumns - leftOffset - rightOffset) * NOISE.random(),
+                    y: lowerOffset + (map.numRows - lowerOffset - upperOffset) * NOISE.random(),
                     angle: Math.PI * NOISE.random(),
                     cavernSizeX: cavernSizeMaxMin + (cavernSizeMaxMax - cavernSizeMaxMin) * NOISE.random(),
                     cavernSizeY: cavernSizeMaxMin + (cavernSizeMaxMax - cavernSizeMaxMin) * NOISE.random(),
@@ -317,23 +313,23 @@ function generateCaverns() {
         }
     }
 
-    for (let i = 1; i < numRows - 1; i++) {
-        for (let j = 1; j < numColumns - 1; j++) {
+    for (let i = 1; i < map.numRows - 1; i++) {
+        for (let j = 1; j < map.numColumns - 1; j++) {
             let tileCenter = tileToCenter(i, j);
             for (let k = 0; k < caverns.length; k++) {
                 let distToCenter = dist(tileCenter.x, tileCenter.y, caverns[k].x, caverns[k].y);
 
                 if (distToCenter < cavernSizeMin) {
-                    tileMap[i * numColumns + j].type = CONSTANTS.TILE_DIRT;
+                    getTile(i, j).type = CONSTANTS.TILE_DIRT;
                 } else {
                     let ellipseRadius = caverns[k].cavernSizeX * caverns[k].cavernSizeY;
                     let distToMax = ellipseRadius - ellipseDist(tileCenter.x, tileCenter.y, caverns[k].x, caverns[k].y, caverns[k].cavernSizeX, caverns[k].cavernSizeY, caverns[k].angle);
 
-                    if (noiseMap[i * numColumns + j][caveChannel] < (distToMax + 2 * cavernSizeMaxMax) / (1.5 * ellipseRadius)) {
-                        if (noiseMap[i * numColumns + j][caveChannel] < distToMax / (1.5 * ellipseRadius)) {
-                            tileMap[i * numColumns + j].type = CONSTANTS.TILE_DIRT;
-                        } else if (tileMap[i * numColumns + j].type == CONSTANTS.TILE_HIGHWALL) {
-                            tileMap[i * numColumns + j].type = CONSTANTS.TILE_WALL;
+                    if (noiseMap[i * map.numColumns + j][caveChannel] < (distToMax + 2 * cavernSizeMaxMax) / (1.5 * ellipseRadius)) {
+                        if (noiseMap[i * map.numColumns + j][caveChannel] < distToMax / (1.5 * ellipseRadius)) {
+                            getTile(i, j).type = CONSTANTS.TILE_DIRT;
+                        } else if (getTile(i, j).type == CONSTANTS.TILE_HIGHWALL) {
+                            getTile(i, j).type = CONSTANTS.TILE_WALL;
                         }
                     }
                 }
@@ -345,24 +341,24 @@ function generateCaverns() {
 }
 
 function labelCaves(caverns) {
-    caves = [];
+    map.caves = [];
     let ID = 0;
 
     for (let i = 0; i < caverns.length; i++) {
         const centerTile = coordsToTile(caverns[i].x, caverns[i].y);
-        if (tileMap[centerTile.i * numColumns + centerTile.j].caveID == -1) {
-            caves.push({ i: centerTile.i, j: centerTile.j, ID, systemID: -1, size: 0 });
+        if (getTile(centerTile.i, centerTile.j).caveID == -1) {
+            map.caves.push({ i: centerTile.i, j: centerTile.j, ID, systemID: -1, size: 0 });
             const queue = [centerTile];
 
             while (queue.length > 0) {
                 const current = queue.pop();
-                tileMap[current.i * numColumns + current.j].caveID = ID;
-                caves[caves.length - 1].size++;
+                getTile(current.i, current.j).caveID = ID;
+                map.caves[map.caves.length - 1].size++;
 
                 for (let j = 0; j < 4; j++) {
                     const neighbor = { i: current.i + CONSTANTS.DIRECTIONS[j].i, j: current.j + CONSTANTS.DIRECTIONS[j].j };
 
-                    if (tileMap[neighbor.i * numColumns + neighbor.j].caveID == -1
+                    if (getTile(neighbor.i, neighbor.j).caveID == -1
                     && !isTileWall(neighbor.i, neighbor.j)) {
                         queue.push(neighbor);
                     }
@@ -375,9 +371,9 @@ function labelCaves(caverns) {
 
 function connectCaves() {
     let caveSystems = [];
-    for (let i = 0; i < caves.length; i++) {
-        if (caves[i].systemID == -1) {
-            caveSystems = buildTunnel(caves[i], caveSystems);
+    for (let i = 0; i < map.caves.length; i++) {
+        if (map.caves[i].systemID == -1) {
+            caveSystems = buildTunnel(map.caves[i], caveSystems);
         }
     }
 
@@ -385,19 +381,19 @@ function connectCaves() {
         caveSystems = buildTunnel(caveSystems[caveSystems.length - 1][0], caveSystems, caveSystems[caveSystems.length - 2][0]);
     }
 
-    for (let i = 1; i < numRows - 1; i++) {
-        for (let j = 1; j < numColumns - 1; j++) {
-            if (tileMap[i * numColumns + j].type == CONSTANTS.TILE_DIRT) {
-                if (noiseMap[i * numColumns + j][terrainChannel] > 0.3) {
-                    if (noiseMap[i * numColumns + j][terrainChannel] > 0.5) {
-                        if (noiseMap[i * numColumns + j][terrainChannel] > 0.6) {
-                            tileMap[i * numColumns + j].type = CONSTANTS.TILE_DEEPWATER;
+    for (let i = 1; i < map.numRows - 1; i++) {
+        for (let j = 1; j < map.numColumns - 1; j++) {
+            if (getTile(i, j).type == CONSTANTS.TILE_DIRT) {
+                if (noiseMap[i * map.numColumns + j][terrainChannel] > 0.3) {
+                    if (noiseMap[i * map.numColumns + j][terrainChannel] > 0.5) {
+                        if (noiseMap[i * map.numColumns + j][terrainChannel] > 0.6) {
+                            getTile(i, j).type = CONSTANTS.TILE_DEEPWATER;
                         } else {
-                            tileMap[i * numColumns + j].type = CONSTANTS.TILE_WATER;
+                            getTile(i, j).type = CONSTANTS.TILE_WATER;
                         }
                     }
                 } else {
-                    tileMap[i * numColumns + j].type = CONSTANTS.TILE_GRASS;
+                    getTile(i, j).type = CONSTANTS.TILE_GRASS;
                 }
             }
         }
@@ -406,25 +402,25 @@ function connectCaves() {
 
 function buildTunnel(cave, caveSystems, targetCave) {
     const weightFunction = function weightFunction(i, j) {
-        const noiseWeight = noiseMap[i * numColumns + j][tunnelChannel];
+        const noiseWeight = noiseMap[i * map.numColumns + j][tunnelChannel];
         return isTileWall(i, j) ? noiseWeight : 10 + noiseWeight;
     };
 
     const dig = function (i, j, width) {
         const digTile = function(i, j) {
-            if (i < 1 || i > numRows - 2 || j < 1 || j > numColumns - 2) return;
+            if (i < 1 || i > map.numRows - 2 || j < 1 || j > map.numColumns - 2) return;
 
-            const tile = tileMap[i * numColumns + j];
+            const tile = getTile(i, j);
             if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
                 tile.type = CONSTANTS.TILE_DIRT;
-                tile.tunnelID = tunnels.length - 1;
+                tile.tunnelID = map.tunnels.length - 1;
             }
         }
 
         const makeWall = function(i, j) {
-            if (i < 1 || i > numRows - 2 || j < 1 || j > numColumns - 2) return;
+            if (i < 1 || i > map.numRows - 2 || j < 1 || j > map.numColumns - 2) return;
             
-            const tile = tileMap[(i - 1) * numColumns + j];
+            const tile = getTile(i - 1, j);
             if (tile.type == CONSTANTS.TILE_HIGHWALL) {
                 tile.type = CONSTANTS.TILE_WALL;
             }
@@ -468,8 +464,8 @@ function buildTunnel(cave, caveSystems, targetCave) {
     }
 
     const searchMap = [];
-    for (let i = 0; i < numColumns; i++) {
-        for (let j = 0; j < numRows; j++) {
+    for (let i = 0; i < map.numColumns; i++) {
+        for (let j = 0; j < map.numRows; j++) {
             searchMap.push({
                 i: i,
                 j: j,
@@ -484,7 +480,7 @@ function buildTunnel(cave, caveSystems, targetCave) {
   
     let heap = new BinaryHeap(node => node.f);
   
-    const start = searchMap[cave.i * numColumns + cave.j];
+    const start = searchMap[cave.i * map.numColumns + cave.j];
     start.g = 0;
     start.f = targetCave ? manhattan(cave.i, cave.j, targetCave.i, targetCave.j) : 0;
   
@@ -493,15 +489,15 @@ function buildTunnel(cave, caveSystems, targetCave) {
     while (heap.size() > 0) {
         let current = heap.pop();
 
-        const currentCaveID = tileMap[current.i * numColumns + current.j].caveID;
-        if (currentCaveID > -1 && currentCaveID < caves.length) {
-            const currentCave = caves[currentCaveID];
+        const currentCaveID = getTile(current.i, current.j).caveID;
+        if (currentCaveID > -1 && currentCaveID < map.caves.length) {
+            const currentCave = map.caves[currentCaveID];
             const currentCaveSystemID = currentCave.systemID;
 
             if ((!targetCave && cave.ID != currentCaveID)
             || (targetCave && targetCave.systemID == currentCaveSystemID)) {
                 // target found, build tunnel
-                tunnels.push({ i: current.i, j: current.j, id: tunnels.length });
+                map.tunnels.push({ i: current.i, j: current.j, id: map.tunnels.length });
                 let path = [];
                 while (current) {
                     path.push({ i: current.i, j: current.j });
@@ -546,10 +542,10 @@ function buildTunnel(cave, caveSystems, targetCave) {
         current.closed = true;
 
         for (let j = 0; j < 4; j++) {
-            const neighbor = searchMap[(current.i + CONSTANTS.DIRECTIONS[j].i) * numColumns + current.j + CONSTANTS.DIRECTIONS[j].j];
+            const neighbor = searchMap[(current.i + CONSTANTS.DIRECTIONS[j].i) * map.numColumns + current.j + CONSTANTS.DIRECTIONS[j].j];
 
             if (neighbor.closed) continue;
-            if (neighbor.i == 0 || neighbor.i == numRows - 1 || neighbor.j == 0 || neighbor.j == numColumns - 1) continue;
+            if (neighbor.i == 0 || neighbor.i == map.numRows - 1 || neighbor.j == 0 || neighbor.j == map.numColumns - 1) continue;
 
             const nCost = weightFunction(neighbor.i, neighbor.j);
             const g =
@@ -577,26 +573,26 @@ function buildTunnel(cave, caveSystems, targetCave) {
 function labelBiomes(isAllowed, biomeType) {
     const biomes = [];
 
-    for (let i = 1; i < numRows - 1; i++) {
-        for (let j = 1; j < numColumns - 1; j++) {
+    for (let i = 1; i < map.numRows - 1; i++) {
+        for (let j = 1; j < map.numColumns - 1; j++) {
             if (isAllowed(i, j)
-            && tileMap[i * numColumns + j].biomeID === -1
-            && (tileMap[i * numColumns + j].caveID !== -1 || tileMap[i * numColumns + j].tunnelID !== -1)) {
-                const biomeID = biomeGraph.biomes.length;
+            && getTile(i, j).biomeID === -1
+            && (getTile(i, j).caveID !== -1 || getTile(i, j).tunnelID !== -1)) {
+                const biomeID = map.biomeGraph.biomes.length;
                 biomes.push({ i, j, ID: biomeID });
-                biomeGraph.biomes.push({ i, j, ID: biomeID, type: biomeType, locations: [] });
+                map.biomeGraph.biomes.push({ i, j, ID: biomeID, type: biomeType, locations: [] });
                 const queue = [{ i, j }];
                 let size = 0;
 
                 while (queue.length > 0) {
                     const current = queue.pop();
-                    tileMap[current.i * numColumns + current.j].biomeID = biomeID;
+                    getTile(current.i, current.j).biomeID = biomeID;
                     size++;
 
                     for (let j = 0; j < 4; j++) {
                         const neighbor = { i: current.i + CONSTANTS.DIRECTIONS[j].i, j: current.j + CONSTANTS.DIRECTIONS[j].j };
 
-                        if (tileMap[neighbor.i * numColumns + neighbor.j].biomeID === -1
+                        if (getTile(neighbor.i, neighbor.j).biomeID === -1
                         && isAllowed(neighbor.i, neighbor.j)) {
                             queue.push(neighbor);
                         }
@@ -604,7 +600,7 @@ function labelBiomes(isAllowed, biomeType) {
                 }
 
                 biomes[biomes.length - 1].size = size;
-                biomeGraph.biomes[biomeGraph.biomes.length - 1].size = size;
+                map.biomeGraph.biomes[map.biomeGraph.biomes.length - 1].size = size;
             }
         }
     }
@@ -613,34 +609,34 @@ function labelBiomes(isAllowed, biomeType) {
 }
 
 function buildBiomeGraph() {
-    const numberBiomes = biomeGraph.biomes.length;
+    const numberBiomes = map.biomeGraph.biomes.length;
     for (let i = 0; i < numberBiomes * numberBiomes; i++) {
-        biomeGraph.adjMatrix.push(0);
+        map.biomeGraph.adjMatrix.push(0);
     }
     
-    for (let i = 1; i < numRows - 2; i++) {
-        for (let j = 1; j < numColumns - 2; j++) {
-            const currentBiome = tileMap[i * numColumns + j].biomeID;
-            const upperNeighborBiome = tileMap[(i + 1) * numColumns + j].biomeID;
+    for (let i = 1; i < map.numRows - 2; i++) {
+        for (let j = 1; j < map.numColumns - 2; j++) {
+            const currentBiome = getTile(i, j).biomeID;
+            const upperNeighborBiome = getTile(i + 1, j).biomeID;
             if (currentBiome !== -1
             && upperNeighborBiome !== -1
             && upperNeighborBiome !== currentBiome) {
-                biomeGraph.adjMatrix[currentBiome * numberBiomes + upperNeighborBiome] = 1;
-                biomeGraph.adjMatrix[upperNeighborBiome * numberBiomes + currentBiome] = 1;
+                map.biomeGraph.adjMatrix[currentBiome * numberBiomes + upperNeighborBiome] = 1;
+                map.biomeGraph.adjMatrix[upperNeighborBiome * numberBiomes + currentBiome] = 1;
             }
-            const rightNeighborBiome = tileMap[i * numColumns + j + 1].biomeID;
+            const rightNeighborBiome = getTile(i, j + 1).biomeID;
             if (currentBiome !== -1
             && rightNeighborBiome !== -1
             && rightNeighborBiome !== currentBiome) {
-                biomeGraph.adjMatrix[currentBiome * numberBiomes + rightNeighborBiome] = 1;
-                biomeGraph.adjMatrix[rightNeighborBiome * numberBiomes + currentBiome] = 1;
+                map.biomeGraph.adjMatrix[currentBiome * numberBiomes + rightNeighborBiome] = 1;
+                map.biomeGraph.adjMatrix[rightNeighborBiome * numberBiomes + currentBiome] = 1;
             }
         }
     }
 }
 
-function findBiomePath(startTile, targetTile, current) {
-    const numberBiomes = biomeGraph.biomes.length;
+function findBiomePath(startTile, targetTile) {
+    const numberBiomes = map.biomeGraph.biomes.length;
     const searchMap = [];
     for (let i = 0; i < numberBiomes; i++) {
         searchMap.push({
@@ -665,7 +661,7 @@ function findBiomePath(startTile, targetTile, current) {
         if (current.ID === targetTile.biomeID) {
             const path = [];
             while (current) {
-                const biome = biomeGraph.biomes[current.ID];
+                const biome = map.biomeGraph.biomes[current.ID];
                 path.push(biome);
                 current = current.pred;
             }
@@ -675,10 +671,10 @@ function findBiomePath(startTile, targetTile, current) {
         current.closed = true;
 
         for (let i = 0; i < numberBiomes; i++) {
-            if (biomeGraph.adjMatrix[i * numberBiomes + current.ID] === 0) continue;
+            if (map.biomeGraph.adjMatrix[i * numberBiomes + current.ID] === 0) continue;
 
             const neighbor = searchMap[i];
-            const weight = current.weight + biomeGraph.biomes[neighbor.ID].type;
+            const weight = current.weight + map.biomeGraph.biomes[neighbor.ID].type;
 
             if (neighbor.closed) continue;
             if (neighbor.visited && weight >= neighbor.weight) continue;
@@ -699,10 +695,10 @@ function findBiomePath(startTile, targetTile, current) {
 }
 
 function findFreeLocations() {
-    const fineRows = Math.floor(numRows / CONSTANTS.LOCATION_RADIUS);
-    const fineColumns = Math.floor(numColumns / CONSTANTS.LOCATION_RADIUS);
-    const coarseRows = Math.floor(numRows / CONSTANTS.LOCATION_DIST);
-    const coarseColumns = Math.floor(numColumns / CONSTANTS.LOCATION_DIST);
+    const fineRows = Math.floor(map.numRows / CONSTANTS.LOCATION_RADIUS);
+    const fineColumns = Math.floor(map.numColumns / CONSTANTS.LOCATION_RADIUS);
+    const coarseRows = Math.floor(map.numRows / CONSTANTS.LOCATION_DIST);
+    const coarseColumns = Math.floor(map.numColumns / CONSTANTS.LOCATION_DIST);
     const fineGrid = [];
     const coarseGrid = [];
 
@@ -718,8 +714,8 @@ function findFreeLocations() {
         return { result, dir: result == Math.floor(x) ? 1 : -1 };
     }
 
-    for (let i = CONSTANTS.LOCATION_RADIUS + 1; i < numRows - CONSTANTS.LOCATION_RADIUS - 1; i++) {
-        for (let j = CONSTANTS.LOCATION_RADIUS + 1; j < numColumns - CONSTANTS.LOCATION_RADIUS - 1; j++) {
+    for (let i = CONSTANTS.LOCATION_RADIUS + 1; i < map.numRows - CONSTANTS.LOCATION_RADIUS - 1; i++) {
+        for (let j = CONSTANTS.LOCATION_RADIUS + 1; j < map.numColumns - CONSTANTS.LOCATION_RADIUS - 1; j++) {
             const row = round(i / CONSTANTS.LOCATION_RADIUS);
             const column = round(j / CONSTANTS.LOCATION_RADIUS);
 
@@ -808,7 +804,7 @@ function findFreeLocations() {
 
                 if (areNeighborsFree(tile.i, tile.j, tile.isAllowed)) {
                     coarseGrid[validIndex] = { i: tile.i, j: tile.j };
-                    biomeGraph.biomes[tileMap[tile.i * numColumns + tile.j].biomeID].locations.push({ i: tile.i, j: tile.j });
+                    map.biomeGraph.biomes[getTile(tile.i, tile.j).biomeID].locations.push({ i: tile.i, j: tile.j });
                 }
             }
         }
@@ -846,7 +842,7 @@ export function tileToCenter(i, j) {
 }
 
 function isTileOfType(i, j, tileTypes) {
-    const tileType = tileMap[i * numColumns + j].type;
+    const tileType = getTile(i, j).type;
     for (let i = 0; i < tileTypes.length; i++) {
         if (tileType == tileTypes[i]) {
             return true;
@@ -863,16 +859,16 @@ export function isNextTileOfType(x, y, dx, dy, tileTypes) {
         
         if (isTileOfType(nextTile.i, nextTile.j, tileTypes)) {
             let nextTileCoords = tileToCenter(nextTile.i, nextTile.j);
-            if (x + dx >= nextTileCoords.x && x + dx < nextTileCoords.x + tileSize) {
-                if (y + dy >= nextTileCoords.y && y + dy < nextTileCoords.y + tileSize) {
+            if (x + dx >= nextTileCoords.x && x + dx < nextTileCoords.x + map.tileSize) {
+                if (y + dy >= nextTileCoords.y && y + dy < nextTileCoords.y + map.tileSize) {
                     return true;
-                } else if (nextTileCoords.y >= y + dy && nextTileCoords.y < y + dy + tileSize) {
+                } else if (nextTileCoords.y >= y + dy && nextTileCoords.y < y + dy + map.tileSize) {
                     return true;
                 }
-            } else if (nextTileCoords.x >= x + dx && nextTileCoords.x < x + dx + tileSize) {
-                if (y + dy >= nextTileCoords.y && y + dy < nextTileCoords.y + tileSize) {
+            } else if (nextTileCoords.x >= x + dx && nextTileCoords.x < x + dx + map.tileSize) {
+                if (y + dy >= nextTileCoords.y && y + dy < nextTileCoords.y + map.tileSize) {
                     return true;
-                } else if (nextTileCoords.y >= y + dy && nextTileCoords.y < y + dy + tileSize) {
+                } else if (nextTileCoords.y >= y + dy && nextTileCoords.y < y + dy + map.tileSize) {
                     return true;
                 }
             }
@@ -957,7 +953,7 @@ export function isOnExit(x, y) {
 
     for (let offset of vertexOffsets) {
         const { i, j } = coordsToTile(x + offset.x, y + offset.y);
-        if (tileMap[i * numColumns + j].type == CONSTANTS.TILE_EXIT)
+        if (getTile(i, j).type == CONSTANTS.TILE_EXIT)
         {
             return true;
         }
@@ -967,13 +963,13 @@ export function isOnExit(x, y) {
 }
 
 export function planObjects(counter) {
-    for (let object of objects) {
+    for (let object of map.objects) {
         object.plan(counter);
     }
 }
 
 export function moveObjects(counter) {
-    for (let object of objects) {
+    for (let object of map.objects) {
         object.move(counter);
     }
 }
@@ -981,21 +977,21 @@ export function moveObjects(counter) {
 export function collisionWithPlayer() {
     let pNodes = PLAYER.get().form.nodes;
 
-    for (let object of objects) {
+    for (let object of map.objects) {
         let oNodes = object.form.nodes;
 
         for (let pNode of pNodes) {
             for (let oNode of oNodes) {
-                if (pNode.x >= oNode.x && pNode.x < oNode.x + tileSize) {
-                    if (pNode.y >= oNode.y && pNode.y < oNode.y + tileSize) {
+                if (pNode.x >= oNode.x && pNode.x < oNode.x + map.tileSize) {
+                    if (pNode.y >= oNode.y && pNode.y < oNode.y + map.tileSize) {
                         return true;
-                    } else if (pNode.y <= oNode.y && pNode.y + tileSize > oNode.y) {
+                    } else if (pNode.y <= oNode.y && pNode.y + map.tileSize > oNode.y) {
                         return true;
                     }
-                } else if (pNode.x <= oNode.x && pNode.x + tileSize > oNode.x) {
-                    if (pNode.y >= oNode.y && pNode.y < oNode.y + tileSize) {
+                } else if (pNode.x <= oNode.x && pNode.x + map.tileSize > oNode.x) {
+                    if (pNode.y >= oNode.y && pNode.y < oNode.y + map.tileSize) {
                         return true;
-                    } else if (pNode.y <= oNode.y && pNode.y + tileSize > oNode.y) {
+                    } else if (pNode.y <= oNode.y && pNode.y + map.tileSize > oNode.y) {
                         return true;
                     }
                 }

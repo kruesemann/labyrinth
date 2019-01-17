@@ -1,3 +1,9 @@
+export const CAMERA_DIST        = 50;
+export const CAMERA_FOV         = 45;
+export const CAMERA_NEAR        = 1;
+export const CAMERA_FAR         = 1001;
+export const CAMERA_SCROLLSPEED = 0.001;
+
 export const TILE_HIGHWALL      = 0;
 export const TILE_WALL          = 1;
 export const TILE_BRICKWALL     = 2;

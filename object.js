@@ -1,4 +1,4 @@
-import * as SCENE from "./scene.js";
+import * as STAGE from "./stage.js";
 import * as SOUND from "./sound.js";
 import * as MAP from "./map.js";
 import * as SHADER from "./shader.js";
@@ -59,12 +59,12 @@ function createDotForm(x, y, color) {
         },
         center: function() {
             const { x, y } = this.getCenter();
-            SCENE.lookAt(x, y);
+            STAGE.lookAt(x, y);
         }
     };
 
     form.set(x, y);
-    SCENE.addMesh(form.mesh);
+    STAGE.addMesh(form.mesh);
 
     return form;
 }
@@ -157,12 +157,12 @@ function createBoxForm(x, y, color) {
         },
         center: function() {
             const { x, y } = this.getCenter();
-            SCENE.lookAt(x, y);
+            STAGE.lookAt(x, y);
         }
     };
 
     form.set(x, y);
-    SCENE.addMesh(form.mesh);
+    STAGE.addMesh(form.mesh);
 
     return form;
 }
@@ -279,11 +279,11 @@ function createSnakeForm(x, y, color) {
         },
         center: function() {
             const { x, y } = this.getCenter();
-            SCENE.lookAt(x, y);
+            STAGE.lookAt(x, y);
         }
     };
 
-    SCENE.addMesh(form.mesh);
+    STAGE.addMesh(form.mesh);
 
     return form;
 }
@@ -415,7 +415,7 @@ export function createObject(i, j, color, speed, formName, aiName) {
             let pos = undefined;
             if (this.form) {
                 pos = this.form.nodes[0];
-                SCENE.removeMesh(this.form.mesh);
+                STAGE.removeMesh(this.form.mesh);
 
                 pos.x -= 0.5;
                 pos.y -= 0.5;

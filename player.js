@@ -1,4 +1,4 @@
-import * as SCENE from "./scene.js";
+import * as STAGE from "./stage.js";
 import * as MAP from "./map.js";
 import * as LIGHT from "./light.js";
 import { createObject } from "./object.js";
@@ -6,9 +6,8 @@ import { createObject } from "./object.js";
 let player = undefined;
 let light = undefined;
 
-export function initialize(i, j) {
+export function reset(i, j) {
     if (player) {
-        SCENE.removeMesh(player.form.mesh);
         player = createObject(i, j, [0.1, 0.1, 0], 2, player.form.id);
     } else {
         player = createObject(i, j, [0.1, 0.1, 0], 2, "dot");

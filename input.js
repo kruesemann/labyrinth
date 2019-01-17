@@ -1,5 +1,5 @@
 import * as CONSTANTS from "./constants.js";
-import * as SCENE from "./scene.js";
+import * as STAGE from "./stage.js";
 import * as SOUND from "./sound.js";
 import * as PLAYER from "./player.js";
 import * as LIGHT from "./light.js";
@@ -53,14 +53,14 @@ export function initialize() {
     
     document.addEventListener("mousemove", event => {
         if (mousedown) {
-            SCENE.moveCamera(event.clientX - mouse.x, event.clientY - mouse.y);
+            STAGE.moveCamera(event.clientX - mouse.x, event.clientY - mouse.y);
             mouse.x = event.clientX;
             mouse.y = event.clientY;
         }
     });
 
     function wheelHandler(event) {
-        SCENE.zoom(event.wheelDelta || -event.detail);
+        STAGE.zoom(event.wheelDelta || -event.detail);
     }
     document.addEventListener("mousewheel", wheelHandler);
     document.addEventListener("DOMMouseScroll", wheelHandler);

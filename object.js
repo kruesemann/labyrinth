@@ -309,7 +309,7 @@ export function createObject(i, j, color, speed, formName, aiName) {
                     if (this.state.action !== CONSTANTS.ACTION_CHARGING) {
                         this.state = { action: CONSTANTS.ACTION_CHARGING, start: counter };
                         SOUND.play("charge");
-                        SOUND.repeat("charging", 1);
+                        SOUND.repeat("charging");
                     }
                     return;
                 }

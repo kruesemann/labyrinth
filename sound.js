@@ -7,17 +7,18 @@ export function reset() {
         loader: new THREE.AudioLoader(),
         masterVolume: 1,
         sounds: {},
+        soundIDs: [],
     }
     
     audio.listener.setMasterVolume(audio.masterVolume);
 
     const soundsData = [
-        { id: "music", url: "assets/Erwachen.wav", volume: 0, loop: true, play: true },
-        { id: "charging", url: "assets/charging.wav", volume: 1, loop: true, play: false },
-        { id: "particle", url: "assets/ding01.wav", volume: 1, loop: false, play: false },
-        { id: "coin", url: "assets/ding01.wav", volume: 0.1, loop: false, play: false },
-        { id: "charge", url: "assets/ghost01.wav", volume: 1, loop: false, play: false },
-        { id: "idle", url: "assets/ghost01.wav", volume: 0.1, loop: false, play: false },
+        { id: "music", url: "assets/Erwachen.wav", volume: 0, loop: true, play: true, levelStop: false },
+        { id: "charging", url: "assets/charging.wav", volume: 1, loop: true, play: false, levelStop: true },
+        { id: "particle", url: "assets/ding01.wav", volume: 1, loop: false, play: false, levelStop: true },
+        { id: "coin", url: "assets/ding01.wav", volume: 1, loop: false, play: false, levelStop: true },
+        { id: "charge", url: "assets/ghost01.wav", volume: 1, loop: false, play: false, levelStop: true },
+        { id: "idle", url: "assets/ghost01.wav", volume: 1, loop: false, play: false, levelStop: true },
     ];
     
     loadSounds(soundsData, 0);
@@ -31,7 +32,9 @@ function loadSounds(soundsData, i) {
         sound.setBuffer(buffer);
         sound.setVolume(soundsData[i].volume);
         sound.setLoop(soundsData[i].loop);
+        sound.levelStop = soundsData[i].levelStop;
         audio.sounds[soundsData[i].id] = sound;
+        audio.soundIDs.push(soundsData[i].id);
         if (soundsData[i].play) sound.play();
         if (i < soundsData.length - 1) {
             loadSounds(soundsData, i + 1);
@@ -41,15 +44,13 @@ function loadSounds(soundsData, i) {
     });
 }
 
-export function play(sound, volume) {
+export function play(sound) {
     if (!audio.sounds[sound]) {
         console.log("Unknown sound");
         return;
     }
 
-    if (volume) {
-        audio.sounds[sound].setVolume(1);
-    }
+    audio.sounds[sound].setVolume(1);
 
     if (audio.sounds[sound].isPlaying) {
         audio.sounds[sound].stop();
@@ -57,15 +58,13 @@ export function play(sound, volume) {
     audio.sounds[sound].play();
 }
 
-export function repeat(sound, volume) {
+export function repeat(sound) {
     if (!audio.sounds[sound]) {
         console.log("Unknown sound");
         return;
     }
 
-    if (volume) {
-        audio.sounds[sound].setVolume(1);
-    }
+    audio.sounds[sound].setVolume(1);
 
     if (!audio.sounds[sound].isPlaying) audio.sounds[sound].play();
 }
@@ -83,6 +82,20 @@ export function setVolume(sound, volume) {
     
     audio.sounds[sound].stop();
     return false;
+}
+
+export function stopLevelSounds(volume) {
+    for (let sound of audio.soundIDs) {
+        if (audio.sounds[sound].levelStop){
+            if (audio.sounds[sound].isPlaying) {
+                if (volume !== 0) {
+                    audio.sounds[sound].setVolume(volume);
+                } else {
+                    audio.sounds[sound].stop();
+                }
+            }
+        }
+    }
 }
 
 export function toggle() {

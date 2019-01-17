@@ -2,6 +2,7 @@ import * as CONSTANTS from "./constants.js";
 import * as SOUND from "./sound.js";
 
 let stage = undefined;
+const levelEvent = new Event("levelEnd");
 
 export function reset() {
     if (stage) {
@@ -16,6 +17,9 @@ export function reset() {
             }
         }
     }
+    
+    document.removeEventListener("levelEnd", levelEnd);
+    document.addEventListener("levelEnd", levelEnd);
 
     stage = {
         width: window.innerWidth,
@@ -86,10 +90,20 @@ export function removeMesh(mesh) {
 }
 
 export function resetScene() {
+    document.dispatchEvent(levelEvent);
     while(stage.scene.children.length > 0){ 
         removeMesh(stage.scene.children[0]); 
     }
     stage.scene.add(stage.camera);
+}
+
+function levelEnd() {
+    const time = Date.now();
+    let volume = 1;
+    while (volume > 0) {
+        volume -= (Date.now() - time) / 100000;
+        SOUND.stopLevelSounds(volume);
+    }
 }
 
 function createBuffer(meshes, width, height) {

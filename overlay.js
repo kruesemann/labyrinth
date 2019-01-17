@@ -21,7 +21,11 @@ export function initialize() {
     });
 
     document.getElementById("info-sound").addEventListener("click", _ => {
-        SOUND.toggle();
+        if (SOUND.toggle()) {
+            document.getElementById("info-sound").value = "Mute";
+        } else {
+            document.getElementById("info-sound").value = "Sound";
+        }
     });
 }
 

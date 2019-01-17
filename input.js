@@ -97,10 +97,7 @@ export function initialize() {
             case 69://e
                 let { x, y } = PLAYER.getHead();
                 if (LIGHT.createParticle(x - 0.25, y - 0.25, [1.0, 1.0, 0.8, CONSTANTS.LIGHTPARTICLE_BRIGHTNESS]) !== null) {
-                    if (SOUND.particleSound.isPlaying) {
-                        SOUND.particleSound.stop();
-                    }
-                    SOUND.particleSound.play();
+                    SOUND.play("particle");
                 };
                 break;
             case 81://q

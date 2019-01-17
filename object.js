@@ -4,6 +4,7 @@ import * as MAP from "./map.js";
 import * as SHADER from "./shader.js";
 import * as AI from "./ai.js";
 import * as CONSTANTS from "./constants.js";
+import * as PLAYER from "./player.js";
 
 function createDotForm(x, y, color) {
     const vertices = [
@@ -296,40 +297,62 @@ export function createObject(i, j, color, speed, formName, aiName) {
         moving: { left: false, up: false, right: false, down: false },
         ai: undefined,
         route: undefined,
+        state: { action: CONSTANTS.ACTION_IDLE, start: 0 },
         plan: function(counter) {
             if (!this.ai) return;
-            let { update, route } = this.ai(this, counter);
+
+            const { update, route } = this.ai(this, counter);
+
             if (update) {
-                this.route = route;
-                if (SOUND.enemySound.isPlaying) {
-                    SOUND.enemySound.stop();
+                if (route.length) {
+                    this.route = route;
+                    if (this.state.action !== CONSTANTS.ACTION_CHARGING) {
+                        this.state = { action: CONSTANTS.ACTION_CHARGING, start: counter };
+                        SOUND.play("charge");
+                        SOUND.repeat("charging", 1);
+                    }
+                    return;
                 }
-                SOUND.enemySound.play();
             }
+
+            if (this.route && this.route.length) return;
+
+            if (this.state.action === CONSTANTS.ACTION_CHARGING) {
+                this.state = { action: CONSTANTS.ACTION_LOST, start: counter };
+            }
+
+            const idlePlan = AI.idle(this, counter);
+            if (!idlePlan.update) return;
+
+            const { x, y } = this.getHead();
+            const player = PLAYER.getHead();
+            if (Math.hypot(x - player.x, y - player.y) < 50) {
+                SOUND.play("idle");
+            }
+            this.route = idlePlan.route;
         },
         move: function(counter) {
+            if (this.state.action === CONSTANTS.ACTION_LOST) {
+                const volume = this.state.start <= counter ? Math.max(0, 500 - counter + this.state.start) / 500 : Math.max(0, 500 - counter - CONSTANTS.MAX_COUNTER + this.state.start) / 500;
+                if (!SOUND.setVolume("charging", volume)) {
+                    this.state.action = CONSTANTS.ACTION_IDLE;
+                }
+            }
+
             if (counter % speed != 0) return false;
 
-            if (this.ai) {
+            if (this.route && this.route.length > 0) {
+                if (this.form.nodes[0].x >= this.route[this.route.length - 1].x && this.form.nodes[0].x <= this.route[this.route.length - 1].x
+                    && this.form.nodes[0].y >= this.route[this.route.length - 1].y && this.form.nodes[0].y <= this.route[this.route.length - 1].y) {
+                    this.route.pop();
+                }
                 if (this.route.length > 0) {
-                    if (this.form.nodes[0].x >= this.route[this.route.length - 1].x && this.form.nodes[0].x <= this.route[this.route.length - 1].x
-                        && this.form.nodes[0].y >= this.route[this.route.length - 1].y && this.form.nodes[0].y <= this.route[this.route.length - 1].y) {
-                        this.route.pop();
-                    }
-                    if (this.route.length > 0) {
-                        this.moving.right = this.form.nodes[0].x < this.route[this.route.length - 1].x;
-                        this.moving.left = this.form.nodes[0].x > this.route[this.route.length - 1].x;
-                        this.moving.up = this.form.nodes[0].y < this.route[this.route.length - 1].y;
-                        this.moving.down = this.form.nodes[0].y > this.route[this.route.length - 1].y;
-                    } else {
-                        this.moving = { left: false, up: false, right: false, down: false };
-                    }
+                    this.moving.right = this.form.nodes[0].x < this.route[this.route.length - 1].x;
+                    this.moving.left = this.form.nodes[0].x > this.route[this.route.length - 1].x;
+                    this.moving.up = this.form.nodes[0].y < this.route[this.route.length - 1].y;
+                    this.moving.down = this.form.nodes[0].y > this.route[this.route.length - 1].y;
                 } else {
-                    let { update, route } = AI.idle(this, counter);
-                    if (update) {
-                        this.route = route;
-                        return this.move(counter);
-                    }
+                    this.moving = { left: false, up: false, right: false, down: false };
                 }
             }
 

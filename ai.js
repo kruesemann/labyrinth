@@ -86,7 +86,7 @@ function aStar(mapInfo, position, target, object) {
         }
     }
 
-    return;
+    return [];
 }
 
 export function test(self, counter) {
@@ -97,12 +97,23 @@ export function test(self, counter) {
 }
 
 export function idle(self, counter) {
-    if (counter % 100 == 0) {
-        let { x, y } = self.getHead();
-        const route = aStar(MAP.getTileMapInfo(), { x, y }, { x: x + 10 * Math.random() - 5, y: y + 10 * Math.random() - 5 }, self);
-        if (route) {
-            return { update: true, route };
+    if (counter % 400 == 0) {
+        const { x, y } = self.getHead();
+        const prox = [MAP.coordsToTile(x, y)];
+
+        for (let i = 0; prox.length < 50; i++) {
+            const current = prox[i];
+            for (let j = 0; j < 4; j++) {
+                const neighbor = { i: current.i + CONSTANTS.DIRECTIONS[j].i, j: current.j + CONSTANTS.DIRECTIONS[j].j };
+                if (self.form.isAllowed(neighbor.i, neighbor.j)) {
+                    prox.push(neighbor);
+                }
+            }
         }
+
+        const targetTile = prox[Math.floor((prox.length - 1) * Math.random() + 1)];
+        const route = aStar(MAP.getTileMapInfo(), { x, y }, MAP.tileToCenter(targetTile.i, targetTile.j), self);
+        return { update: true, route };
     }
     return { update: false, route: undefined };
 }
@@ -110,9 +121,7 @@ export function idle(self, counter) {
 export function proxHunter(self, counter) {
     if (counter % 100 == 0) {
         const route = aStar(MAP.getTileMapInfo(), self.getHead(), PLAYER.getTail(), self);
-        if (route && route.length < 25) {
-            return { update: true, route };
-        }
+        return { update: true, route: route.length < 25 ? route : [] };
     }
     return { update: false, route: undefined };
 }
@@ -125,8 +134,8 @@ export function lightAffine(self, counter) {
                 route = aStar(MAP.getTileMapInfo(), self.getHead(), light.pos, self);
             }
         }
-        if (route && route.length > 5) {
-            return { update: true, route };
+        if (route) {
+            return { update: true, route: route.length > 5 ? route : [] };
         }
     }
     return { update: false, route: undefined };

@@ -8,6 +8,7 @@
 ## Obstacles
 
 * monsters
+    * monsters in close proximity can be heard and every so often be seen (even behind walls)
 
 * map
     * narrow tunnels

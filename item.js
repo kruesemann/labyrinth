@@ -58,10 +58,7 @@ export function createCoin(x, y) {
     coin.collect = function() {
         increaseScore();
         this.remove();
-        if (SOUND.coinSound.isPlaying) {
-            SOUND.coinSound.stop();
-        }
-        SOUND.coinSound.play();
+        SOUND.play("coin");
     };
 }
 

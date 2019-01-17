@@ -82,3 +82,9 @@ export const DIRECTIONS = [
     { i: -1, j: 1 },
     { i: 1, j: 1 }
 ];
+
+export const MAX_COUNTER    = 1000;
+
+export const ACTION_IDLE        = 0;
+export const ACTION_CHARGING    = 1;
+export const ACTION_LOST        = 2;

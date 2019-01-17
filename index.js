@@ -1,3 +1,4 @@
+import * as CONSTANTS from "./constants.js";
 import * as SCENE from "./scene.js";
 import * as SOUND from "./sound.js";
 import * as OVERLAY from "./overlay.js";
@@ -63,7 +64,7 @@ function gameloop() {
 
     requestAnimationFrame(gameloop);
 
-    if (counter == 1000) {
+    if (counter == CONSTANTS.MAX_COUNTER) {
         counter = 0;
     } else {
         counter++;

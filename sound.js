@@ -2,45 +2,88 @@ import * as SCENE from "./scene.js";
 
 let audioListener = undefined;
 let audioLoader = undefined;
-let volume = 0;
-let music = undefined;
+let masterVolume = 1;
 
-export let particleSound = undefined;
-export let coinSound = undefined;
-export let enemySound = undefined;
+const sounds = {};
 
 export function initialize() {
     audioListener = new THREE.AudioListener();
-    audioListener.setMasterVolume(volume);
+    audioListener.setMasterVolume(masterVolume);
     SCENE.addToCamera(audioListener);
-
-    music = new THREE.Audio(audioListener);
     audioLoader = new THREE.AudioLoader();
+
+    const soundsData = [
+        { id: "music", url: "assets/Erwachen.wav", volume: 0, loop: true, play: true },
+        { id: "charging", url: "assets/charging.wav", volume: 1, loop: true, play: false },
+        { id: "particle", url: "assets/ding01.wav", volume: 1, loop: false, play: false },
+        { id: "coin", url: "assets/ding01.wav", volume: 0.1, loop: false, play: false },
+        { id: "charge", url: "assets/ghost01.wav", volume: 1, loop: false, play: false },
+        { id: "idle", url: "assets/ghost01.wav", volume: 0.1, loop: false, play: false },
+    ];
     
-    audioLoader.load('assets/Erwachen.wav', function(buffer) {
-        music.setBuffer(buffer);
-        music.setLoop(true);
-        music.play();
-    });
-    audioLoader.load('assets/ding01.wav', function(buffer) {
-        particleSound = new THREE.Audio(audioListener);
-        particleSound.setBuffer(buffer);
-        particleSound.setVolume(0.1);
-        coinSound = new THREE.Audio(audioListener);
-        coinSound.setBuffer(buffer);
-        coinSound.setVolume(0.1);
-    });
-    audioLoader.load('assets/ghost01.wav', function(buffer) {
-        enemySound = new THREE.Audio(audioListener);
-        enemySound.setBuffer(buffer);
-    });
+    loadSounds(soundsData, 0);
+}
+
+function loadSounds(soundsData, i) {
+    if (i < soundsData.length) {
+        audioLoader.load(soundsData[i].url, function(buffer) {
+            const sound = new THREE.Audio(audioListener);
+            sound.setBuffer(buffer);
+            sound.setVolume(soundsData[i].volume);
+            sound.setLoop(soundsData[i].loop);
+            sounds[soundsData[i].id] = sound;
+            if (soundsData[i].play) sound.play();
+            loadSounds(soundsData, i + 1);
+        });
+    }
+}
+
+export function play(sound, volume) {
+    if (!sounds[sound]) {
+        console.log("Unknown sound");
+        return;
+    }
+
+    if (volume) {
+        sounds[sound].setVolume(1);
+    }
+
+    if (sounds[sound].isPlaying) {
+        sounds[sound].stop();
+    }
+    sounds[sound].play();
+}
+
+export function repeat(sound, volume) {
+    if (!sounds[sound]) {
+        console.log("Unknown sound");
+        return;
+    }
+
+    if (volume) {
+        sounds[sound].setVolume(1);
+    }
+
+    if (!sounds[sound].isPlaying) sounds[sound].play();
+}
+
+export function setVolume(sound, volume) {
+    if (volume !== 0) {
+        sounds[sound].setVolume(volume);
+        return true;
+    }
+    
+    sounds[sound].stop();
+    return false;
 }
 
 export function toggle() {
-    if (volume !== 0) {
-        volume = 0;
+    if (masterVolume !== 0) {
+        masterVolume = 0;
     } else {
-        volume = 1;
+        masterVolume = 1;
     }
-    audioListener.setMasterVolume(volume);
+    audioListener.setMasterVolume(masterVolume);
+
+    return masterVolume === 1;
 }

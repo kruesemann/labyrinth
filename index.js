@@ -29,6 +29,7 @@ export function reset() {
 
 function setup() {
     OVERLAY.reset(game.seed, game.level, game.score);
+    NOISE.setGameSeed(game.seed);
     INPUT.reset();
     gameloop();
 }
@@ -51,8 +52,7 @@ export function increaseScore() {
 
 function loadNextMap() {
     STAGE.resetScene();
-    NOISE.setSeed(game.seed);
-    game.mapSeed = NOISE.random();
+    game.mapSeed = NOISE.nextMapSeed();
     MAP.reset(game.mapSeed, 200, 200, game.level);
 }
 

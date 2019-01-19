@@ -1,11 +1,21 @@
-let seed = 1;
+let mapSeed = 1;
+let gameSeed = 1;
 
-export function setSeed(s) {
-    seed = s;
+export function setGameSeed(s) {
+    gameSeed = s;
+}
+
+export function setMapSeed(s) {
+    mapSeed = s;
 }
 
 export function random() {
-    var x = Math.sin(seed++) * 10000;
+    const x = Math.sin(mapSeed++) * 1000000;
+    return x - Math.floor(x);
+}
+
+export function nextMapSeed() {
+    const x = Math.sin(gameSeed++) * 1000000;
     return x - Math.floor(x);
 }
 

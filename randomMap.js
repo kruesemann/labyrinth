@@ -6,7 +6,7 @@ import { BinaryHeap } from "./heap.js";
 let randomMap = undefined;
 
 export function create(seed, numRows, numColumns, level) {
-    NOISE.setSeed(seed);
+    NOISE.setMapSeed(seed);
     
     randomMap = {
         tileMap: [],

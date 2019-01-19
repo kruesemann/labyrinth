@@ -68,10 +68,21 @@ export function createCoin(i, j) {
     };
 }
 
+export function createShrine(i, j, formID) {
+    const shrine = create(i, j, [0, 0.75, 0.5]);
+
+    shrine.collect = function() {
+        PLAYER.transform(formID);
+        this.remove();
+        SOUND.play("coin");
+    }
+}
+
 export function createItems(itemList) {
     for (let item of itemList) {
         switch(item.type) {
             case "coin": createCoin(item.i, item.j); break;
+            case "shrine": createShrine(item.i, item.j, item.formID); break;
         }
     }
 }

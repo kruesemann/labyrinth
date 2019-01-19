@@ -39,7 +39,7 @@ export function loadSpecificLevel(gameSeed, level) {
     game.level = level;
     OVERLAY.setSeed(game.seed);
     OVERLAY.setLevel(game.level);
-    NOISE.setGameSeed(game.seed);
+    NOISE.setGameSeed(game.seed + level - 1);
     loadNextMap();
 }
 
@@ -66,7 +66,7 @@ function gameloop() {
         const death = OBJECT.collisionWithPlayer();
         if (death) {
             alert("COLLISION!! AHHHHHH!!!");
-            return;
+            loadSpecificLevel(game.seed, 1);
         }
     }
 

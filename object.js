@@ -36,7 +36,7 @@ function createDotForm(x, y, color) {
     geometry.addAttribute('a_color', new THREE.BufferAttribute(new Float32Array(colors), 3));
 
     const form = {
-        id: "dot",
+        ID: "dot",
         nodes: [{ x: 0, y: 0 }],
         mesh: new THREE.Mesh(geometry, SHADER.getObjectMaterial()),
         move: function (dx, dy) {
@@ -120,7 +120,7 @@ function createBoxForm(x, y, color) {
     geometry.addAttribute('a_color', new THREE.BufferAttribute(new Float32Array(colors), 3));
 
     const form = {
-        id: "box",
+        ID: "box",
         nodes: [
             { x: 0, y: 0 },
             { x: 0, y: 0 },
@@ -215,7 +215,7 @@ function createSnakeForm(x, y, color) {
     geometry.addAttribute('a_color', new THREE.BufferAttribute(new Float32Array(colors), 3));
 
     const form = {
-        id: "snake",
+        ID: "snake",
         nodes: nodes,
         mesh: new THREE.Mesh(geometry, SHADER.getObjectMaterial()),
         move: function (dx, dy) {
@@ -295,7 +295,7 @@ function createSnakeForm(x, y, color) {
     return form;
 }
 
-function create(i, j, color, speed, formName, aiName) {
+function create(i, j, color, speed, formID, aiID) {
     const { x, y } = MAPUTIL.tileToCoords(i, j);
 
     const object = {
@@ -418,19 +418,21 @@ function create(i, j, color, speed, formName, aiName) {
         getCenter: function() {
             return this.form.getCenter();
         },
-        transform: function(form, x, y) {
+        transform: function(formID, x, y) {
             let pos = undefined;
             if (this.form) {
+                if (this.form.ID === formID) return;
+
                 pos = this.form.nodes[0];
                 STAGE.removeMesh(this.form.mesh);
 
                 pos.x -= 0.5;
                 pos.y -= 0.5;
-                if (form === "box") {
+                if (formID === "box") {
                     pos.x -= 0.5;
                     pos.y -= 0.5;
                 }
-                if (this.form.id === "box") {
+                if (this.form.ID === "box") {
                     pos.x += 0.5;
                     pos.y += 0.5;
                 }
@@ -438,17 +440,17 @@ function create(i, j, color, speed, formName, aiName) {
                 pos = { x, y };
             }
 
-            switch (form) {
-                case "dot": object.form = createDotForm(pos.x, pos.y, color); break;
-                case "box": object.form = createBoxForm(pos.x, pos.y, color); break;
-                case "snake": object.form = createSnakeForm(pos.x, pos.y, color); break;
+            switch (formID) {
+                case "dot": this.form = createDotForm(pos.x, pos.y, color); break;
+                case "box": this.form = createBoxForm(pos.x, pos.y, color); break;
+                case "snake": this.form = createSnakeForm(pos.x, pos.y, color); break;
             }
         },
     };
 
-    object.transform(formName, x, y);
+    object.transform(formID, x, y);
 
-    switch(aiName) {
+    switch(aiID) {
         case "test":
             object.ai = function(self, counter) {
                 return AI.test(self, counter);
@@ -472,19 +474,19 @@ function create(i, j, color, speed, formName, aiName) {
     return object;
 }
 
-export function createEnemy(i, j, color, speed, formName, aiName) {
-    const enemy = create(i, j, color, speed, formName, aiName);
+export function createEnemy(i, j, color, speed, formID, aiID) {
+    const enemy = create(i, j, color, speed, formID, aiID);
     enemies.push(enemy);
 }
 
 export function createEnemies(enemyList) {
     for (let enemy of enemyList) {
-        createEnemy(enemy.i, enemy.j, enemy.color, enemy.speed, enemy.formName, enemy.aiName);
+        createEnemy(enemy.i, enemy.j, enemy.color, enemy.speed, enemy.formID, enemy.aiID);
     }
 }
 
-export function createPlayer(i, j, color, speed, formName) {
-    return create(i, j, color, speed, formName);
+export function createPlayer(i, j, color, speed, formID) {
+    return create(i, j, color, speed, formID);
 }
 
 export function planEnemies(counter) {

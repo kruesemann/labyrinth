@@ -7,7 +7,7 @@ let light = undefined;
 
 export function reset(i, j) {
     if (player) {
-        player = createPlayer(i, j, [0.1, 0.1, 0], 2, player.form.id);
+        player = createPlayer(i, j, [0.1, 0.1, 0], 2, player.form.ID);
     } else {
         player = createPlayer(i, j, [0.1, 0.1, 0], 2, "dot");
     }
@@ -70,7 +70,7 @@ export function get() {
 }
 
 export function getForm() {
-    return player.form.id;
+    return player.form.ID;
 }
 
 export function getHead() {

@@ -13,12 +13,12 @@ export function reset() {
     audio.listener.setMasterVolume(audio.masterVolume);
 
     const soundsData = [
-        { id: "music", url: "assets/Erwachen.wav", volume: 0, loop: true, play: true, levelStop: false },
-        { id: "charging", url: "assets/charging.wav", volume: 1, loop: true, play: false, levelStop: true },
-        { id: "particle", url: "assets/ding01.wav", volume: 1, loop: false, play: false, levelStop: true },
-        { id: "coin", url: "assets/ding01.wav", volume: 1, loop: false, play: false, levelStop: true },
-        { id: "charge", url: "assets/ghost01.wav", volume: 1, loop: false, play: false, levelStop: true },
-        { id: "idle", url: "assets/ghost01.wav", volume: 1, loop: false, play: false, levelStop: true },
+        { ID: "music", url: "assets/Erwachen.wav", volume: 0, loop: true, play: true, levelStop: false },
+        { ID: "charging", url: "assets/charging.wav", volume: 1, loop: true, play: false, levelStop: true },
+        { ID: "particle", url: "assets/ding01.wav", volume: 1, loop: false, play: false, levelStop: true },
+        { ID: "coin", url: "assets/ding01.wav", volume: 1, loop: false, play: false, levelStop: true },
+        { ID: "charge", url: "assets/ghost01.wav", volume: 1, loop: false, play: false, levelStop: true },
+        { ID: "idle", url: "assets/ghost01.wav", volume: 1, loop: false, play: false, levelStop: true },
     ];
     
     loadSounds(soundsData, 0);
@@ -33,8 +33,8 @@ function loadSounds(soundsData, i) {
         sound.setVolume(soundsData[i].volume);
         sound.setLoop(soundsData[i].loop);
         sound.levelStop = soundsData[i].levelStop;
-        audio.sounds[soundsData[i].id] = sound;
-        audio.soundIDs.push(soundsData[i].id);
+        audio.sounds[soundsData[i].ID] = sound;
+        audio.soundIDs.push(soundsData[i].ID);
         if (soundsData[i].play) sound.play();
         if (i < soundsData.length - 1) {
             loadSounds(soundsData, i + 1);

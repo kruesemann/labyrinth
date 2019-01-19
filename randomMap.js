@@ -6,6 +6,8 @@ import { BinaryHeap } from "./heap.js";
 let randomMap = undefined;
 
 export function create(seed, numRows, numColumns, level) {
+    NOISE.setSeed(seed);
+    
     randomMap = {
         tileMap: [],
         numRows,
@@ -14,6 +16,7 @@ export function create(seed, numRows, numColumns, level) {
         terrainChannel: 1,
         tunnelChannel: 2,
         noiseMap: [],
+        level,
         caves: [],
         tunnels: [],
         numberBiomeTypes: 0,
@@ -150,8 +153,8 @@ export function create(seed, numRows, numColumns, level) {
             } else if (tile.type == CONSTANTS.TILE_DEEPWATER) {
                 for (let k = 0; k < 6; k++) {
                     colors.push(0.0);
-                    colors.push(randomMap.noiseMap[i * numColumns + j][0] / 4);//randomMap.noiseMap[i * numColumns + j][0] / 4 //colors.push(0.1);
-                    colors.push(randomMap.noiseMap[i * numColumns + j][0] / 1.5);//randomMap.noiseMap[i * numColumns + j][0] / 3 //colors.push(0.3);
+                    colors.push(Math.max(0.005, randomMap.noiseMap[i * numColumns + j][0] / 4));//randomMap.noiseMap[i * numColumns + j][0] / 4 //colors.push(0.1);
+                    colors.push(Math.max(0.05, randomMap.noiseMap[i * numColumns + j][0] / 1.5));//randomMap.noiseMap[i * numColumns + j][0] / 3 //colors.push(0.3);
                 }
             } else if (tile.type == CONSTANTS.TILE_GRASS) {
                 for (let k = 0; k < 6; k++) {

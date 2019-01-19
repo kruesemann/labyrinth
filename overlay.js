@@ -7,7 +7,7 @@ let levelDisplay = undefined;
 let scoreDisplay = undefined;
 
 export function reset(seed, level, score) {
-    document.getElementById("loading").style.display = "none";
+    document.getElementById("loading-box").style.display = "none";
     document.getElementById("info").style.display = "block";
     document.getElementById("canvas").style.display = "block";
 

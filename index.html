@@ -37,7 +37,7 @@
                 z-index: 0;
             }
 
-            #loading {
+            #loading-box {
                 display: block;
                 width: 150px;
                 height: 40px;
@@ -46,28 +46,46 @@
                 text-align: center;
                 font-size: 20pt;
                 font-weight: bold;
-                color: #7e7e7e;
-                box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
-                -webkit-animation: loadingAnimation 1s linear infinite alternate; /* Safari 4.0 - 8.0 */
-                animation: loadingAnimation 1s linear infinite alternate;
+                -webkit-animation: loadingBoxAnimation 1s linear infinite alternate;
+                animation: loadingBoxAnimation 1s linear infinite alternate;
             }
 
-            /* Safari 4.0 - 8.0 */
-            @-webkit-keyframes loadingAnimation {
-                0%   {box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2); color: #7e7e7e;}
-                100% {box-shadow: 0px 0px 5px rgba(0, 0, 0, 1); color: #000000;}
+            .dot {
+                -webkit-animation: loadingDotAnimation 1s infinite alternate;
+                animation: loadingDotAnimation 1s infinite alternate;
             }
 
-            /* Standard syntax */
-            @keyframes loadingAnimation {
-                0%   {box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2); color: #7e7e7e;}
-                100% {box-shadow: 0px 0px 5px rgba(0, 0, 0, 1); color: #000000;}
+            @-webkit-keyframes loadingBoxAnimation {
+                0%   { box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2); }
+                100% { box-shadow: 0px 0px 5px rgba(0, 0, 0, 1); }
+            }
+
+            @keyframes loadingBoxAnimation {
+                0%   { box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2); }
+                100% { box-shadow: 0px 0px 5px rgba(0, 0, 0, 1); }
+            }
+
+            @-webkit-keyframes loadingDotAnimation {
+                0%   { opacity: 0; }
+                20%  { opacity: 0.2; }
+                100% { opacity: 1; }
+            }
+
+            @keyframes loadingDotAnimation {
+                0%   { opacity: 0; }
+                20%  { opacity: 0.2; }
+                100% { opacity: 1; }
             }
         </style>
     </head>
 
     <body>
-        <div id="loading">loading...</div>
+        <div id="loading-box">
+            loading<!--
+            --><span class="dot">.</span><!--
+            --><span class="dot" style="animation-delay: 0.2s; -webkit-animation-delay: 0.2s;">.</span><!--
+            --><span class="dot" style="animation-delay: 0.4s; -webkit-animation-delay: 0.4s;">.</span>
+        </div>
         <div id="info">
             <label for="info-seed">Seed:</label>
             <!--<div class="info-block" id="info-seed"></div>-->

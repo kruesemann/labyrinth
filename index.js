@@ -51,7 +51,7 @@ export function increaseScore() {
 
 function loadNextMap() {
     STAGE.resetScene();
-    NOISE.setSeed(game.seed + 200 * (game.level - 1));
+    NOISE.setSeed(game.seed);
     game.mapSeed = NOISE.random();
     MAP.reset(game.mapSeed, 200, 200, game.level);
 }
@@ -86,6 +86,5 @@ function gameloop() {
     LIGHT.renderLighting(game.counter);
     STAGE.render();
 }
-//gameloop();
 
 reset();

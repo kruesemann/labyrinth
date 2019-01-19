@@ -39,6 +39,7 @@ export function loadSpecificLevel(gameSeed, level) {
     game.level = level;
     OVERLAY.setSeed(game.seed);
     OVERLAY.setLevel(game.level);
+    NOISE.setGameSeed(game.seed);
     loadNextMap();
 }
 

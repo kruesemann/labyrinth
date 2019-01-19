@@ -14,12 +14,12 @@ export function reset(numRows, numColumns, level) {
 
     const lightGeometry = new THREE.BufferGeometry();
     lightGeometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array([
-                    0,             0, 0,
-        dimensions[0],             0, 0,
-                    0, dimensions[1], 0,
-        dimensions[0],             0, 0,
-        dimensions[0], dimensions[1], 0,
-                    0, dimensions[1], 0,
+                    0,             0, 0.01,
+        dimensions[0],             0, 0.01,
+                    0, dimensions[1], 0.01,
+        dimensions[0],             0, 0.01,
+        dimensions[0], dimensions[1], 0.01,
+                    0, dimensions[1], 0.01,
     ]), 3));
     lightGeometry.addAttribute('a_texelCoords', new THREE.BufferAttribute(new Float32Array([
         0, 0,
@@ -36,7 +36,7 @@ export function reset(numRows, numColumns, level) {
     mapLightingMesh = new THREE.Mesh(lightGeometry, SHADER.getMapLightingMaterial());
 }
 
-export function createLight(x, y, color) {
+export function create(x, y, color) {
     let uniformIndex = -1;
 
     for (let i = 0; i < CONSTANTS.LIGHT_MAXNUM; i++) {
@@ -109,8 +109,14 @@ export function createLight(x, y, color) {
     return light;
 }
 
+export function createLights(lightList) {
+    for (let light of lightList) {
+        create(light.x, light.y, light.color);
+    }
+}
+
 export function createParticle(x, y, color) {
-    const particle = createLight(x, y, color);
+    const particle = create(x, y, color);
     if (particle !== null) {
         particle.fade = true;
     }

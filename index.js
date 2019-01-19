@@ -3,6 +3,7 @@ import * as STAGE from "./stage.js";
 import * as OVERLAY from "./overlay.js";
 import * as INPUT from "./input.js";
 import * as MAP from "./map.js";
+import * as OBJECT from "./object.js";
 import * as PLAYER from "./player.js";
 import * as LIGHT from "./light.js";
 import * as ITEM from "./item.js";
@@ -61,7 +62,7 @@ function gameloop() {
         OVERLAY.setLevel(++game.level);
         loadNextMap();
     } else {
-        const death = MAP.collisionWithPlayer();
+        const death = OBJECT.collisionWithPlayer();
         if (death) {
             alert("COLLISION!! AHHHHHH!!!");
             return;
@@ -77,8 +78,8 @@ function gameloop() {
     }
     
     ITEM.collectItemsUnderPlayer();
-    MAP.planObjects(game.counter);
-    MAP.moveObjects(game.counter);
+    OBJECT.planEnemies(game.counter);
+    OBJECT.moveEnemies(game.counter);
     game.nextLevel = PLAYER.move(game.counter);
     PLAYER.center();
 

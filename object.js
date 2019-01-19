@@ -1,19 +1,26 @@
 import * as STAGE from "./stage.js";
 import * as SOUND from "./sound.js";
 import * as MAP from "./map.js";
+import * as MAPUTIL from "./mapUtil.js";
 import * as SHADER from "./shader.js";
 import * as AI from "./ai.js";
 import * as CONSTANTS from "./constants.js";
 import * as PLAYER from "./player.js";
 
+let enemies = [];
+
+export function reset() {
+    enemies = [];
+}
+
 function createDotForm(x, y, color) {
     const vertices = [
-        0, 0, 0,
-        1, 0, 0,
-        0, 1, 0,
-        1, 0, 0,
-        1, 1, 0,
-        0, 1, 0,
+        0, 0, 0.02,
+        1, 0, 0.02,
+        0, 1, 0.02,
+        1, 0, 0.02,
+        1, 1, 0.02,
+        0, 1, 0.02,
     ];
 
     const colors = [];
@@ -71,33 +78,33 @@ function createDotForm(x, y, color) {
 
 function createBoxForm(x, y, color) {
     const vertices = [
-        0, 0, 0,
-        1, 0, 0,
-        0, 1, 0,
-        1, 0, 0,
-        1, 1, 0,
-        0, 1, 0,
+        0, 0, 0.02,
+        1, 0, 0.02,
+        0, 1, 0.02,
+        1, 0, 0.02,
+        1, 1, 0.02,
+        0, 1, 0.02,
         
-        1, 0, 0,
-        2, 0, 0,
-        1, 1, 0,
-        2, 0, 0,
-        2, 1, 0,
-        1, 1, 0,
+        1, 0, 0.02,
+        2, 0, 0.02,
+        1, 1, 0.02,
+        2, 0, 0.02,
+        2, 1, 0.02,
+        1, 1, 0.02,
         
-        1, 1, 0,
-        2, 1, 0,
-        1, 2, 0,
-        2, 1, 0,
-        2, 2, 0,
-        1, 2, 0,
+        1, 1, 0.02,
+        2, 1, 0.02,
+        1, 2, 0.02,
+        2, 1, 0.02,
+        2, 2, 0.02,
+        1, 2, 0.02,
         
-        0, 1, 0,
-        1, 1, 0,
-        0, 2, 0,
-        1, 1, 0,
-        1, 2, 0,
-        0, 2, 0,
+        0, 1, 0.02,
+        1, 1, 0.02,
+        0, 2, 0.02,
+        1, 1, 0.02,
+        1, 2, 0.02,
+        0, 2, 0.02,
     ];
 
     const colors = [];
@@ -175,22 +182,22 @@ function createSnakeForm(x, y, color) {
     for (let i = 0; i < length; i++) {
         vertices.push(x);
         vertices.push(y);
-        vertices.push(0);
+        vertices.push(0.02);
         vertices.push(x + 1);
         vertices.push(y);
-        vertices.push(0);
+        vertices.push(0.02);
         vertices.push(x);
         vertices.push(y + 1);
-        vertices.push(0);
+        vertices.push(0.02);
         vertices.push(x + 1);
         vertices.push(y);
-        vertices.push(0);
+        vertices.push(0.02);
         vertices.push(x + 1);
         vertices.push(y + 1);
-        vertices.push(0);
+        vertices.push(0.02);
         vertices.push(x);
         vertices.push(y + 1);
-        vertices.push(0);
+        vertices.push(0.02);
 
         nodes.push({ x: x + 0.5, y: y + 0.5 });
     }
@@ -243,22 +250,22 @@ function createSnakeForm(x, y, color) {
             for (let i = 0; i < length; i++) {
                 vertices.push(x);
                 vertices.push(y);
-                vertices.push(0);
+                vertices.push(0.02);
                 vertices.push(x + 1);
                 vertices.push(y);
-                vertices.push(0);
+                vertices.push(0.02);
                 vertices.push(x);
                 vertices.push(y + 1);
-                vertices.push(0);
+                vertices.push(0.02);
                 vertices.push(x + 1);
                 vertices.push(y);
-                vertices.push(0);
+                vertices.push(0.02);
                 vertices.push(x + 1);
                 vertices.push(y + 1);
-                vertices.push(0);
+                vertices.push(0.02);
                 vertices.push(x);
                 vertices.push(y + 1);
-                vertices.push(0);
+                vertices.push(0.02);
             }
             this.mesh.geometry.attributes.position.array = new Float32Array(vertices);
             this.mesh.geometry.computeBoundingSphere();
@@ -288,8 +295,8 @@ function createSnakeForm(x, y, color) {
     return form;
 }
 
-export function createObject(i, j, color, speed, formName, aiName) {
-    const { x, y } = MAP.tileToCoords(i, j);
+function create(i, j, color, speed, formName, aiName) {
+    const { x, y } = MAPUTIL.tileToCoords(i, j);
 
     const object = {
         form: undefined,
@@ -463,4 +470,60 @@ export function createObject(i, j, color, speed, formName, aiName) {
     }
 
     return object;
+}
+
+export function createEnemy(i, j, color, speed, formName, aiName) {
+    const enemy = create(i, j, color, speed, formName, aiName);
+    enemies.push(enemy);
+}
+
+export function createEnemies(enemyList) {
+    for (let enemy of enemyList) {
+        createEnemy(enemy.i, enemy.j, enemy.color, enemy.speed, enemy.formName, enemy.aiName);
+    }
+}
+
+export function createPlayer(i, j, color, speed, formName) {
+    return create(i, j, color, speed, formName);
+}
+
+export function planEnemies(counter) {
+    for (let enemy of enemies) {
+        enemy.plan(counter);
+    }
+}
+
+export function moveEnemies(counter) {
+    for (let enemy of enemies) {
+        enemy.move(counter);
+    }
+}
+
+export function collisionWithPlayer() {
+    const tileSize = MAP.getTileSize();
+    const pNodes = PLAYER.get().form.nodes;
+
+    for (let enemy of enemies) {
+        const oNodes = enemy.form.nodes;
+
+        for (let pNode of pNodes) {
+            for (let oNode of oNodes) {
+                if (pNode.x >= oNode.x && pNode.x < oNode.x + tileSize) {
+                    if (pNode.y >= oNode.y && pNode.y < oNode.y + tileSize) {
+                        return true;
+                    } else if (pNode.y <= oNode.y && pNode.y + tileSize > oNode.y) {
+                        return true;
+                    }
+                } else if (pNode.x <= oNode.x && pNode.x + tileSize > oNode.x) {
+                    if (pNode.y >= oNode.y && pNode.y < oNode.y + tileSize) {
+                        return true;
+                    } else if (pNode.y <= oNode.y && pNode.y + tileSize > oNode.y) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
 }

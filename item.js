@@ -1,28 +1,29 @@
 import * as SHADER from "./shader.js";
 import * as STAGE from "./stage.js";
 import * as SOUND from "./sound.js";
+import * as MAPUTIL from "./mapUtil.js";
 import * as PLAYER from "./player.js";
 import { increaseScore } from "./index.js";
 
 let items = [];
 
 export function reset() {
-    removeAllItems();
+    items = [];
 }
 
-function createItem(x, y, color) {
+function create(i, j, color) {
     const vertices = [
-        0.25, 0.25, 0,
-        0.75, 0.25, 0,
-        0.25, 0.75, 0,
-        0.75, 0.25, 0,
-        0.75, 0.75, 0,
-        0.25, 0.75, 0,
+        0.25, 0.25, 0.01,
+        0.75, 0.25, 0.01,
+        0.25, 0.75, 0.01,
+        0.75, 0.25, 0.01,
+        0.75, 0.75, 0.01,
+        0.25, 0.75, 0.01,
     ];
 
     const colors = [];
 
-    for (let i = 0; i < 6; i++) {
+    for (let k = 0; k < 6; k++) {
         colors.push(color[0]);
         colors.push(color[1]);
         colors.push(color[2]);
@@ -49,6 +50,7 @@ function createItem(x, y, color) {
         }
     };
 
+    const { x, y } = MAPUTIL.tileToCoords(i, j);
     item.set(x, y);
     STAGE.addMesh(item.mesh);
 
@@ -56,8 +58,8 @@ function createItem(x, y, color) {
     return item;
 }
 
-export function createCoin(x, y) {
-    const coin = createItem(x, y, [0.75, 0.75, 0]);
+export function createCoin(i, j) {
+    const coin = create(i, j, [0.75, 0.75, 0]);
 
     coin.collect = function() {
         increaseScore();
@@ -66,8 +68,12 @@ export function createCoin(x, y) {
     };
 }
 
-export function removeAllItems() {
-    items = [];
+export function createItems(itemList) {
+    for (let item of itemList) {
+        switch(item.type) {
+            case "coin": createCoin(item.i, item.j); break;
+        }
+    }
 }
 
 export function collectItemsUnderPlayer() {

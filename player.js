@@ -1,18 +1,18 @@
 import * as MAP from "./map.js";
 import * as LIGHT from "./light.js";
-import { createObject } from "./object.js";
+import { createPlayer } from "./object.js";
 
 let player = undefined;
 let light = undefined;
 
 export function reset(i, j) {
     if (player) {
-        player = createObject(i, j, [0.1, 0.1, 0], 2, player.form.id);
+        player = createPlayer(i, j, [0.1, 0.1, 0], 2, player.form.id);
     } else {
-        player = createObject(i, j, [0.1, 0.1, 0], 2, "dot");
+        player = createPlayer(i, j, [0.1, 0.1, 0], 2, "dot");
     }
     const center = getCenter();
-    light = LIGHT.createLight(center.x, center.y, [1, 1, 1, 5]);
+    light = LIGHT.create(center.x, center.y, [1, 1, 1, 5]);
 }
 
 export function center() {

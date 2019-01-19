@@ -1,4 +1,5 @@
 import * as MAP from "./map.js";
+import * as MAPUTIL from "./mapUtil.js";
 import * as PLAYER from "./player.js";
 import * as CONSTANTS from "./constants.js";
 import * as LIGHT from "./light.js";
@@ -6,8 +7,8 @@ import { BinaryHeap } from "./heap.js";
 
 function aStar(mapInfo, position, target, object) {
     const { numColumns, numRows } = mapInfo;
-    const startTile = MAP.coordsToTile(position.x, position.y);
-    const targetTile = MAP.coordsToTile(target.x, target.y);
+    const startTile = MAPUTIL.coordsToTile(position.x, position.y);
+    const targetTile = MAPUTIL.coordsToTile(target.x, target.y);
     const compMap = [];
   
     const weightFunction = function(i, j) {
@@ -33,7 +34,7 @@ function aStar(mapInfo, position, target, object) {
   
     const start = compMap[startTile.i * numColumns + startTile.j];
     start.g = 0;
-    start.f = MAP.manhattan(startTile.i, startTile.j, targetTile.i, targetTile.j);
+    start.f = MAPUTIL.manhattan(startTile.i, startTile.j, targetTile.i, targetTile.j);
   
     heap.push(start);
   
@@ -43,7 +44,7 @@ function aStar(mapInfo, position, target, object) {
         if (current.i == targetTile.i && current.j == targetTile.j) {
             const path = [];
             while (current) {
-                path.push(MAP.tileToCenter(current.i, current.j));
+                path.push(MAPUTIL.tileToCenter(current.i, current.j));
                 current = current.pred;
             }
 
@@ -75,7 +76,7 @@ function aStar(mapInfo, position, target, object) {
             if (neighbor.visited && g >= neighbor.g) continue;
             neighbor.pred = current;
             neighbor.g = g;
-            neighbor.f = g + MAP.manhattan(ni, nj, targetTile.i, targetTile.j);
+            neighbor.f = g + MAPUTIL.manhattan(ni, nj, targetTile.i, targetTile.j);
 
             if (!neighbor.visited) {
                 neighbor.visited = true;
@@ -99,7 +100,7 @@ export function test(self, counter) {
 export function idle(self, counter) {
     if (counter % 400 == 0) {
         const { x, y } = self.getHead();
-        const prox = [MAP.coordsToTile(x, y)];
+        const prox = [MAPUTIL.coordsToTile(x, y)];
 
         for (let i = 0; prox.length < 50; i++) {
             const current = prox[i];
@@ -112,7 +113,7 @@ export function idle(self, counter) {
         }
 
         const targetTile = prox[Math.floor((prox.length - 1) * Math.random() + 1)];
-        const route = aStar(MAP.getTileMapInfo(), { x, y }, MAP.tileToCenter(targetTile.i, targetTile.j), self);
+        const route = aStar(MAP.getTileMapInfo(), { x, y }, MAPUTIL.tileToCenter(targetTile.i, targetTile.j), self);
         return { update: true, route };
     }
     return { update: false, route: undefined };

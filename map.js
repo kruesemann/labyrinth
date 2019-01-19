@@ -19,7 +19,6 @@ export function reset(seed, numRows, numColumns, level) {
 
     map = {
         seed,
-        tileSize: 1,
         tileMap,
         numRows,
         numColumns,
@@ -39,37 +38,33 @@ export function getTileMapInfo() {
     return { numColumns: map.numColumns, numRows: map.numRows };
 }
 
-export function getTileSize() {
-    return map.tileSize;
-}
-
 export function getTile(i, j) {
     return map.tileMap[i * map.numColumns + j];
 }
 
 function createTexture(colors) {
-    const { numRows, numColumns, tileSize } = map;
+    const { numRows, numColumns } = map;
     const vertices = [];
 
     for (let i = 0; i < numRows; i++) {
         for (let j = 0; j < numColumns; j++) {
-            vertices.push(j * tileSize);
-            vertices.push(i * tileSize);
+            vertices.push(j);
+            vertices.push(i);
             vertices.push(0);
-            vertices.push((j + 1) * tileSize);
-            vertices.push(i * tileSize);
+            vertices.push(j + 1);
+            vertices.push(i);
             vertices.push(0);
-            vertices.push(j * tileSize);
-            vertices.push((i + 1) * tileSize);
+            vertices.push(j);
+            vertices.push(i + 1);
             vertices.push(0);
-            vertices.push((j + 1) * tileSize);
-            vertices.push(i * tileSize);
+            vertices.push(j + 1);
+            vertices.push(i);
             vertices.push(0);
-            vertices.push((j + 1) * tileSize);
-            vertices.push((i + 1) * tileSize);
+            vertices.push(j + 1);
+            vertices.push(i + 1);
             vertices.push(0);
-            vertices.push(j * tileSize);
-            vertices.push((i + 1) * tileSize);
+            vertices.push(j);
+            vertices.push(i + 1);
             vertices.push(0);
         }
     }
@@ -118,16 +113,16 @@ export function isNextTileOfType(x, y, dx, dy, tileTypes) {
         
         if (MAPUTIL.isTileOfType(nextTile.i, nextTile.j, tileTypes, getTile)) {
             const nextTileCoords = MAPUTIL.tileToCenter(nextTile.i, nextTile.j);
-            if (x + dx >= nextTileCoords.x && x + dx < nextTileCoords.x + map.tileSize) {
-                if (y + dy >= nextTileCoords.y && y + dy < nextTileCoords.y + map.tileSize) {
+            if (x + dx >= nextTileCoords.x && x + dx < nextTileCoords.x + 1) {
+                if (y + dy >= nextTileCoords.y && y + dy < nextTileCoords.y + 1) {
                     return true;
-                } else if (nextTileCoords.y >= y + dy && nextTileCoords.y < y + dy + map.tileSize) {
+                } else if (nextTileCoords.y >= y + dy && nextTileCoords.y < y + dy + 1) {
                     return true;
                 }
-            } else if (nextTileCoords.x >= x + dx && nextTileCoords.x < x + dx + map.tileSize) {
-                if (y + dy >= nextTileCoords.y && y + dy < nextTileCoords.y + map.tileSize) {
+            } else if (nextTileCoords.x >= x + dx && nextTileCoords.x < x + dx + 1) {
+                if (y + dy >= nextTileCoords.y && y + dy < nextTileCoords.y + 1) {
                     return true;
-                } else if (nextTileCoords.y >= y + dy && nextTileCoords.y < y + dy + map.tileSize) {
+                } else if (nextTileCoords.y >= y + dy && nextTileCoords.y < y + dy + 1) {
                     return true;
                 }
             }

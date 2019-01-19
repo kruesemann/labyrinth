@@ -500,7 +500,6 @@ export function moveEnemies(counter) {
 }
 
 export function collisionWithPlayer() {
-    const tileSize = MAP.getTileSize();
     const pNodes = PLAYER.get().form.nodes;
 
     for (let enemy of enemies) {
@@ -508,16 +507,16 @@ export function collisionWithPlayer() {
 
         for (let pNode of pNodes) {
             for (let oNode of oNodes) {
-                if (pNode.x >= oNode.x && pNode.x < oNode.x + tileSize) {
-                    if (pNode.y >= oNode.y && pNode.y < oNode.y + tileSize) {
+                if (pNode.x >= oNode.x && pNode.x < oNode.x + 1) {
+                    if (pNode.y >= oNode.y && pNode.y < oNode.y + 1) {
                         return true;
-                    } else if (pNode.y <= oNode.y && pNode.y + tileSize > oNode.y) {
+                    } else if (pNode.y <= oNode.y && pNode.y + 1 > oNode.y) {
                         return true;
                     }
-                } else if (pNode.x <= oNode.x && pNode.x + tileSize > oNode.x) {
-                    if (pNode.y >= oNode.y && pNode.y < oNode.y + tileSize) {
+                } else if (pNode.x <= oNode.x && pNode.x + 1 > oNode.x) {
+                    if (pNode.y >= oNode.y && pNode.y < oNode.y + 1) {
                         return true;
-                    } else if (pNode.y <= oNode.y && pNode.y + tileSize > oNode.y) {
+                    } else if (pNode.y <= oNode.y && pNode.y + 1 > oNode.y) {
                         return true;
                     }
                 }

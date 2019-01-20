@@ -40,17 +40,17 @@ export function create(x, y, color) {
     let uniformIndex = -1;
 
     for (let i = 0; i < CONSTANTS.LIGHT_MAXNUM; i++) {
-        if (SHADER.mapLightingUniforms.u_lightPos.value[2 * i] == 0
-        && SHADER.mapLightingUniforms.u_lightPos.value[2 * i + 1] == 0
-        && SHADER.mapLightingUniforms.u_lightColor.value[4 * i] == 0
-        && SHADER.mapLightingUniforms.u_lightColor.value[4 * i + 1] == 0
-        && SHADER.mapLightingUniforms.u_lightColor.value[4 * i + 2] == 0
-        && SHADER.mapLightingUniforms.u_lightColor.value[4 * i + 3] == 0) {
+        if (SHADER.mapLightingUniforms.u_lightPos.value[2 * i] === 0
+        && SHADER.mapLightingUniforms.u_lightPos.value[2 * i + 1] === 0
+        && SHADER.mapLightingUniforms.u_lightColor.value[4 * i] === 0
+        && SHADER.mapLightingUniforms.u_lightColor.value[4 * i + 1] === 0
+        && SHADER.mapLightingUniforms.u_lightColor.value[4 * i + 2] === 0
+        && SHADER.mapLightingUniforms.u_lightColor.value[4 * i + 3] === 0) {
             uniformIndex = i;
         }
     }
 
-    if (uniformIndex == -1) {
+    if (uniformIndex === -1) {
         console.log("too many lights");
         return null;
     }
@@ -146,7 +146,7 @@ export function removeLight(index) {
 }
 
 export function removeLastLight() {
-    if (lights.length == 0) return;
+    if (lights.length === 0) return;
 
     const light = lights.pop();
 
@@ -172,12 +172,12 @@ export function removeAllLights() {
 }
 
 export function flickerAll(counter) {
-    if (counter % 4 == 0) {
+    if (counter % 4 === 0) {
         for (let light of lights) {
             light.flicker();
         }
     }
-    if (counter % 10 == 0) {
+    if (counter % 10 === 0) {
         for (let i = 0; i < lights.length; i++) {
             if (lights[i].fade && lights[i].die()) {
                 removeLight(i);

@@ -74,7 +74,7 @@ function gameloop() {
 
     requestAnimationFrame(gameloop);
 
-    if (game.counter == CONSTANTS.MAX_COUNTER) {
+    if (game.counter === CONSTANTS.MAX_COUNTER) {
         game.counter = 0;
     } else {
         game.counter++;

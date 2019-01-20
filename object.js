@@ -371,7 +371,7 @@ function create(i, j, color, speed, formID, aiID) {
                 dx = -CONSTANTS.OBJECT_STRIDE;
             }
             if (this.moving.right) {
-                if (dx == 0) {
+                if (dx === 0) {
                     dx = CONSTANTS.OBJECT_STRIDE;
                 } else {
                     dx = 0;
@@ -385,7 +385,7 @@ function create(i, j, color, speed, formID, aiID) {
                 dy = CONSTANTS.OBJECT_STRIDE;
             }
             if (this.moving.down) {
-                if (dy == 0) {
+                if (dy === 0) {
                     dy = -CONSTANTS.OBJECT_STRIDE;
                 } else {
                     dy = 0;

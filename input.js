@@ -107,7 +107,7 @@ function keyDownHandler(event) {
             break;
     }
     
-    if (transformation.ongoing && transformation.sequence.length == 4) {
+    if (transformation.ongoing && transformation.sequence.length === 4) {
 
         let transformationCode = 0;
         for (let i = 0; i < transformation.sequence.length; i++) {
@@ -116,7 +116,7 @@ function keyDownHandler(event) {
         }
 
         switch (transformationCode) {
-            case 1432:
+            case 4321:
                 PLAYER.transform("snake");
                 transformation.ongoing = false;
                 break;

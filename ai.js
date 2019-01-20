@@ -41,7 +41,7 @@ function aStar(mapInfo, position, target, object) {
     while (heap.size() > 0) {
         let current = heap.pop();
 
-        if (current.i == targetTile.i && current.j == targetTile.j) {
+        if (current.i === targetTile.i && current.j === targetTile.j) {
             const path = [];
             while (current) {
                 path.push(MAPUTIL.tileToCenter(current.i, current.j));
@@ -91,14 +91,14 @@ function aStar(mapInfo, position, target, object) {
 }
 
 export function test(self, counter) {
-    if (counter % 100 == 0) {
+    if (counter % 100 === 0) {
         return { update: true, route: aStar(MAP.getTileMapInfo(), self.getHead(), PLAYER.getHead(), self) };
     }
     return { update: false, route: undefined };
 }
 
 export function idle(self, counter) {
-    if (counter % 400 == 0) {
+    if (counter % 400 === 0) {
         const { x, y } = self.getHead();
         const prox = [MAPUTIL.coordsToTile(x, y)];
 
@@ -120,7 +120,7 @@ export function idle(self, counter) {
 }
 
 export function proxHunter(self, counter) {
-    if (counter % 100 == 0) {
+    if (counter % 100 === 0) {
         const route = aStar(MAP.getTileMapInfo(), self.getHead(), PLAYER.getTail(), self);
         return { update: true, route: route.length < 25 ? route : [] };
     }
@@ -128,7 +128,7 @@ export function proxHunter(self, counter) {
 }
 
 export function lightAffine(self, counter) {
-    if (counter % 100 == 0) {
+    if (counter % 100 === 0) {
         let route = undefined;
         for (let i = LIGHT.lights.length - 1; i >= 0; i--) {
             if (MAP.rayCast(self.getHead(), LIGHT.lights[i].pos)) {

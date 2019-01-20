@@ -20,7 +20,7 @@ export function isTileOfType(i, j, tileTypes, tileGetter) {
     if (!tileGetter) console.log(i, j, tileTypes);
     const tileType = tileGetter(i, j).type;
     for (let i = 0; i < tileTypes.length; i++) {
-        if (tileType == tileTypes[i]) {
+        if (tileType === tileTypes[i]) {
             return true;
         }
     }

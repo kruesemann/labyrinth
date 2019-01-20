@@ -132,55 +132,55 @@ export function create(seed, numRows, numColumns, level) {
         for (let j = 0; j < randomMap.numColumns; j++) {
             const tile = getTile(i, j);
 
-            if (tile.type == CONSTANTS.TILE_WALL) {
+            if (tile.type === CONSTANTS.TILE_WALL) {
                 for (let k = 0; k < 6; k++) {
                     colors.push(Math.min(0.03, randomMap.noiseMap[i * numColumns + j][0] / 10));//colors.push(0.05);
                     colors.push(Math.min(0.03, randomMap.noiseMap[i * numColumns + j][0] / 10));//colors.push(0.05);
                     colors.push(Math.min(0.03, randomMap.noiseMap[i * numColumns + j][0] / 10));//colors.push(0.05);
                 }
-            } else if (tile.type == CONSTANTS.TILE_DIRT) {
+            } else if (tile.type === CONSTANTS.TILE_DIRT) {
                 for (let k = 0; k < 6; k++) {
                     colors.push(randomMap.noiseMap[i * numColumns + j][1] / 4);//colors.push(0.24);
                     colors.push(randomMap.noiseMap[i * numColumns + j][1] / 8);//colors.push(0.15);
                     colors.push(0.0);
                 }
-            } else if (tile.type == CONSTANTS.TILE_WATER) {
+            } else if (tile.type === CONSTANTS.TILE_WATER) {
                 for (let k = 0; k < 6; k++) {
                     colors.push(randomMap.noiseMap[i * numColumns + j][0] / 3);//randomMap.noiseMap[i * numColumns + j][0] / 10 //colors.push(0.0);
                     colors.push(randomMap.noiseMap[i * numColumns + j][0] / 2);//randomMap.noiseMap[i * numColumns + j][1] / 8 //colors.push(0.2);
                     colors.push(randomMap.noiseMap[i * numColumns + j][1] / 2);//randomMap.noiseMap[i * numColumns + j][1] / 5 //colors.push(0.6);
                 }
-            } else if (tile.type == CONSTANTS.TILE_DEEPWATER) {
+            } else if (tile.type === CONSTANTS.TILE_DEEPWATER) {
                 for (let k = 0; k < 6; k++) {
                     colors.push(0.0);
                     colors.push(Math.max(0.005, randomMap.noiseMap[i * numColumns + j][0] / 4));//randomMap.noiseMap[i * numColumns + j][0] / 4 //colors.push(0.1);
                     colors.push(Math.max(0.05, randomMap.noiseMap[i * numColumns + j][0] / 1.5));//randomMap.noiseMap[i * numColumns + j][0] / 3 //colors.push(0.3);
                 }
-            } else if (tile.type == CONSTANTS.TILE_GRASS) {
+            } else if (tile.type === CONSTANTS.TILE_GRASS) {
                 for (let k = 0; k < 6; k++) {
                     colors.push(randomMap.noiseMap[i * numColumns + j][0] / 3);//colors.push(0.1);
                     colors.push(randomMap.noiseMap[i * numColumns + j][1] / 2);//colors.push(0.3);
                     colors.push(0.0);
                 }
-            } else if (tile.type == CONSTANTS.TILE_HIGHWALL) {
+            } else if (tile.type === CONSTANTS.TILE_HIGHWALL) {
                 for (let k = 0; k < 6; k++) {
                     colors.push(0.0);
                     colors.push(0.0);
                     colors.push(0.0);
                 }
-            } else if (tile.type == CONSTANTS.TILE_PAVED) {
+            } else if (tile.type === CONSTANTS.TILE_PAVED) {
                 for (let k = 0; k < 6; k++) {
                     colors.push(1.0);
                     colors.push(0.2);
                     colors.push(0.5);
                 }
-            } else if (tile.type == CONSTANTS.TILE_EXIT) {
+            } else if (tile.type === CONSTANTS.TILE_EXIT) {
                 for (let k = 0; k < 6; k++) {
                     colors.push(1.0);
                     colors.push(0.0);
                     colors.push(1.0);
                 }
-            } else if (tile.type == CONSTANTS.TILE_ENTRANCE) {
+            } else if (tile.type === CONSTANTS.TILE_ENTRANCE) {
                 for (let k = 0; k < 6; k++) {
                     colors.push(0.1);
                     colors.push(0.1);
@@ -205,10 +205,10 @@ function generateCaverns() {
     for (let i = 0; i < numZones.i; i++) {
         for (let j = 0; j < numZones.j; j++) {
             for (let k = 0; k < numCavernsPerZone; k++) {
-                const lowerOffset = (i == 0 ? cavernSizeMaxMax : cavernDistMin)                 + i * randomMap.numRows / numZones.i;
-                const upperOffset = (i == numZones.i - 1 ? cavernSizeMaxMax : cavernDistMin)    + (numZones.i - i - 1) * randomMap.numRows / numZones.i;
-                const leftOffset  = (j == 0 ? cavernSizeMaxMax : cavernDistMin)                 + j * randomMap.numColumns / numZones.j + 5;
-                const rightOffset = (j == numZones.j ? cavernSizeMaxMax : cavernDistMin)        + (numZones.j - j - 1) * randomMap.numColumns / numZones.j + 5;
+                const lowerOffset = (i === 0 ? cavernSizeMaxMax : cavernDistMin)                 + i * randomMap.numRows / numZones.i;
+                const upperOffset = (i === numZones.i - 1 ? cavernSizeMaxMax : cavernDistMin)    + (numZones.i - i - 1) * randomMap.numRows / numZones.i;
+                const leftOffset  = (j === 0 ? cavernSizeMaxMax : cavernDistMin)                 + j * randomMap.numColumns / numZones.j + 5;
+                const rightOffset = (j === numZones.j ? cavernSizeMaxMax : cavernDistMin)        + (numZones.j - j - 1) * randomMap.numColumns / numZones.j + 5;
 
                 caverns.push({
                     x: leftOffset + (randomMap.numColumns - leftOffset - rightOffset) * NOISE.random(),
@@ -236,7 +236,7 @@ function generateCaverns() {
                     if (randomMap.noiseMap[i * randomMap.numColumns + j][randomMap.caveChannel] < (distToMax + 2 * cavernSizeMaxMax) / (1.5 * ellipseRadius)) {
                         if (randomMap.noiseMap[i * randomMap.numColumns + j][randomMap.caveChannel] < distToMax / (1.5 * ellipseRadius)) {
                             getTile(i, j).type = CONSTANTS.TILE_DIRT;
-                        } else if (getTile(i, j).type == CONSTANTS.TILE_HIGHWALL) {
+                        } else if (getTile(i, j).type === CONSTANTS.TILE_HIGHWALL) {
                             getTile(i, j).type = CONSTANTS.TILE_WALL;
                         }
                     }
@@ -266,7 +266,7 @@ function labelCaves(caverns) {
                 for (let j = 0; j < 4; j++) {
                     const neighbor = { i: current.i + CONSTANTS.DIRECTIONS[j].i, j: current.j + CONSTANTS.DIRECTIONS[j].j };
 
-                    if (getTile(neighbor.i, neighbor.j).caveID == -1
+                    if (getTile(neighbor.i, neighbor.j).caveID === -1
                     && !isTileWall(neighbor.i, neighbor.j)) {
                         queue.push(neighbor);
                     }
@@ -280,7 +280,7 @@ function labelCaves(caverns) {
 function connectCaves() {
     let caveSystems = [];
     for (let i = 0; i < randomMap.caves.length; i++) {
-        if (randomMap.caves[i].systemID == -1) {
+        if (randomMap.caves[i].systemID === -1) {
             caveSystems = buildTunnel(randomMap.caves[i], caveSystems);
         }
     }
@@ -291,7 +291,7 @@ function connectCaves() {
 
     for (let i = 1; i < randomMap.numRows - 1; i++) {
         for (let j = 1; j < randomMap.numColumns - 1; j++) {
-            if (getTile(i, j).type == CONSTANTS.TILE_DIRT) {
+            if (getTile(i, j).type === CONSTANTS.TILE_DIRT) {
                 if (randomMap.noiseMap[i * randomMap.numColumns + j][randomMap.terrainChannel] > 0.3) {
                     if (randomMap.noiseMap[i * randomMap.numColumns + j][randomMap.terrainChannel] > 0.5) {
                         if (randomMap.noiseMap[i * randomMap.numColumns + j][randomMap.terrainChannel] > 0.6) {
@@ -319,7 +319,7 @@ function buildTunnel(cave, caveSystems, targetCave) {
             if (i < 1 || i > randomMap.numRows - 2 || j < 1 || j > randomMap.numColumns - 2) return;
 
             const tile = getTile(i, j);
-            if (tile.type == CONSTANTS.TILE_HIGHWALL || tile.type == CONSTANTS.TILE_WALL || tile.type == CONSTANTS.TILE_BRICKWALL) {
+            if (tile.type === CONSTANTS.TILE_HIGHWALL || tile.type === CONSTANTS.TILE_WALL || tile.type === CONSTANTS.TILE_BRICKWALL) {
                 tile.type = CONSTANTS.TILE_DIRT;
                 tile.tunnelID = randomMap.tunnels.length - 1;
             }
@@ -329,7 +329,7 @@ function buildTunnel(cave, caveSystems, targetCave) {
             if (i < 1 || i > randomMap.numRows - 2 || j < 1 || j > randomMap.numColumns - 2) return;
             
             const tile = getTile(i - 1, j);
-            if (tile.type == CONSTANTS.TILE_HIGHWALL) {
+            if (tile.type === CONSTANTS.TILE_HIGHWALL) {
                 tile.type = CONSTANTS.TILE_WALL;
             }
         }
@@ -403,7 +403,7 @@ function buildTunnel(cave, caveSystems, targetCave) {
             const currentCaveSystemID = currentCave.systemID;
 
             if ((!targetCave && cave.ID != currentCaveID)
-            || (targetCave && targetCave.systemID == currentCaveSystemID)) {
+            || (targetCave && targetCave.systemID === currentCaveSystemID)) {
                 // target found, build tunnel
                 randomMap.tunnels.push({ i: current.i, j: current.j, ID: randomMap.tunnels.length });
                 const path = [];
@@ -416,7 +416,7 @@ function buildTunnel(cave, caveSystems, targetCave) {
                 let wide = false;
                 let varianceLength = 3 + Math.floor(10 * NOISE.random());
                 for (let tileNr of path) {
-                    if (varianceLength == 0) {
+                    if (varianceLength === 0) {
                         varianceLength = 3 + Math.floor(10 * NOISE.random());
                         wide = !wide;
                     }
@@ -424,14 +424,14 @@ function buildTunnel(cave, caveSystems, targetCave) {
                     varianceLength--;
                 }
 
-                if (currentCaveSystemID == -1) {
+                if (currentCaveSystemID === -1) {
                     cave.systemID = caveSystems.length;
                     currentCave.systemID = caveSystems.length;
                     caveSystems.push([cave, currentCave]);
                     return caveSystems;
                 }
 
-                if (cave.systemID == -1) {
+                if (cave.systemID === -1) {
                     cave.systemID = currentCaveSystemID;
                     caveSystems[currentCaveSystemID].push(cave);
                     return caveSystems;
@@ -453,7 +453,7 @@ function buildTunnel(cave, caveSystems, targetCave) {
             const neighbor = searchMap[(current.i + CONSTANTS.DIRECTIONS[j].i) * randomMap.numColumns + current.j + CONSTANTS.DIRECTIONS[j].j];
 
             if (neighbor.closed) continue;
-            if (neighbor.i == 0 || neighbor.i == randomMap.numRows - 1 || neighbor.j == 0 || neighbor.j == randomMap.numColumns - 1) continue;
+            if (neighbor.i === 0 || neighbor.i === randomMap.numRows - 1 || neighbor.j === 0 || neighbor.j === randomMap.numColumns - 1) continue;
 
             const nCost = weightFunction(neighbor.i, neighbor.j);
             const g =
@@ -619,11 +619,13 @@ function findFreeLocations() {
 
     function round(x) {
         const result = Math.round(x);
-        return { result, dir: result == Math.floor(x) ? 1 : -1 };
+        return { result, dir: result === Math.floor(x) ? 1 : -1 };
     }
 
     for (let i = CONSTANTS.LOCATION_RADIUS + 1; i < randomMap.numRows - CONSTANTS.LOCATION_RADIUS - 1; i++) {
         for (let j = CONSTANTS.LOCATION_RADIUS + 1; j < randomMap.numColumns - CONSTANTS.LOCATION_RADIUS - 1; j++) {
+            if (getTile(i, j).biomeID === -1) continue;
+
             const row = round(i / CONSTANTS.LOCATION_RADIUS);
             const column = round(j / CONSTANTS.LOCATION_RADIUS);
 

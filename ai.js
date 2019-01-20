@@ -130,13 +130,13 @@ export function proxHunter(self, counter) {
 export function lightAffine(self, counter) {
     if (counter % 100 == 0) {
         let route = undefined;
-        for (let light of LIGHT.lights) {
-            if (MAP.rayCast(self.getHead(), light.pos)) {
-                route = aStar(MAP.getTileMapInfo(), self.getHead(), light.pos, self);
+        for (let i = LIGHT.lights.length - 1; i >= 0; i--) {
+            if (MAP.rayCast(self.getHead(), LIGHT.lights[i].pos)) {
+                route = aStar(MAP.getTileMapInfo(), self.getHead(), LIGHT.lights[i].pos, self);
+                if (route) {
+                    return { update: true, route: route.length > 5 ? route : [] };
+                }
             }
-        }
-        if (route) {
-            return { update: true, route: route.length > 5 ? route : [] };
         }
     }
     return { update: false, route: undefined };

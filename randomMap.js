@@ -113,47 +113,17 @@ export function create(seed, numRows, numColumns, level) {
     const { locationGrid, gridRows, gridColumns } = findFreeLocations(); // entries of locationGrid may be 0
 
     const items = [];
-    let snake = false;
-    let box = false;
-    let dot = false;
-
     for (let biome of pathToExit) {
         if (biome.locations.length > 0) {
-            let formID;
-
-            if (snake || box && dot) {
-                formID = "snake";
-            } else if (box) {
-                if (biome.type === CONSTANTS.NARROW_WATER_BIOME || biome.type === CONSTANTS.NARROW_GROUND_BIOME) {
-                    formID = "snake";
-                } else {
-                    formID = "box";
-                }
-            } else {
-                if (biome.type === CONSTANTS.NARROW_WATER_BIOME || biome.type === CONSTANTS.WIDE_WATER_BIOME) {
-                    formID = "snake";
-                } else {
-                    formID = "dot";
-                }
-            }
-            items.push({ type: "shrine", i: biome.locations[0].i, j: biome.locations[0].j, formID });
-            snake = box = dot = false;
-        }
-
-        if (biome.type === CONSTANTS.NARROW_WATER_BIOME) {
-            snake = true;
-        } else if (biome.type === CONSTANTS.WIDE_WATER_BIOME) {
-            box = true;
-        } else if (biome.type === CONSTANTS.NARROW_GROUND_BIOME) {
-            dot = true;
+            items.push({ type: "coin", i: biome.locations[0].i, j: biome.locations[0].j });
         }
     }
 
     const enemies = [];
     const biome1 = wideGroundBiomes[(index + 5) % wideGroundBiomes.length];
-    enemies.push({ i: biome1.i, j: biome1.j, color: [0.1, 0, 0], speed: 5, formID: "snake", aiID: "lightAffine" });
+    enemies.push({ i: biome1.i, j: biome1.j, color: [0.5, 0, 0], speed: 5, formID: "snake", aiID: "lightAffine" });
     const biome2 = wideGroundBiomes[(index + 10) % wideGroundBiomes.length];
-    enemies.push({ i: biome2.i, j: biome2.j, color: [0.1, 0, 0], speed: 3, formID: "dot", aiID: "proxHunter" });
+    enemies.push({ i: biome2.i, j: biome2.j, color: [0.5, 0, 0], speed: 3, formID: "dot", aiID: "proxHunter" });
 
     const lights = [];
 

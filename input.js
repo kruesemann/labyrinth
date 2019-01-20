@@ -6,6 +6,13 @@ import * as LIGHT from "./light.js";
 import * as SHADER from "./shader.js";
 import { nextLevel } from "./index.js";
 
+const KEY_SPACE = 32;
+const KEY_LEFT  = 37;
+const KEY_UP    = 38;
+const KEY_RIGHT = 39;
+const KEY_DOWN  = 40;
+const KEY_F11   = 122;
+
 function enterFullscreen() {
     if (document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen();
@@ -41,19 +48,32 @@ function wheelHandler(event) {
     STAGE.zoom(event.wheelDelta || -event.detail);
 }
 
+let transformation = { ongoing: false, sequence: [] };
+
 function keyDownHandler(event) {
     switch (event.keyCode) {
-        case 37://left
+        case KEY_SPACE:
+            if (!transformation.ongoing) transformation = { ongoing: true, sequence: [] };
+            break;
+        case KEY_LEFT:
             PLAYER.moveLeft();
+            if (transformation.ongoing) transformation.sequence.push(KEY_LEFT);
             break;
-        case 38://up
+        case KEY_UP:
             PLAYER.moveUp();
+            if (transformation.ongoing) transformation.sequence.push(KEY_UP);
             break;
-        case 39://right
+        case KEY_RIGHT:
             PLAYER.moveRight();
+            if (transformation.ongoing) transformation.sequence.push(KEY_RIGHT);
             break;
-        case 40://down
+        case KEY_DOWN:
             PLAYER.moveDown();
+            if (transformation.ongoing) transformation.sequence.push(KEY_DOWN);
+            break;
+        case KEY_F11:
+            toggleFullscreen();
+            event.preventDefault();
             break;
         case 49://1
             PLAYER.transform("dot");
@@ -71,16 +91,10 @@ function keyDownHandler(event) {
             PLAYER.moveRight();
             break;
         case 69://e
-            const { x, y } = PLAYER.getHead();
-            if (LIGHT.createParticle(x - 0.25, y - 0.25, [1.0, 1.0, 0.8, CONSTANTS.LIGHTPARTICLE_BRIGHTNESS]) !== null) {
-                SOUND.play("particle");
-            };
+            PLAYER.dropParticle();
             break;
         case 81://q
-            LIGHT.removeLight(0);
-            break;
-        case 82://r
-            console.log(SHADER.mapUniforms.u_lightColor.value);
+            LIGHT.removeLight(1);
             break;
         case 83://s
             PLAYER.moveDown();
@@ -91,25 +105,51 @@ function keyDownHandler(event) {
         case 88://x
             nextLevel();
             break;
-        case 122:
-            toggleFullscreen();
-            event.preventDefault();
-            break;
+    }
+    
+    if (transformation.ongoing && transformation.sequence.length == 4) {
+
+        let transformationCode = 0;
+        for (let i = 0; i < transformation.sequence.length; i++) {
+            transformationCode *= 10;
+            transformationCode += transformation.sequence[i] - 36;
+        }
+
+        switch (transformationCode) {
+            case 1432:
+                PLAYER.transform("snake");
+                transformation.ongoing = false;
+                break;
+            case 3131:
+                PLAYER.transform("box");
+                transformation.ongoing = false;
+                break;
+            case 3142:
+                PLAYER.transform("dot");
+                transformation.ongoing = false;
+                break;
+            default:
+                transformation.sequence.shift();
+                break;
+        }
     }
 }
 
 function keyUpHandler(event) {
     switch (event.keyCode) {
-        case 37://left
+        case KEY_SPACE:
+            transformation.ongoing = false;
+            break;
+        case KEY_LEFT:
             PLAYER.stopLeft();
             break;
-        case 38://up
+        case KEY_UP:
             PLAYER.stopUp();
             break;
-        case 39://right
+        case KEY_RIGHT:
             PLAYER.stopRight();
             break;
-        case 40://down
+        case KEY_DOWN:
             PLAYER.stopDown();
             break;
         case 65://a
@@ -128,6 +168,8 @@ function keyUpHandler(event) {
 }
 
 export function reset() {
+    transformation = { ongoing: false, sequence: [] };
+
     document.removeEventListener("mousewheel", wheelHandler);
     document.removeEventListener("DOMMouseScroll", wheelHandler);
     window.removeEventListener("keydown", keyDownHandler);

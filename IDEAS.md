@@ -3,7 +3,8 @@
 ## Player
 
 * player can control the light
-    * dropping fading particles
+    * light at player's head increases up to a certain level
+    * when that level is reached the player can drop a fading particle and the light at their head dims
 
 ## Obstacles
 
@@ -35,9 +36,8 @@
 ## Forms
 
 * player can switch forms
-    * via fixed switches with infinite uses for one form
-    * via fixed switches with infinite uses for an arbitrary form
-    * via portable switches with finite uses
+    * by performing a transformation dance in close proximity to a shrine
+    * initiating a dance will give a visual cue
 
 * forms change the light particles
     * dot: white and dim
@@ -59,7 +59,7 @@
 
 * go deeper
 
-* collect points
+* collect points to unlock stuff
 
 # Map Generation
 

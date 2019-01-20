@@ -66,6 +66,8 @@ function gameloop() {
         const death = OBJECT.collisionWithPlayer();
         if (death) {
             alert("COLLISION!! AHHHHHH!!!");
+            game.score = 0;
+            OVERLAY.setScore(game.score);
             loadSpecificLevel(game.seed, 1);
         }
     }

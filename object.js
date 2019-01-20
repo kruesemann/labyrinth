@@ -225,9 +225,9 @@ function createSnakeForm(x, y, color) {
 
             this.mesh.geometry.attributes.position.needsUpdate = true;
             const vertices = [];
-            for (let j = 0; j < 6; j++) {
-                vertices.push(add(this.mesh.geometry.attributes.position.array[j * 3], dx));
-                vertices.push(add(this.mesh.geometry.attributes.position.array[j * 3 + 1], dy));
+            for (let i = 0; i < 6; i++) {
+                vertices.push(add(this.mesh.geometry.attributes.position.array[i * 3], dx));
+                vertices.push(add(this.mesh.geometry.attributes.position.array[i * 3 + 1], dy));
                 vertices.push(0);
             }
             for (let i = 1; i < length; i++) {

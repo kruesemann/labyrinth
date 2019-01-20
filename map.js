@@ -160,7 +160,7 @@ export function isTileNarrowWater(i, j) {
     return MAPUTIL.isTileNarrowWater(i, j, getTile);
 }
 
-export function isOnExit(x, y) {
+export function isOnExit(nodes) {
     const vertexOffsets = [
         { x: -0.5, y: -0.5 },
         { x: -0.5, y: 0 },
@@ -173,11 +173,13 @@ export function isOnExit(x, y) {
         { x: 0.499, y: 0.499 },
     ];
 
-    for (let offset of vertexOffsets) {
-        const { i, j } = MAPUTIL.coordsToTile(x + offset.x, y + offset.y);
-        if (getTile(i, j).type == CONSTANTS.TILE_EXIT)
-        {
-            return true;
+    for (let node of nodes) {
+        for (let offset of vertexOffsets) {
+            const { i, j } = MAPUTIL.coordsToTile(node.x + offset.x, node.y + offset.y);
+            if (getTile(i, j).type == CONSTANTS.TILE_EXIT)
+            {
+                return true;
+            }
         }
     }
 

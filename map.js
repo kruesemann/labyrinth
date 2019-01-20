@@ -6,6 +6,7 @@ import * as CONSTANTS from "./constants.js";
 import * as LIGHT from "./light.js";
 import * as ITEM from "./item.js";
 import * as OBJECT from "./object.js";
+import * as SOUND from "./sound.js";
 import * as MAPUTIL from "./mapUtil.js";
 
 let map = undefined;
@@ -15,13 +16,14 @@ export function reset(seed, numRows, numColumns, level) {
     LIGHT.reset(numRows, numColumns, level);
     ITEM.reset();
 
-    const  { tileMap, start, enemies, lights, items, colors } = RANDOMMAP.create(seed, numRows, numColumns, level);
+    const  { tileMap, start, enemies, lights, items, secrets, colors } = RANDOMMAP.create(seed, numRows, numColumns, level);
 
     map = {
         seed,
         tileMap,
         numRows,
         numColumns,
+        secrets,
         mesh: undefined,
     };
 
@@ -222,4 +224,13 @@ export function rayCast(start, target) {
     }
 
     return true;
+}
+
+export function ambientSound() {
+    const playerPos = PLAYER.getCenter();
+    for (let secret of map.secrets) {
+        const { x, y } = MAPUTIL.tileToCenter(secret.i, secret.j);
+        const dist = Math.hypot(playerPos.x - x, playerPos.y - y);
+        SOUND.repeat(secret.soundID, Math.max(0, (50 - dist) / 50));
+    }
 }

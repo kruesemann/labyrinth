@@ -1,5 +1,6 @@
 let audio = undefined;
 const readyEvent = new Event("soundReady");
+const errorEvent = new Event("soundError");
 
 export function reset() {
     audio = {
@@ -19,6 +20,7 @@ export function reset() {
         { ID: "coin", url: "assets/coin.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "charge", url: "assets/charge.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "idle", url: "assets/idle.ogg", volume: 1, loop: false, play: false, levelStop: true },
+        { ID: "ambient01", url: "assets/ambient01.ogg", volume: 1, loop: true, play: false, levelStop: true },
     ];
     
     loadSounds(soundsData, 0);
@@ -41,6 +43,9 @@ function loadSounds(soundsData, i) {
         } else {
             document.dispatchEvent(readyEvent);
         }
+    }, _ => {}, function(err) {
+        console.log(err);
+        document.dispatchEvent(errorEvent);
     });
 }
 
@@ -50,7 +55,11 @@ export function play(sound, volume) {
         return;
     }
 
-    audio.sounds[sound].setVolume(volume || 1);
+    if (volume || volume === 0) {
+        audio.sounds[sound].setVolume(volume);
+    } else {
+        audio.sounds[sound].setVolume(1);
+    }
 
     if (audio.sounds[sound].isPlaying) {
         audio.sounds[sound].stop();
@@ -58,13 +67,17 @@ export function play(sound, volume) {
     audio.sounds[sound].play();
 }
 
-export function repeat(sound) {
+export function repeat(sound, volume) {
     if (!audio.sounds[sound]) {
         console.log("Unknown sound");
         return;
     }
 
-    audio.sounds[sound].setVolume(1);
+    if (volume || volume === 0) {
+        audio.sounds[sound].setVolume(volume);
+    } else {
+        audio.sounds[sound].setVolume(1);
+    }
 
     if (!audio.sounds[sound].isPlaying) audio.sounds[sound].play();
 }

@@ -22,10 +22,6 @@ export function create(seed, numRows, numColumns, level) {
         numberBiomeTypes: 0,
         biomeTypes: [],
         biomeGraph: { biomes: [], adjMatrix: [] },
-        start: { i: -1, j: -1 },
-        objects: [],
-        lights: [],
-        items: [],
     };
 
     // temporary inits
@@ -117,7 +113,21 @@ export function create(seed, numRows, numColumns, level) {
         if (biome.locations.length > 0) {
             items.push({ type: "coin", i: biome.locations[0].i, j: biome.locations[0].j });
         }
+        locationGrid[biome.i * gridColumns + biome.j] = 0;
     }
+
+    const secrets = [];
+    /*for (let i = 0; i < 1; i++) {
+        let index = Math.floor(NOISE.random() * (gridRows * gridColumns - 1));
+        for (let j = 0; j < gridRows * gridColumns; j++) {
+            if (locationGrid[index] !== 0) {
+                secrets.push({ i: locationGrid[index].i, j: locationGrid[index].j, soundID: "ambient01" });
+                locationGrid[index] = 0;
+                break;
+            }
+            index = (index + 1) % (gridRows * gridColumns);
+        }
+    }*/
 
     const enemies = [];
     const biome1 = wideGroundBiomes[(index + 5) % wideGroundBiomes.length];
@@ -190,7 +200,7 @@ export function create(seed, numRows, numColumns, level) {
         }
     }
 
-    return { tileMap: randomMap.tileMap, start, enemies, lights, items, colors };
+    return { tileMap: randomMap.tileMap, start, enemies, lights, items, secrets, colors };
 }
 
 function generateCaverns() {

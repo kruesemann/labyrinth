@@ -24,10 +24,16 @@ export function reset() {
     document.removeEventListener("soundReady", setup);
     document.addEventListener("soundReady", setup);
 
+    document.removeEventListener("soundError", setup);
+    document.addEventListener("soundError", setup);
+
     STAGE.reset();
 }
 
 function setup() {
+    document.removeEventListener("soundReady", setup);
+    document.removeEventListener("soundError", setup);
+
     OVERLAY.reset(game.seed, game.level, game.score);
     NOISE.setGameSeed(game.seed);
     INPUT.reset();
@@ -85,6 +91,7 @@ function gameloop() {
     OBJECT.moveEnemies(game.counter);
     game.nextLevel = PLAYER.move(game.counter);
     PLAYER.center();
+    MAP.ambientSound();
 
     LIGHT.renderLighting(game.counter);
     STAGE.render();

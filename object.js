@@ -333,8 +333,9 @@ function create(i, j, color, speed, formID, aiID) {
 
             const { x, y } = this.getHead();
             const player = PLAYER.getHead();
-            if (Math.hypot(x - player.x, y - player.y) < 50) {
-                SOUND.play("idle");
+            const dist = Math.hypot(x - player.x, y - player.y);
+            if (dist < 50) {
+                SOUND.play("idle", Math.pow((50 - dist) / 50, 2));
             }
             this.route = idlePlan.route;
         },

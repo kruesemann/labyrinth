@@ -34,6 +34,7 @@ function loadSounds(soundsData, i) {
         const sound = new THREE.Audio(audio.listener);
         sound.setBuffer(buffer);
         sound.setVolume(soundsData[i].volume);
+        sound.isFading = false;
         sound.setLoop(soundsData[i].loop);
         sound.levelStop = soundsData[i].levelStop;
         if (soundsData[i].play) sound.play();
@@ -89,21 +90,6 @@ export function repeat(soundID, volume) {
     }
 }
 
-export function setVolume(soundID, volume) {
-    if (!audio.sounds[soundID]) {
-        console.log("Unknown sound");
-        return;
-    }
-
-    if (volume > 0) {
-        audio.sounds[soundID].setVolume(volume);
-        return true;
-    }
-    
-    audio.sounds[soundID].stop();
-    return false;
-}
-
 export async function fadeIn(soundID, time) {
     if (audio.sounds[soundID].isPlaying) return;
 
@@ -126,7 +112,10 @@ export async function fadeOutLevel(time) {
 
     for (let soundID of audio.soundIDs) {
         if (audio.sounds[soundID].levelStop
-        && audio.sounds[soundID].isPlaying) {
+        && audio.sounds[soundID].isPlaying
+        && !audio.sounds[soundID].isFading) {
+            console.log(soundID, audio.sounds[soundID].isFading);
+            audio.sounds[soundID].isFading = true;
             fades.push(soundID);
         }
     }
@@ -142,6 +131,7 @@ export async function fadeOutLevel(time) {
                     audio.sounds[soundID].setVolume(volume);
                 } else {
                     audio.sounds[soundID].stop();
+                    audio.sounds[soundID].isFading = false;
                 }
             }
         }, time / 10);
@@ -150,7 +140,12 @@ export async function fadeOutLevel(time) {
 }
 
 export async function fadeOut(soundID, time) {
-    if (!audio.sounds[soundID].isPlaying) return;
+    if (!audio.sounds[soundID].isPlaying
+    || audio.sounds[soundID].isFading) {
+        return;
+    }
+
+    audio.sounds[soundID].isFading = true;
 
     function fade(volume) {
         setTimeout(() => {
@@ -159,6 +154,7 @@ export async function fadeOut(soundID, time) {
                 audio.sounds[soundID].setVolume(volume);
             } else {
                 audio.sounds[soundID].stop();
+                audio.sounds[soundID].isFading = false;
             }
         }, time / 10);
     }

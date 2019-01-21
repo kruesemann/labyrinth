@@ -80,6 +80,10 @@ export const LIGHTPARTICLE_DEATH        = 1.5 * LIGHTMAP_PRECISION;
 
 export const LIGHT_PLAYER_GROWTH    = 1.3;
 
+export const ANIMATION_FADE_TIME    = 500;
+export const ANIMATION_OPACITY      = 0.5;
+export const ANIMATION_DANCE_TIME   = 2500;
+
 export const DIRECTIONS = [
     { i: 1, j: 0 },
     { i: 0, j: -1 },

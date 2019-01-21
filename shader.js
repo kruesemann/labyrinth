@@ -298,3 +298,95 @@ const objectShaderMaterial = new THREE.ShaderMaterial({
 export function getObjectMaterial() {
     return objectShaderMaterial;
 }
+
+const animationDanceVSrc = `
+varying vec2 v_pos;
+
+void main(void) {
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    v_pos = position.xy;
+}
+`;
+
+const animationDanceFSrc = `
+#define FADE_TIME   ${CONSTANTS.ANIMATION_FADE_TIME}
+#define OPACITY     ${CONSTANTS.ANIMATION_OPACITY}
+#define TIME        ${CONSTANTS.ANIMATION_DANCE_TIME}
+#define STEP_TIME   ${CONSTANTS.ANIMATION_DANCE_TIME / 4}
+#define FADE_FACTOR ${CONSTANTS.ANIMATION_FADE_TIME / CONSTANTS.ANIMATION_OPACITY}
+#define SECOND_FADE ${CONSTANTS.ANIMATION_FADE_TIME + CONSTANTS.ANIMATION_DANCE_TIME}
+#define TOTAL_TIME  ${2 * CONSTANTS.ANIMATION_FADE_TIME + CONSTANTS.ANIMATION_DANCE_TIME}
+#define STEP_1      ${CONSTANTS.ANIMATION_FADE_TIME + 1 * CONSTANTS.ANIMATION_DANCE_TIME / 4}
+#define STEP_2      ${CONSTANTS.ANIMATION_FADE_TIME + 2 * CONSTANTS.ANIMATION_DANCE_TIME / 4}
+#define STEP_3      ${CONSTANTS.ANIMATION_FADE_TIME + 3 * CONSTANTS.ANIMATION_DANCE_TIME / 4}
+#define STEP_4      ${CONSTANTS.ANIMATION_FADE_TIME + 4 * CONSTANTS.ANIMATION_DANCE_TIME / 4}
+
+varying vec2 v_pos;
+
+uniform float u_counter;
+uniform vec2 u_moves[5];
+
+float box(vec2 pos, vec2 size){
+    size = vec2(0.5) - size * 0.5;
+    vec2 uv = smoothstep(size, size + vec2(0.001), pos);
+    uv *= smoothstep(size, size + vec2(0.001), vec2(1.0) - pos);
+    return uv.x * uv.y;
+}
+
+void main(void) {
+    vec2 pos = v_pos.xy / vec2(5.0, 5.0);
+    
+    float masterOpacity = 0.0;
+
+    if (u_counter < float(FADE_TIME)) {
+        masterOpacity = u_counter / float(FADE_FACTOR);
+    } else if (u_counter < float(SECOND_FADE)) {
+        masterOpacity = float(OPACITY);
+    } else if (u_counter < float(TOTAL_TIME)) {
+        masterOpacity = (float(TOTAL_TIME) - u_counter) / float(FADE_FACTOR);
+    }
+
+    vec2 translate = vec2(0.0);
+
+    if (u_counter < float(FADE_TIME)) {
+        translate = u_moves[0];
+    } else if (u_counter < float(STEP_1)) {
+        float lambda = (u_counter - float(FADE_TIME)) / float(STEP_TIME);
+        translate = mix(u_moves[0], u_moves[1], lambda);
+    } else if (u_counter < float(STEP_2)) {
+        float lambda = (u_counter - float(STEP_1)) / float(STEP_TIME);
+        translate = mix(u_moves[1], u_moves[2], lambda);
+    } else if (u_counter < float(STEP_3)) {
+        float lambda = (u_counter - float(STEP_2)) / float(STEP_TIME);
+        translate = mix(u_moves[2], u_moves[3], lambda);
+    } else if (u_counter < float(STEP_4)) {
+        float lambda = (u_counter - float(STEP_3)) / float(STEP_TIME);
+        translate = mix(u_moves[3], u_moves[4], lambda);
+    } else {
+        translate = u_moves[4];
+    }
+
+    pos += translate;
+
+    vec4 color = vec4(1.0, 1.0, 0.0, box(pos, vec2(0.2)));
+
+    gl_FragColor = masterOpacity * color;
+}
+`;
+
+export const animationDanceUniforms = {
+    u_counter: { type: 'float', value: 0 },
+    u_moves: { type: 'vec2', value: new Float32Array(10)},
+};
+
+const animationDanceShaderMaterial = new THREE.ShaderMaterial({
+    uniforms: animationDanceUniforms,
+    vertexShader:   animationDanceVSrc,
+    fragmentShader: animationDanceFSrc,
+    depthWrite: false,
+    transparent: true,
+});
+
+export function getAnimationDanceMaterial() {
+    return animationDanceShaderMaterial;
+}

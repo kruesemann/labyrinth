@@ -16,7 +16,7 @@ export function reset(seed, numRows, numColumns, level) {
     LIGHT.reset(numRows, numColumns, level);
     ITEM.reset();
 
-    const  { tileMap, start, enemies, lights, items, secrets, colors } = RANDOMMAP.create(seed, numRows, numColumns, level);
+    const  { tileMap, start, enemies, items, secrets, colors } = RANDOMMAP.create(seed, numRows, numColumns, level);
 
     map = {
         seed,
@@ -29,7 +29,6 @@ export function reset(seed, numRows, numColumns, level) {
 
     PLAYER.reset(start.i, start.j);
     OBJECT.createEnemies(enemies);
-    LIGHT.createLights(lights);
     ITEM.createItems(items);
 
     createTexture(colors);

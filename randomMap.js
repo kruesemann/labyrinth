@@ -135,8 +135,6 @@ export function create(seed, numRows, numColumns, level) {
     const biome2 = wideGroundBiomes[(index + 10) % wideGroundBiomes.length];
     enemies.push({ i: biome2.i, j: biome2.j, color: [0.5, 0, 0], speed: 3, formID: "dot", aiID: "proxHunter" });
 
-    const lights = [];
-
     const colors = [];
     for (let i = 0; i < randomMap.numRows; i++) {
         for (let j = 0; j < randomMap.numColumns; j++) {
@@ -200,7 +198,7 @@ export function create(seed, numRows, numColumns, level) {
         }
     }
 
-    return { tileMap: randomMap.tileMap, start, enemies, lights, items, secrets, colors };
+    return { tileMap: randomMap.tileMap, start, enemies, items, secrets, colors };
 }
 
 function generateCaverns() {

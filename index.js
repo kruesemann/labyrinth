@@ -8,10 +8,14 @@ import * as PLAYER from "./player.js";
 import * as LIGHT from "./light.js";
 import * as ITEM from "./item.js";
 import * as NOISE from "./noise.js";
+import * as EVENT from "./event.js";
+import * as ANIMATION from "./animation.js";
 
 let game = undefined;
 
 export function reset() {
+    EVENT.reset();
+
     game = {
         seed: 1,
         level: 0,
@@ -21,18 +25,15 @@ export function reset() {
         nextLevel: true,
     };
 
-    document.removeEventListener("soundReady", setup);
-    document.addEventListener("soundReady", setup);
-
-    document.removeEventListener("soundError", setup);
-    document.addEventListener("soundError", setup);
+    EVENT.on("soundReady", setup);
+    EVENT.on("soundError", setup);
 
     STAGE.reset();
 }
 
 function setup() {
-    document.removeEventListener("soundReady", setup);
-    document.removeEventListener("soundError", setup);
+    EVENT.off("soundReady", setup);
+    EVENT.off("soundError", setup);
 
     OVERLAY.reset(game.seed, game.level, game.score);
     NOISE.setGameSeed(game.seed);
@@ -85,6 +86,10 @@ function gameloop() {
     } else {
         game.counter++;
     }
+
+    if (game.counter % 200 === 0) {
+        EVENT.trigger("animationPlaySnakeDance");
+    }
     
     ITEM.collectItemsUnderPlayer();
     OBJECT.planEnemies(game.counter);
@@ -92,6 +97,7 @@ function gameloop() {
     game.nextLevel = PLAYER.move(game.counter);
     PLAYER.center();
     MAP.ambientSound();
+    ANIMATION.animate();
 
     LIGHT.renderLighting(game.counter);
     STAGE.render();

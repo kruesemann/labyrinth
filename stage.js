@@ -1,8 +1,9 @@
 import * as CONSTANTS from "./constants.js";
 import * as SOUND from "./sound.js";
+import * as ANIMATION from "./animation.js";
+import * as EVENT from "./event.js";
 
 let stage = undefined;
-const levelEvent = new Event("levelEnd");
 
 export function reset() {
     if (stage) {
@@ -18,8 +19,7 @@ export function reset() {
         }
     }
     
-    document.removeEventListener("levelEnd", levelEnd);
-    document.addEventListener("levelEnd", levelEnd);
+    EVENT.on("newLevel", newLevel);
 
     stage = {
         width: window.innerWidth,
@@ -37,6 +37,7 @@ export function reset() {
 
     stage.camera.add(SOUND.reset());
     stage.camera.position.z = CONSTANTS.CAMERA_DIST;
+    ANIMATION.reset();
 
     stage.scene.add(stage.camera);
     //stage.scene.background = new THREE.Color( 0xffffff );
@@ -90,14 +91,15 @@ export function removeMesh(mesh) {
 }
 
 export function resetScene() {
-    document.dispatchEvent(levelEvent);
+    EVENT.trigger("newLevel");
+    ANIMATION.stopAllRunning();
     while(stage.scene.children.length > 0){ 
         removeMesh(stage.scene.children[0]); 
     }
     stage.scene.add(stage.camera);
 }
 
-function levelEnd() {
+function newLevel() {
     const time = Date.now();
     let volume = 1;
     while (volume > 0) {

@@ -1,6 +1,6 @@
+import * as EVENT from "./event.js";
+
 let audio = undefined;
-const readyEvent = new Event("soundReady");
-const errorEvent = new Event("soundError");
 
 export function reset() {
     audio = {
@@ -41,11 +41,11 @@ function loadSounds(soundsData, i) {
         if (i < soundsData.length - 1) {
             loadSounds(soundsData, i + 1);
         } else {
-            document.dispatchEvent(readyEvent);
+            EVENT.trigger("soundReady");
         }
     }, _ => {}, function(err) {
         console.log(err);
-        document.dispatchEvent(errorEvent);
+        EVENT.trigger("soundError");
     });
 }
 

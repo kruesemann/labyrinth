@@ -26,14 +26,12 @@ export function reset() {
     };
 
     EVENT.on("soundReady", setup);
-    EVENT.on("soundError", setup);
 
     STAGE.reset();
 }
 
 function setup() {
     EVENT.off("soundReady", setup);
-    EVENT.off("soundError", setup);
 
     OVERLAY.reset(game.seed, game.level, game.score);
     NOISE.setGameSeed(game.seed);

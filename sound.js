@@ -14,7 +14,6 @@ export function reset() {
     audio.listener.setMasterVolume(audio.masterVolume);
 
     const soundsData = [
-        { ID: "music01", url: "assets/music01.ogg", volume: 0, loop: true, play: true, levelStop: false },
         { ID: "charging", url: "assets/charging.ogg", volume: 1, loop: true, play: false, levelStop: true },
         { ID: "particle", url: "assets/particle.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "coin", url: "assets/coin.ogg", volume: 1, loop: false, play: false, levelStop: true },
@@ -35,17 +34,24 @@ function loadSounds(soundsData, i) {
         sound.setVolume(soundsData[i].volume);
         sound.setLoop(soundsData[i].loop);
         sound.levelStop = soundsData[i].levelStop;
+        if (soundsData[i].play) sound.play();
+
         audio.sounds[soundsData[i].ID] = sound;
         audio.soundIDs.push(soundsData[i].ID);
-        if (soundsData[i].play) sound.play();
+
         if (i < soundsData.length - 1) {
             loadSounds(soundsData, i + 1);
         } else {
             EVENT.trigger("soundReady");
         }
-    }, _ => {}, function(err) {
-        console.log(err);
-        EVENT.trigger("soundError");
+    }, _ => {}, function(_) {
+        console.log(soundsData[i].url + " not found");
+
+        if (i < soundsData.length - 1) {
+            loadSounds(soundsData, i + 1);
+        } else {
+            EVENT.trigger("soundReady");
+        }
     });
 }
 

@@ -14,6 +14,8 @@ export function reset() {
     audio.listener.setMasterVolume(audio.masterVolume);
 
     const soundsData = [
+        { ID: "transforming", url: "assets/transforming.ogg", volume: 1, loop: true, play: false, levelStop: true },
+        { ID: "transform", url: "assets/transform.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "charging", url: "assets/charging.ogg", volume: 1, loop: true, play: false, levelStop: true },
         { ID: "particle", url: "assets/particle.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "coin", url: "assets/coin.ogg", volume: 1, loop: false, play: false, levelStop: true },
@@ -55,66 +57,112 @@ function loadSounds(soundsData, i) {
     });
 }
 
-export function play(sound, volume) {
-    if (!audio.sounds[sound]) {
+export function play(soundID, volume) {
+    if (!audio.sounds[soundID]) {
         console.log("Unknown sound");
         return;
     }
 
     if (volume || volume === 0) {
-        audio.sounds[sound].setVolume(volume);
+        audio.sounds[soundID].setVolume(volume);
     } else {
-        audio.sounds[sound].setVolume(1);
+        audio.sounds[soundID].setVolume(1);
     }
 
-    if (audio.sounds[sound].isPlaying) {
-        audio.sounds[sound].stop();
+    if (audio.sounds[soundID].isPlaying) {
+        audio.sounds[soundID].stop();
     }
-    audio.sounds[sound].play();
+    audio.sounds[soundID].play();
 }
 
-export function repeat(sound, volume) {
-    if (!audio.sounds[sound]) {
+export function repeat(soundID, volume) {
+    if (!audio.sounds[soundID]) {
         console.log("Unknown sound");
         return;
     }
 
     if (volume || volume === 0) {
-        audio.sounds[sound].setVolume(volume);
+        audio.sounds[soundID].setVolume(volume);
+        if (!audio.sounds[soundID].isPlaying) audio.sounds[soundID].play();
     } else {
-        audio.sounds[sound].setVolume(1);
+        fadeIn(soundID, 100);
     }
-
-    if (!audio.sounds[sound].isPlaying) audio.sounds[sound].play();
 }
 
-export function setVolume(sound, volume) {
-    if (!audio.sounds[sound]) {
+export function setVolume(soundID, volume) {
+    if (!audio.sounds[soundID]) {
         console.log("Unknown sound");
         return;
     }
 
-    if (volume !== 0) {
-        audio.sounds[sound].setVolume(volume);
+    if (volume > 0) {
+        audio.sounds[soundID].setVolume(volume);
         return true;
     }
     
-    audio.sounds[sound].stop();
+    audio.sounds[soundID].stop();
     return false;
 }
 
-export function stopLevelSounds(volume) {
-    for (let sound of audio.soundIDs) {
-        if (audio.sounds[sound].levelStop){
-            if (audio.sounds[sound].isPlaying) {
-                if (volume !== 0) {
-                    audio.sounds[sound].setVolume(volume);
-                } else {
-                    audio.sounds[sound].stop();
-                }
+export async function fadeIn(soundID, time) {
+    if (audio.sounds[soundID].isPlaying) return;
+
+    audio.sounds[soundID].play();
+    audio.sounds[soundID].setVolume(0);
+
+    function fade(volume) {
+        setTimeout(() => {
+            if (volume < 1) {
+                fade(volume + 0.1);
+                audio.sounds[soundID].setVolume(volume);
             }
+        }, time / 10);
+    }
+    fade(0.1);
+}
+
+export async function fadeOutLevel(time) {
+    const fades = [];
+
+    for (let soundID of audio.soundIDs) {
+        if (audio.sounds[soundID].levelStop
+        && audio.sounds[soundID].isPlaying) {
+            fades.push(soundID);
         }
     }
+
+    function fade(volume) {
+        setTimeout(() => {
+            if (volume > 0) {
+                fade(volume - 0.1);
+            }
+
+            for (let soundID of fades) {
+                if (volume > 0) {
+                    audio.sounds[soundID].setVolume(volume);
+                } else {
+                    audio.sounds[soundID].stop();
+                }
+            }
+        }, time / 10);
+    }
+    fade(0.9);
+}
+
+export async function fadeOut(soundID, time) {
+    if (!audio.sounds[soundID].isPlaying) return;
+
+    function fade(volume) {
+        setTimeout(() => {
+            if (volume > 0) {
+                fade(volume - 0.1);
+                audio.sounds[soundID].setVolume(volume);
+            } else {
+                audio.sounds[soundID].stop();
+            }
+        }, time / 10);
+    }
+    fade(0.9);
 }
 
 export function toggle() {

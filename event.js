@@ -7,8 +7,6 @@ export function reset() {
     }
     
     events["soundReady"] = new Event("soundReady");
-
-    events["newLevel"] = new Event("newLevel");
 }
 
 export function on(eventID, callback) {

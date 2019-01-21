@@ -22,7 +22,7 @@ export function center() {
 }
 
 export function transform(form) {
-    player.transform(form);
+    return player.transform(form);
 }
 
 export function dropParticle() {

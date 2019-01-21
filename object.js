@@ -325,7 +325,8 @@ function create(i, j, color, speed, formID, aiID) {
             if (this.route && this.route.length) return;
 
             if (this.state.action === CONSTANTS.ACTION_CHARGING) {
-                this.state = { action: CONSTANTS.ACTION_LOST, start: counter };
+                this.state = { action: CONSTANTS.ACTION_IDLE, start: counter };
+                SOUND.fadeOut("charging", 5000);
             }
 
             const idlePlan = AI.idle(this, counter);
@@ -340,13 +341,6 @@ function create(i, j, color, speed, formID, aiID) {
             this.route = idlePlan.route;
         },
         move: function(counter) {
-            if (this.state.action === CONSTANTS.ACTION_LOST) {
-                const volume = this.state.start <= counter ? Math.max(0, 500 - counter + this.state.start) / 500 : Math.max(0, 500 - counter - CONSTANTS.MAX_COUNTER + this.state.start) / 500;
-                if (!SOUND.setVolume("charging", volume)) {
-                    this.state.action = CONSTANTS.ACTION_IDLE;
-                }
-            }
-
             if (counter % speed != 0) return false;
 
             if (this.route && this.route.length > 0) {
@@ -422,7 +416,7 @@ function create(i, j, color, speed, formID, aiID) {
         transform: function(formID, x, y) {
             let pos = undefined;
             if (this.form) {
-                if (this.form.ID === formID) return;
+                if (this.form.ID === formID) return false;
 
                 pos = this.form.nodes[0];
                 STAGE.removeMesh(this.form.mesh);
@@ -445,7 +439,9 @@ function create(i, j, color, speed, formID, aiID) {
                 case "dot": this.form = createDotForm(pos.x, pos.y, color); break;
                 case "box": this.form = createBoxForm(pos.x, pos.y, color); break;
                 case "snake": this.form = createSnakeForm(pos.x, pos.y, color); break;
+                default: return false;
             }
+            return true;
         },
     };
 

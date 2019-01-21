@@ -1,9 +1,7 @@
-import * as CONSTANTS from "./constants.js";
 import * as STAGE from "./stage.js";
 import * as SOUND from "./sound.js";
 import * as PLAYER from "./player.js";
 import * as LIGHT from "./light.js";
-import * as SHADER from "./shader.js";
 import { nextLevel } from "./index.js";
 
 const KEY_SPACE = 32;
@@ -12,6 +10,8 @@ const KEY_UP    = 38;
 const KEY_RIGHT = 39;
 const KEY_DOWN  = 40;
 const KEY_F11   = 122;
+
+let keyBuffer = { sequence: [-1, -1, -1, -1], startIndex: 0, ongoing: false };
 
 function enterFullscreen() {
     if (document.documentElement.requestFullscreen) {
@@ -48,28 +48,41 @@ function wheelHandler(event) {
     STAGE.zoom(event.wheelDelta || -event.detail);
 }
 
-let transformation = { ongoing: false, sequence: [] };
-
 function keyDownHandler(event) {
     switch (event.keyCode) {
         case KEY_SPACE:
-            if (!transformation.ongoing) transformation = { ongoing: true, sequence: [] };
+            if (!keyBuffer.ongoing) {
+                keyBuffer.ongoing = true;
+                SOUND.repeat("transforming");
+            }
             break;
         case KEY_LEFT:
             PLAYER.moveLeft();
-            if (transformation.ongoing) transformation.sequence.push(KEY_LEFT);
+            if (keyBuffer.ongoing) {
+                keyBuffer.sequence[keyBuffer.startIndex] = KEY_LEFT - 36;
+                keyBuffer.startIndex = (keyBuffer.startIndex + 1) % 4;
+            }
             break;
         case KEY_UP:
             PLAYER.moveUp();
-            if (transformation.ongoing) transformation.sequence.push(KEY_UP);
+            if (keyBuffer.ongoing) {
+                keyBuffer.sequence[keyBuffer.startIndex] = KEY_UP - 36;
+                keyBuffer.startIndex = (keyBuffer.startIndex + 1) % 4;
+            }
             break;
         case KEY_RIGHT:
             PLAYER.moveRight();
-            if (transformation.ongoing) transformation.sequence.push(KEY_RIGHT);
+            if (keyBuffer.ongoing) {
+                keyBuffer.sequence[keyBuffer.startIndex] = KEY_RIGHT - 36;
+                keyBuffer.startIndex = (keyBuffer.startIndex + 1) % 4;
+            }
             break;
         case KEY_DOWN:
             PLAYER.moveDown();
-            if (transformation.ongoing) transformation.sequence.push(KEY_DOWN);
+            if (keyBuffer.ongoing) {
+                keyBuffer.sequence[keyBuffer.startIndex] = KEY_DOWN - 36;
+                keyBuffer.startIndex = (keyBuffer.startIndex + 1) % 4;
+            }
             break;
         case KEY_F11:
             toggleFullscreen();
@@ -107,29 +120,25 @@ function keyDownHandler(event) {
             break;
     }
     
-    if (transformation.ongoing && transformation.sequence.length === 4) {
+    if (keyBuffer.ongoing) {
 
         let transformationCode = 0;
-        for (let i = 0; i < transformation.sequence.length; i++) {
+        for (let i = 0; i < 4; i++) {
             transformationCode *= 10;
-            transformationCode += transformation.sequence[i] - 36;
+            transformationCode += keyBuffer.sequence[(keyBuffer.startIndex + i) % 4];
         }
 
         switch (transformationCode) {
             case 4321:
-                PLAYER.transform("snake");
-                transformation.ongoing = false;
+                if (PLAYER.transform("snake")) SOUND.play("transform");
                 break;
             case 3131:
-                PLAYER.transform("box");
-                transformation.ongoing = false;
+                if (PLAYER.transform("box")) SOUND.play("transform");
                 break;
             case 3142:
-                PLAYER.transform("dot");
-                transformation.ongoing = false;
+                if (PLAYER.transform("dot")) SOUND.play("transform");
                 break;
             default:
-                transformation.sequence.shift();
                 break;
         }
     }
@@ -138,7 +147,8 @@ function keyDownHandler(event) {
 function keyUpHandler(event) {
     switch (event.keyCode) {
         case KEY_SPACE:
-            transformation.ongoing = false;
+            keyBuffer = { sequence: [-1, -1, -1, -1], startIndex: 0, ongoing: false };
+            SOUND.fadeOut("transforming", 100);
             break;
         case KEY_LEFT:
             PLAYER.stopLeft();
@@ -168,7 +178,7 @@ function keyUpHandler(event) {
 }
 
 export function reset() {
-    transformation = { ongoing: false, sequence: [] };
+    keyBuffer = { sequence: [-1, -1, -1, -1], startIndex: 0, ongoing: false };
 
     document.removeEventListener("mousewheel", wheelHandler);
     document.removeEventListener("DOMMouseScroll", wheelHandler);

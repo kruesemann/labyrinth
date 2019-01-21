@@ -84,10 +84,6 @@ function gameloop() {
     } else {
         game.counter++;
     }
-
-    if (game.counter % 200 === 0) {
-        ANIMATION.playSnakeDance();
-    }
     
     ITEM.collectItemsUnderPlayer();
     OBJECT.planEnemies(game.counter);

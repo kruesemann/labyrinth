@@ -1,6 +1,5 @@
 import * as SHADER from "./shader.js";
 import * as STAGE from "./stage.js";
-import * as EVENT from "./event.js";
 import * as PLAYER from "./player.js";
 import * as CONSTANTS from "./constants.js";
 

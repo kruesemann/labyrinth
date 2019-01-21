@@ -1,7 +1,6 @@
 import * as CONSTANTS from "./constants.js";
 import * as SOUND from "./sound.js";
 import * as ANIMATION from "./animation.js";
-import * as EVENT from "./event.js";
 
 let stage = undefined;
 
@@ -18,8 +17,6 @@ export function reset() {
             }
         }
     }
-    
-    EVENT.on("newLevel", newLevel);
 
     stage = {
         width: window.innerWidth,
@@ -91,21 +88,12 @@ export function removeMesh(mesh) {
 }
 
 export function resetScene() {
-    EVENT.trigger("newLevel");
+    SOUND.fadeOutLevel(1000);
     ANIMATION.stopAllRunning();
     while(stage.scene.children.length > 0){ 
         removeMesh(stage.scene.children[0]); 
     }
     stage.scene.add(stage.camera);
-}
-
-function newLevel() {
-    const time = Date.now();
-    let volume = 1;
-    while (volume > 0) {
-        volume -= (Date.now() - time) / 100000;
-        SOUND.stopLevelSounds(volume);
-    }
 }
 
 function createBuffer(meshes, width, height) {

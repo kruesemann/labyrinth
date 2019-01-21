@@ -5,9 +5,6 @@ export function reset() {
     for (let handler of eventHandlers) {
         document.removeEventListener(handler.eventID, handler.callback);
     }
-
-    events["animationPlaySnakeDance"] = new Event("animationPlaySnakeDance");
-    events["animationEndSnakeDance"] = new Event("animationEndSnakeDance");
     
     events["soundReady"] = new Event("soundReady");
     events["soundError"] = new Event("soundError");

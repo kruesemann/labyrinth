@@ -88,7 +88,7 @@ function gameloop() {
     }
 
     if (game.counter % 200 === 0) {
-        EVENT.trigger("animationPlaySnakeDance");
+        ANIMATION.playSnakeDance();
     }
     
     ITEM.collectItemsUnderPlayer();

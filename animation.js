@@ -12,13 +12,11 @@ export function reset() {
 
     animations = {};
     runningAnimations = [];
-
-    EVENT.on("animationPlaySnakeDance", playSnakeDance);
 }
 
 export function stopAllRunning() {
     for (let animation of runningAnimations) {
-        EVENT.trigger(animation.endEvent);
+        animation.onEnd();
     }
 } 
 
@@ -48,10 +46,9 @@ function playDance(x, y, width, height, animationID, danceMoves) {
 
 function endSnakeDance() {
     STAGE.removeMesh(animations["snakeDance"]);
-    EVENT.off("animationEndSnakeDance", endSnakeDance);
 }
 
-function playSnakeDance() {
+export function playSnakeDance() {
     SHADER.animationDanceUniforms.u_counter.value = 0;
 
     const { x, y } = PLAYER.getCenter();
@@ -63,13 +60,11 @@ function playSnakeDance() {
         0.4, -0.4,
     ]);
 
-    EVENT.on("animationEndSnakeDance", endSnakeDance);
-
     runningAnimations.push({
         uniformsID: "animationDanceUniforms",
         startTime: Date.now(),
         time: 2 * CONSTANTS.ANIMATION_FADE_TIME + CONSTANTS.ANIMATION_DANCE_TIME,
-        endEvent: "animationEndSnakeDance",
+        onEnd: endSnakeDance,
     });
 }
 
@@ -77,7 +72,7 @@ export function animate() {
     for (let i = 0; i < runningAnimations.length; i++) {
         const animation = runningAnimations[i];
         if (SHADER[animation.uniformsID].u_counter.value === animation.time) {
-            EVENT.trigger(animation.endEvent);
+            animation.onEnd();
             runningAnimations.splice(i--, 1);
         } else {
             SHADER[animation.uniformsID].u_counter.value = Date.now() - animation.startTime;

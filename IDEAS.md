@@ -6,6 +6,22 @@
     * light at player's head increases up to a certain level
     * when that level is reached the player can drop a fading particle and the light at their head dims
 
+* depleted health bar = death
+    * collision with monsters depletes health bar
+
+## Items
+
+* find or buy items to go along with play style
+
+* coins to buy/unlock items/other stuff
+
+* health items replenishes health bar
+
+* other items:
+    * different player lights
+    * unique lights with special properties
+    * keys to secret rooms
+
 ## Obstacles
 
 * monsters

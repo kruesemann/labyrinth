@@ -56,6 +56,7 @@
                 height: 18px;
                 background-color: red;
                 margin-bottom: -4px;
+                outline: 1px solid rgba(128, 128, 128, 0.25);
             }
 
             #info-health {
@@ -108,10 +109,12 @@
             <!--<div class="info-block" id="info-level"></div>-->
             <input type="number" min="1" style="width:50px" id="info-level">
             <input type="button" value="set" id="info-set">
-            <label for="info-health">Health:</label>
+            <label for="info-health-bg">Health:</label>
             <div id="info-health-bg">
                 <div id="info-health"></div>
             </div>
+            <label for="info-form">Form:</label>
+            <div class="info-block" id="info-form"></div>
             <label>toggle:</label>
             <input type="button" value="Fullscreen" id="info-fc">
             <input type="button" value="Mute" id="info-sound">

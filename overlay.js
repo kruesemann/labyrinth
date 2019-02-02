@@ -14,6 +14,7 @@ export function reset(seed, level, score) {
         level: document.getElementById("info-level"),
         score: document.getElementById("info-score"),
         health: document.getElementById("info-health"),
+        form: document.getElementById("info-form"),
     };
 
     document.getElementById("info-set").removeEventListener("click", loadLevel);
@@ -29,6 +30,7 @@ export function reset(seed, level, score) {
     setLevel(level);
     setScore(score);
     setHealth(100);
+    setForm("dot");
 }
 
 function loadLevel() {
@@ -61,9 +63,6 @@ export function setHealth(health) {
     display.health.style.width = `${health}%`;
 }
 
-export function set(seed, level, score, health) {
-    setSeed(seed);
-    setLevel(level);
-    setScore(score);
-    setHealth(health);
+export function setForm(formID) {
+    display.form.innerHTML = formID;
 }

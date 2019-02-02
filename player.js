@@ -16,6 +16,7 @@ export function reset(i, j) {
         player = createPlayer(i, j, [0.1, 0.1, 0], 2, player.form.ID);
         setHealth(health);
     }
+    OVERLAY.setForm(player.form.ID);
     const center = getCenter();
     player.light = LIGHT.create(center.x, center.y, [1, 1, 1, 1]);
 }
@@ -24,8 +25,9 @@ export function center() {
     player.form.center();
 }
 
-export function transform(form) {
-    return player.transform(form);
+export function transform(formID) {
+    OVERLAY.setForm(formID);
+    return player.transform(formID);
 }
 
 export function dropParticle() {

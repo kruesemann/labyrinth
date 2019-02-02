@@ -111,7 +111,11 @@ export function create(seed, numRows, numColumns, level) {
     const items = [];
     for (let biome of pathToExit) {
         if (biome.locations.length > 0) {
-            items.push({ type: "coin", i: biome.locations[0].i, j: biome.locations[0].j });
+            if (NOISE.random() < 0.5) {
+                items.push({ type: "coin", i: biome.locations[0].i, j: biome.locations[0].j });
+            } else {
+                items.push({ type: "heal", i: biome.locations[0].i, j: biome.locations[0].j });
+            }
         }
         locationGrid[biome.i * gridColumns + biome.j] = 0;
     }

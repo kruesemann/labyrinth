@@ -2,18 +2,19 @@ import * as SOUND from "./sound.js";
 import * as INPUT from "./input.js";
 import { loadSpecificLevel } from "./index.js";
 
-let seedDisplay = undefined;
-let levelDisplay = undefined;
-let scoreDisplay = undefined;
+let display = undefined;
 
 export function reset(seed, level, score) {
     document.getElementById("loading-box").style.display = "none";
     document.getElementById("info").style.display = "block";
     document.getElementById("canvas").style.display = "block";
 
-    seedDisplay = document.getElementById('info-seed');
-    levelDisplay = document.getElementById('info-level');
-    scoreDisplay = document.getElementById('info-score');
+    display = {
+        seed: document.getElementById("info-seed"),
+        level: document.getElementById("info-level"),
+        score: document.getElementById("info-score"),
+        health: document.getElementById("info-health"),
+    };
 
     document.getElementById("info-set").removeEventListener("click", loadLevel);
     document.getElementById("info-set").addEventListener("click", loadLevel);
@@ -27,10 +28,11 @@ export function reset(seed, level, score) {
     setSeed(seed);
     setLevel(level);
     setScore(score);
+    setHealth(100);
 }
 
 function loadLevel() {
-    loadSpecificLevel(Number(seedDisplay.value), Number(levelDisplay.value));
+    loadSpecificLevel(Number(display.seed.value), Number(display.level.value));
 }
 
 function toggleSoundButton() {
@@ -42,21 +44,26 @@ function toggleSoundButton() {
 }
 
 export function setSeed(seed) {
-    //seedDisplay.innerHTML = seed;
-    seedDisplay.value = seed;
+    //display.seed.innerHTML = seed;
+    display.seed.value = seed;
 }
 
 export function setLevel(level) {
-    //levelDisplay.innerHTML = level;
-    levelDisplay.value = level;
+    //display.level.innerHTML = level;
+    display.level.value = level;
 }
 
 export function setScore(score) {
-    scoreDisplay.innerHTML = score;
+    display.score.innerHTML = score;
 }
 
-export function set(seed, level, score) {
+export function setHealth(health) {
+    display.health.style.width = `${health}%`;
+}
+
+export function set(seed, level, score, health) {
     setSeed(seed);
     setLevel(level);
     setScore(score);
+    setHealth(health);
 }

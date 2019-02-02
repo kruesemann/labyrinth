@@ -22,6 +22,8 @@ export function reset() {
         { ID: "charge", url: "assets/charge.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "idle", url: "assets/idle.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "ambient01", url: "assets/ambient01.ogg", volume: 1, loop: true, play: false, levelStop: true },
+        { ID: "hurt", url: "assets/hurt.ogg", volume: 1, loop: false, play: false, levelStop: true },
+        { ID: "heal", url: "assets/heal.ogg", volume: 1, loop: false, play: false, levelStop: true },
     ];
     
     loadSounds(soundsData, 0);
@@ -91,6 +93,11 @@ export function repeat(soundID, volume) {
 }
 
 export async function fadeIn(soundID, time) {
+    if (!audio.sounds[soundID]) {
+        console.log("Unknown sound");
+        return;
+    }
+
     if (audio.sounds[soundID].isPlaying) return;
 
     audio.sounds[soundID].play();
@@ -111,10 +118,11 @@ export async function fadeOutLevel(time) {
     const fades = [];
 
     for (let soundID of audio.soundIDs) {
+        if (!audio.sounds[soundID]) continue;
+
         if (audio.sounds[soundID].levelStop
         && audio.sounds[soundID].isPlaying
         && !audio.sounds[soundID].isFading) {
-            console.log(soundID, audio.sounds[soundID].isFading);
             audio.sounds[soundID].isFading = true;
             fades.push(soundID);
         }
@@ -127,6 +135,8 @@ export async function fadeOutLevel(time) {
             }
 
             for (let soundID of fades) {
+                if (!audio.sounds[soundID]) continue;
+
                 if (volume > 0) {
                     audio.sounds[soundID].setVolume(volume);
                 } else {
@@ -140,6 +150,11 @@ export async function fadeOutLevel(time) {
 }
 
 export async function fadeOut(soundID, time) {
+    if (!audio.sounds[soundID]) {
+        console.log("Unknown sound");
+        return;
+    }
+
     if (!audio.sounds[soundID].isPlaying
     || audio.sounds[soundID].isFading) {
         return;

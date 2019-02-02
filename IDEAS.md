@@ -19,7 +19,7 @@
 
 * other items:
     * different player lights
-    * unique lights with special properties
+    * unique lights with special properties (moving, showing directions)
     * keys to secret rooms
 
 ## Obstacles

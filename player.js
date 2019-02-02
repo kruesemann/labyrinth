@@ -2,19 +2,22 @@ import * as CONSTANTS from "./constants.js";
 import * as MAP from "./map.js";
 import * as LIGHT from "./light.js";
 import * as SOUND from "./sound.js";
+import * as OVERLAY from "./overlay.js";
 import { createPlayer } from "./object.js";
 
 let player = undefined;
-let light = undefined;
 
 export function reset(i, j) {
-    if (player) {
-        player = createPlayer(i, j, [0.1, 0.1, 0], 2, player.form.ID);
-    } else {
+    if (!player || player.health === 0) {
         player = createPlayer(i, j, [0.1, 0.1, 0], 2, "dot");
+        setHealth(100);
+    } else {
+        const health = player.health;
+        player = createPlayer(i, j, [0.1, 0.1, 0], 2, player.form.ID);
+        setHealth(health);
     }
     const center = getCenter();
-    light = LIGHT.create(center.x, center.y, [1, 1, 1, 1]);
+    player.light = LIGHT.create(center.x, center.y, [1, 1, 1, 1]);
 }
 
 export function center() {
@@ -26,10 +29,10 @@ export function transform(form) {
 }
 
 export function dropParticle() {
-    if (light.color[3] >= CONSTANTS.LIGHTPARTICLE_BRIGHTNESS / 2) {
+    if (player.light.color[3] >= CONSTANTS.LIGHTPARTICLE_BRIGHTNESS / 2) {
         const { x, y } = getLightPosition();
         if (LIGHT.createParticle(x, y, [1.0, 1.0, 0.8, CONSTANTS.LIGHTPARTICLE_BRIGHTNESS]) !== null) {
-            light.changeColor([1, 1, 1, 1]);
+            player.light.changeColor([1, 1, 1, 1]);
             SOUND.play("particle");
         };
     }
@@ -37,13 +40,13 @@ export function dropParticle() {
 
 export function move(counter) {
     if (counter % 10 === 0) {
-        if (light.color[3] < CONSTANTS.LIGHTPARTICLE_BRIGHTNESS / 2) {
-            light.changeColor([1, 1, 1, light.color[3] * CONSTANTS.LIGHT_PLAYER_GROWTH]);
+        if (player.light.color[3] < CONSTANTS.LIGHTPARTICLE_BRIGHTNESS / 2) {
+            player.light.changeColor([1, 1, 1, player.light.color[3] * CONSTANTS.LIGHT_PLAYER_GROWTH]);
         }
     }
     if (player.move(counter)) {
         const center = getCenter();
-        light.set(center.x, center.y);
+        player.light.set(center.x, center.y);
         return MAP.isOnExit(player.form.nodes);
     }
     return false;
@@ -102,5 +105,26 @@ export function getCenter() {
 }
 
 export function getLightPosition() {
-    return light.pos;
+    return player.light.pos;
+}
+
+export function getHealth() {
+    return player.health;
+}
+
+function setHealth(health) {
+    player.health = health;
+    OVERLAY.setHealth(health);
+}
+
+export function hurt() {
+    setHealth(Math.max(0, player.health - 34));
+    SOUND.play("hurt");
+    return player.health === 0;
+}
+
+export function heal() {
+    if (player.health === 100) return false;
+    setHealth(Math.min(100, player.health + 34));
+    return true;
 }

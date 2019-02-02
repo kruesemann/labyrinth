@@ -62,9 +62,21 @@ export function createCoin(i, j) {
     const coin = create(i, j, [0.75, 0.75, 0]);
 
     coin.collect = function() {
+        coin.set(0, 0);
         increaseScore();
         this.remove();
         SOUND.play("coin");
+    };
+}
+
+export function createHeal(i, j) {
+    const heal = create(i, j, [0.75, 0, 0.1]);
+
+    heal.collect = function() {
+        if (!PLAYER.heal()) return;
+        heal.set(0, 0);
+        this.remove();
+        SOUND.play("heal");
     };
 }
 
@@ -72,6 +84,8 @@ export function createItems(itemList) {
     for (let item of itemList) {
         switch(item.type) {
             case "coin": createCoin(item.i, item.j); break;
+            case "heal": createHeal(item.i, item.j); break;
+            default: console.log("Unknown item"); return;
         }
     }
 }

@@ -23,6 +23,7 @@ export function reset() {
         mapSeed: 0,
         counter: 0,
         nextLevel: true,
+        immune: 0,
     };
 
     EVENT.on("soundReady", setup);
@@ -52,8 +53,13 @@ export function nextLevel() {
     game.nextLevel = true;
 }
 
+function setScore(score) {
+    game.score = score;
+    OVERLAY.setScore(score);
+}
+
 export function increaseScore() {
-    OVERLAY.setScore(++game.score);
+    setScore(++game.score);
 }
 
 function loadNextMap() {
@@ -62,20 +68,33 @@ function loadNextMap() {
     MAP.reset(game.mapSeed, 200, 200, game.level);
 }
 
+function resolveCollisions() {
+    if (game.immune !== 0) {
+        game.immune--;
+        return;
+    }
+
+    if (!OBJECT.collisionWithPlayer()) return;
+
+    const death = PLAYER.hurt();
+    OVERLAY.setHealth(PLAYER.getHealth());
+    game.immune = 50;
+
+    if (!death) return;
+
+    alert("DEAD!! AHHHHHH!!!");
+    setScore(0);
+    loadSpecificLevel(game.seed, 1);
+}
+
 function gameloop() {
     if (game.nextLevel) {
         game.nextLevel = false;
         OVERLAY.setLevel(++game.level);
         loadNextMap();
-    } else {
-        const death = OBJECT.collisionWithPlayer();
-        if (death) {
-            alert("COLLISION!! AHHHHHH!!!");
-            game.score = 0;
-            OVERLAY.setScore(game.score);
-            loadSpecificLevel(game.seed, 1);
-        }
     }
+
+    resolveCollisions();
 
     requestAnimationFrame(gameloop);
 

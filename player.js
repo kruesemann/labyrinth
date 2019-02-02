@@ -118,13 +118,13 @@ function setHealth(health) {
 }
 
 export function hurt() {
-    setHealth(Math.max(0, player.health - 34));
+    setHealth(Math.max(0, player.health - CONSTANTS.HEALTH_HURT));
     SOUND.play("hurt");
     return player.health === 0;
 }
 
 export function heal() {
     if (player.health === 100) return false;
-    setHealth(Math.min(100, player.health + 34));
+    setHealth(Math.min(100, player.health + CONSTANTS.HEALTH_HEAL));
     return true;
 }

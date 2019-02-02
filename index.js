@@ -59,7 +59,7 @@ function setScore(score) {
 }
 
 export function increaseScore() {
-    setScore(++game.score);
+    setScore(game.score + 1);
 }
 
 function loadNextMap() {
@@ -78,7 +78,7 @@ function resolveCollisions() {
 
     const death = PLAYER.hurt();
     OVERLAY.setHealth(PLAYER.getHealth());
-    game.immune = 50;
+    game.immune = CONSTANTS.IMMUNE_TIME;
 
     if (!death) return;
 

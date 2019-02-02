@@ -99,3 +99,7 @@ export const MAX_COUNTER    = 1000;
 
 export const ACTION_IDLE        = 0;
 export const ACTION_CHARGING    = 1;
+
+export const IMMUNE_TIME    = 50;
+export const HEALTH_HURT    = 34;
+export const HEALTH_HEAL    = 34;

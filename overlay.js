@@ -1,5 +1,6 @@
 import * as SOUND from "./sound.js";
 import * as INPUT from "./input.js";
+import * as SHADER from "./shader.js";
 import { loadSpecificLevel } from "./index.js";
 
 let display = undefined;
@@ -25,6 +26,9 @@ export function reset(seed, level, score) {
 
     document.getElementById("info-sound").removeEventListener("click", toggleSoundButton);
     document.getElementById("info-sound").addEventListener("click", toggleSoundButton);
+    
+    document.getElementById("info-gamma").removeEventListener("input", setGamma);
+    document.getElementById("info-gamma").addEventListener("input", setGamma);
 
     setSeed(seed);
     setLevel(level);
@@ -43,6 +47,13 @@ function toggleSoundButton() {
     } else {
         document.getElementById("info-sound").value = "Sound";
     }
+}
+
+function setGamma() {
+    const gamma = document.getElementById("info-gamma").value;
+    SHADER.mapUniforms.u_gamma.value = gamma;
+    SHADER.objectUniforms.u_gamma.value = gamma;
+    SHADER.animationDanceUniforms.u_gamma.value = gamma;
 }
 
 export function setSeed(seed) {

@@ -109,17 +109,22 @@
             <!--<div class="info-block" id="info-level"></div>-->
             <input type="number" min="1" style="width:50px" id="info-level">
             <input type="button" value="set" id="info-set">
+
             <label for="info-health-bg">Health:</label>
             <div id="info-health-bg">
                 <div id="info-health"></div>
             </div>
             <label for="info-form">Form:</label>
             <div class="info-block" id="info-form"></div>
+            <label for="info-score">Score:</label>
+            <div class="info-block" id="info-score"></div>
+            
+            <label for="info-gamma">Gamma:</label>
+            <input type="range" min="0.25" step="0.05" max="1.25" value="1.00" id="info-gamma">
+
             <label>toggle:</label>
             <input type="button" value="Fullscreen" id="info-fc">
             <input type="button" value="Mute" id="info-sound">
-            <label for="info-score">Score:</label>
-            <div class="info-block" id="info-score"></div>
         </div>
         <div id="canvas"></div>
     </body>

@@ -55,7 +55,7 @@ bool rayCast(vec2 start, vec2 target) {
         skip = true;
     }
 
-    for (int n = MAXDIST + 1; n > 1; --n) {
+    for (int n = 2 * MAXDIST + 1; n > 1; --n) {
         if (n <= 1 + di + dj) {
             if (skip) {
                 skip = false;
@@ -208,14 +208,19 @@ const mapFSrc = `
 varying vec3 v_pos;
 varying vec2 v_texelCoords;
 
+uniform float u_gamma;
 uniform sampler2D u_texture;
 
 void main(void) {
     gl_FragColor = texture2D(u_texture, v_texelCoords);
+    gl_FragColor.r = pow(gl_FragColor.r, u_gamma);
+    gl_FragColor.g = pow(gl_FragColor.g, u_gamma);
+    gl_FragColor.b = pow(gl_FragColor.b, u_gamma);
 }
 `;
 
 export const mapUniforms = {
+    u_gamma: { type: 'float', value: 1 },
     u_texture: { type: 'sampler2D', value: undefined },
 };
 
@@ -252,6 +257,7 @@ const objectFSrc = `
 varying vec4 v_pos;
 varying vec4 v_color;
 
+uniform float u_gamma;
 uniform sampler2D u_texture;
 uniform vec2 u_dimensions;
 uniform vec4 u_ambientLight;
@@ -277,10 +283,14 @@ void main() {
 
     gl_FragColor.rgb = v_color.rgb * max(u_ambientLight.a * u_ambientLight.rgb, RGB);
     gl_FragColor.a = v_color.a;
+    gl_FragColor.r = pow(gl_FragColor.r, u_gamma);
+    gl_FragColor.g = pow(gl_FragColor.g, u_gamma);
+    gl_FragColor.b = pow(gl_FragColor.b, u_gamma);
 }
 `;
 
 export const objectUniforms = {
+    u_gamma: { type: 'float', value: 1 },
     u_texture: { type: 'sampler2D', value: undefined },
     u_dimensions: { type: 'vec2', value: new Float32Array(2) },
     u_ambientLight: { type: 'vec3', value: new Float32Array([1.0, 1.0, 1.0, 1.0]) },
@@ -323,6 +333,7 @@ const animationDanceFSrc = `
 
 varying vec2 v_pos;
 
+uniform float u_gamma;
 uniform float u_counter;
 uniform vec2 u_moves[5];
 
@@ -371,10 +382,14 @@ void main(void) {
     vec4 color = vec4(1.0, 1.0, 0.0, box(pos, vec2(0.2)));
 
     gl_FragColor = masterOpacity * color;
+    gl_FragColor.r = pow(gl_FragColor.r, u_gamma);
+    gl_FragColor.g = pow(gl_FragColor.g, u_gamma);
+    gl_FragColor.b = pow(gl_FragColor.b, u_gamma);
 }
 `;
 
 export const animationDanceUniforms = {
+    u_gamma: { type: 'float', value: 1 },
     u_counter: { type: 'float', value: 0 },
     u_moves: { type: 'vec2', value: new Float32Array(10)},
 };

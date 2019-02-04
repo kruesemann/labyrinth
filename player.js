@@ -130,3 +130,7 @@ export function heal() {
     setHealth(Math.min(100, player.health + CONSTANTS.HEALTH_HEAL));
     return true;
 }
+
+export function getNearestShrine() {
+    return MAP.getNearestShrine(getCenter());
+}

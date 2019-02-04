@@ -46,6 +46,11 @@ function create(i, j, color) {
         },
         remove: function() {
             STAGE.removeMesh(this.mesh);
+            for (let item of items) {
+                if (item.index > this.index) {
+                    item.index--;
+                }
+            }
             items.splice(this.index, 1);
         }
     };
@@ -62,7 +67,7 @@ export function createCoin(i, j) {
     const coin = create(i, j, [0.75, 0.75, 0]);
 
     coin.collect = function() {
-        coin.set(0, 0);
+        this.set(0, 0);
         increaseScore();
         this.remove();
         SOUND.play("coin");
@@ -74,9 +79,16 @@ export function createHeal(i, j) {
 
     heal.collect = function() {
         if (!PLAYER.heal()) return;
-        heal.set(0, 0);
+        this.set(0, 0);
         this.remove();
         SOUND.play("heal");
+    };
+}
+
+export function createShrine(i, j) {
+    const shrine = create(i, j, [0, 0.5, 0.75]);
+
+    shrine.collect = function() {
     };
 }
 
@@ -85,6 +97,7 @@ export function createItems(itemList) {
         switch(item.type) {
             case "coin": createCoin(item.i, item.j); break;
             case "heal": createHeal(item.i, item.j); break;
+            case "shrine": createShrine(item.i, item.j); break;
             default: console.log("Unknown item"); return;
         }
     }

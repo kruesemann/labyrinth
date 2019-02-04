@@ -15,7 +15,7 @@
 
 * coins to buy/unlock items/other stuff
 
-* health items replenishes health bar
+* health items replenish health bar
 
 * other items:
     * different player lights

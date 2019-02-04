@@ -21,7 +21,7 @@ export function reset() {
         { ID: "coin", url: "assets/coin.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "charge", url: "assets/charge.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "idle", url: "assets/idle.ogg", volume: 1, loop: false, play: false, levelStop: true },
-        { ID: "ambient01", url: "assets/ambient01.ogg", volume: 1, loop: true, play: false, levelStop: true },
+        { ID: "shrine", url: "assets/shrine.ogg", volume: 1, loop: true, play: false, levelStop: false },
         { ID: "hurt", url: "assets/hurt.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "heal", url: "assets/heal.ogg", volume: 1, loop: false, play: false, levelStop: true },
     ];
@@ -62,7 +62,7 @@ function loadSounds(soundsData, i) {
 
 export function play(soundID, volume) {
     if (!audio.sounds[soundID]) {
-        console.log("Unknown sound");
+        console.log("Unknown sound:", soundID);
         return;
     }
 
@@ -78,23 +78,30 @@ export function play(soundID, volume) {
     audio.sounds[soundID].play();
 }
 
-export function repeat(soundID, volume) {
+export function repeat(soundID, volumes) {
     if (!audio.sounds[soundID]) {
-        console.log("Unknown sound");
+        console.log("Unknown sound:", soundID);
         return;
     }
 
-    if (volume || volume === 0) {
+    if (!volumes || volumes.length === 0) {
+        fadeIn(soundID, 100);
+    } else {
+        let volume = 0;
+        for (let vol of volumes) {
+            if (volume < vol) {
+                volume = vol;
+            }
+        }
+
         audio.sounds[soundID].setVolume(volume);
         if (!audio.sounds[soundID].isPlaying) audio.sounds[soundID].play();
-    } else {
-        fadeIn(soundID, 100);
     }
 }
 
 export async function fadeIn(soundID, time) {
     if (!audio.sounds[soundID]) {
-        console.log("Unknown sound");
+        console.log("Unknown sound:", soundID);
         return;
     }
 
@@ -151,7 +158,7 @@ export async function fadeOutLevel(time) {
 
 export async function fadeOut(soundID, time) {
     if (!audio.sounds[soundID]) {
-        console.log("Unknown sound");
+        console.log("Unknown sound:", soundID);
         return;
     }
 

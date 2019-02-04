@@ -27,10 +27,10 @@ export function create(seed, numRows, numColumns, level) {
     // temporary inits
     randomMap.numberBiomeTypes = 4;
     randomMap.biomeTypes = [
-        { type: CONSTANTS.WIDE_GROUND_BIOME, isAllowed: isTileWideGround },
         { type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGround },
-        { type: CONSTANTS.WIDE_WATER_BIOME, isAllowed: isTileWideWater },
-        { type: CONSTANTS.NARROW_WATER_BIOME, isAllowed: isTileNarrowWater }
+        { type: CONSTANTS.NARROW_WATER_BIOME, isAllowed: isTileNarrowWater },
+        { type: CONSTANTS.WIDE_GROUND_BIOME, isAllowed: isTileGround },
+        { type: CONSTANTS.WIDE_WATER_BIOME, isAllowed: isTileWater },
     ];
 
     for (let i = 0; i < numRows; i++) {
@@ -108,30 +108,96 @@ export function create(seed, numRows, numColumns, level) {
     
     const { locationGrid, gridRows, gridColumns } = findFreeLocations(); // entries of locationGrid may be 0
 
-    const items = [];
-    for (let biome of pathToExit) {
-        if (biome.locations.length > 0) {
-            if (NOISE.random() < 0.5) {
-                items.push({ type: "coin", i: biome.locations[0].i, j: biome.locations[0].j });
-            } else {
-                items.push({ type: "heal", i: biome.locations[0].i, j: biome.locations[0].j });
+    const secrets = [];
+    let dot = false;
+    let box = false;
+    let snake = false;
+    for (let i = 0; i < pathToExit.length; i++) {
+        const biome = pathToExit[i];
+        let formIDs = [];
+        if (snake || box && dot) {
+            formIDs.push("snake");
+            if (biome.type !== CONSTANTS.NARROW_GROUND_BIOME
+            && biome.type !== CONSTANTS.NARROW_WATER_BIOME) {
+                formIDs.push("box");
+            }
+            if (biome.type !== CONSTANTS.WIDE_WATER_BIOME
+            && biome.type !== CONSTANTS.NARROW_WATER_BIOME) {
+                formIDs.push("dot");
             }
         }
-        locationGrid[biome.i * gridColumns + biome.j] = 0;
+        else if (box) {
+            if (biome.type !== CONSTANTS.NARROW_GROUND_BIOME
+            && biome.type !== CONSTANTS.NARROW_WATER_BIOME) {
+                formIDs.push("box");
+            } else {
+                formIDs.push("snake");
+            }
+            if (biome.type !== CONSTANTS.WIDE_WATER_BIOME
+            && biome.type !== CONSTANTS.NARROW_WATER_BIOME) {
+                formIDs.push("dot");
+            }
+        } else if (dot) {
+            if (biome.type !== CONSTANTS.NARROW_GROUND_BIOME
+            && biome.type !== CONSTANTS.NARROW_WATER_BIOME) {
+                formIDs.push("box");
+            }
+            if (biome.type !== CONSTANTS.WIDE_WATER_BIOME
+            && biome.type !== CONSTANTS.NARROW_WATER_BIOME) {
+                formIDs.push("dot");
+            } else {
+                formIDs.push("snake");
+            }
+        }
+
+        if (formIDs.length) {
+            if (biome.locations.length > 0) {
+                secrets.push({ type: "shrine", i: biome.locations[0].i, j: biome.locations[0].j, formIDs, soundID: "shrine" });
+                locationGrid[Math.round(biome.locations[0].i / CONSTANTS.LOCATION_DIST) * gridColumns + Math.round(biome.locations[0].j / CONSTANTS.LOCATION_DIST)] = 0;
+                dot = box = snake = false;
+            } else if (i === pathToExit.length - 1 || i === 0) {
+                secrets.push({ type: "shrine", i: biome.i, j: biome.j + 1, formIDs, soundID: "shrine" });
+                locationGrid[Math.round(biome.i / CONSTANTS.LOCATION_DIST) * gridColumns + Math.round(biome.j / CONSTANTS.LOCATION_DIST)] = 0;
+                dot = box = snake = false;
+            } else if (biome.size > 50) {
+                secrets.push({ type: "shrine", i: biome.i, j: biome.j, formIDs, soundID: "shrine" });
+                locationGrid[Math.round(biome.i / CONSTANTS.LOCATION_DIST) * gridColumns + Math.round(biome.j / CONSTANTS.LOCATION_DIST)] = 0;
+                dot = box = snake = false;
+            }
+        }
+
+        if (biome.type === CONSTANTS.NARROW_GROUND_BIOME) dot = true;
+        else if (biome.type === CONSTANTS.WIDE_WATER_BIOME) box = true;
+        else if (biome.type === CONSTANTS.NARROW_WATER_BIOME) snake = true;
     }
 
-    const secrets = [];
-    /*for (let i = 0; i < 1; i++) {
+    const items = [];
+    const numItems = Math.floor(NOISE.random() * 10) + 5;
+    const numHeals = Math.floor(NOISE.random() * 5) + 3;
+
+    for (let i = 0; i < numItems; i++) {
         let index = Math.floor(NOISE.random() * (gridRows * gridColumns - 1));
         for (let j = 0; j < gridRows * gridColumns; j++) {
             if (locationGrid[index] !== 0) {
-                secrets.push({ i: locationGrid[index].i, j: locationGrid[index].j, soundID: "ambient01" });
+                items.push({ type: "coin", i: locationGrid[index].i, j: locationGrid[index].j });
                 locationGrid[index] = 0;
                 break;
             }
             index = (index + 1) % (gridRows * gridColumns);
         }
-    }*/
+    }
+
+    for (let i = 0; i < numHeals; i++) {
+        let index = Math.floor(NOISE.random() * (gridRows * gridColumns - 1));
+        for (let j = 0; j < gridRows * gridColumns; j++) {
+            if (locationGrid[index] !== 0) {
+                items.push({ type: "heal", i: locationGrid[index].i, j: locationGrid[index].j });
+                locationGrid[index] = 0;
+                break;
+            }
+            index = (index + 1) % (gridRows * gridColumns);
+        }
+    }
 
     const enemies = [];
     const biome1 = wideGroundBiomes[(index + 5) % wideGroundBiomes.length];
@@ -143,7 +209,7 @@ export function create(seed, numRows, numColumns, level) {
     for (let i = 0; i < randomMap.numRows; i++) {
         for (let j = 0; j < randomMap.numColumns; j++) {
             const tile = getTile(i, j);
-
+            
             if (tile.type === CONSTANTS.TILE_WALL) {
                 for (let k = 0; k < 6; k++) {
                     colors.push(Math.min(0.03, randomMap.noiseMap[i * numColumns + j][0] / 10));//colors.push(0.05);
@@ -199,6 +265,30 @@ export function create(seed, numRows, numColumns, level) {
                     colors.push(0.0);
                 }
             }
+
+            /*for (let k = 0; k < 6; k++) {
+                if (tile.biomeID === -1) {
+                    colors.push(0);
+                    colors.push(0);
+                    colors.push(0);
+                } else if (randomMap.biomeGraph.biomes[tile.biomeID].type === CONSTANTS.WIDE_GROUND_BIOME) {
+                    colors.push(0);
+                    colors.push((tile.biomeID + 10) / (randomMap.biomeGraph.biomes.length + 10));
+                    colors.push(0);
+                } else if (randomMap.biomeGraph.biomes[tile.biomeID].type === CONSTANTS.NARROW_GROUND_BIOME) {
+                    colors.push((tile.biomeID + 10) / (randomMap.biomeGraph.biomes.length + 10));
+                    colors.push((tile.biomeID + 10) / (randomMap.biomeGraph.biomes.length + 10));
+                    colors.push(0);
+                } else if (randomMap.biomeGraph.biomes[tile.biomeID].type === CONSTANTS.WIDE_WATER_BIOME) {
+                    colors.push(0);
+                    colors.push(0);
+                    colors.push((tile.biomeID + 10) / (randomMap.biomeGraph.biomes.length + 10));
+                } else if (randomMap.biomeGraph.biomes[tile.biomeID].type === CONSTANTS.NARROW_WATER_BIOME) {
+                    colors.push(0);
+                    colors.push((tile.biomeID + 10) / (randomMap.biomeGraph.biomes.length + 10));
+                    colors.push((tile.biomeID + 10) / (randomMap.biomeGraph.biomes.length + 10));
+                }
+            }*/
         }
     }
 
@@ -512,9 +602,10 @@ function labelBiomes(isAllowed, biomeType) {
                     for (let j = 0; j < 4; j++) {
                         const neighbor = { i: current.i + CONSTANTS.DIRECTIONS[j].i, j: current.j + CONSTANTS.DIRECTIONS[j].j };
 
-                        if (getTile(neighbor.i, neighbor.j).biomeID === -1
-                        && isAllowed(neighbor.i, neighbor.j)) {
-                            queue.push(neighbor);
+                        if (getTile(neighbor.i, neighbor.j).biomeID === -1) {
+                            if (isAllowed(neighbor.i, neighbor.j)) {
+                                queue.push(neighbor);
+                            }
                         }
                     }
                 }
@@ -767,18 +858,35 @@ function isTileWater(i, j) {
     return MAPUTIL.isTileWater(i, j, getTile);
 }
 
-function isTileWideGround(i, j) {
-    return MAPUTIL.isTileWideGround(i, j, getTile);
+function isTileNarrow(i, j, isAllowed) {
+    if (!isAllowed(i, j)) return false;
+
+    // adjacent tiles
+    if (!isAllowed(i, j - 1) && !isAllowed(i, j + 1)) return true;
+    if (!isAllowed(i - 1, j) && !isAllowed(i + 1, j)) return true;
+    
+    // diagonal tiles
+    for (let k = 4; k < 8; k++) {
+        const dir = CONSTANTS.DIRECTIONS[k];
+        if (isAllowed(i + dir.i, j + dir.j)) continue;
+        if (!isAllowed(i - dir.i, j)) {
+            if (!isAllowed(i + dir.i, j - dir.j)) return true;
+            return isAllowed(i, j + dir.j);
+        }
+        if (!isAllowed(i, j - dir.j)) {
+            if (!isAllowed(i - dir.i, j + dir.j)) return true;
+            return isAllowed(i + dir.i, j);
+        }
+        if (!isAllowed(i - dir.i, j - dir.j)) return true;
+    }
+    
+    return false;
 }
 
 function isTileNarrowGround(i, j) {
-    return MAPUTIL.isTileNarrowGround(i, j, getTile);
-}
-
-function isTileWideWater(i, j) {
-    return MAPUTIL.isTileWideWater(i, j, getTile);
+    return isTileNarrow(i, j, isTileGround);
 }
 
 function isTileNarrowWater(i, j) {
-    return MAPUTIL.isTileNarrowWater(i, j, getTile);
+    return isTileNarrow(i, j, isTileWater);
 }

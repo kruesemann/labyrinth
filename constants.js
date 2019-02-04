@@ -15,6 +15,7 @@ export const TILE_GRASS         = 7;
 export const TILE_PAVED         = 8;
 export const TILE_EXIT          = 9;
 export const TILE_ENTRANCE      = 10;
+export const TILE_SHRINE        = 11;
 
 export const GROUND_TILES = [
     TILE_DIRT,
@@ -34,6 +35,7 @@ export const WALL_TILES = [
     TILE_HIGHWALL,
     TILE_WALL,
     TILE_BRICKWALL,
+    TILE_SHRINE,
 ];
 export const FORBIDDEN_DOT_TILES = [
     TILE_DEEPWATER,

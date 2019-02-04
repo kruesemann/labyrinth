@@ -77,3 +77,25 @@ export function setHealth(health) {
 export function setForm(formID) {
     display.form.innerHTML = formID;
 }
+
+export async function showText(text) {
+    const dialog = document.createElement("DIV");
+    dialog.classList.add("dialog");
+    dialog.innerHTML = text;
+    document.getElementById("dialog-box").appendChild(dialog);
+
+    setTimeout(() => {
+        dialog.remove();
+    }, 5000);
+}
+
+export async function showDialog(texts) {
+    if (!texts.length) return;
+    
+    const text = texts.shift();
+    showText(text);
+
+    setTimeout(() => {
+        showDialog(texts);
+    }, 5000);
+}

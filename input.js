@@ -2,6 +2,7 @@ import * as STAGE from "./stage.js";
 import * as SOUND from "./sound.js";
 import * as PLAYER from "./player.js";
 import * as LIGHT from "./light.js";
+import * as OVERLAY from "./overlay.js";
 import { nextLevel } from "./index.js";
 
 const KEY_SPACE = 32;
@@ -151,7 +152,7 @@ function keyDownHandler(event) {
             PLAYER.dropParticle();
             break;
         case 81://q
-            LIGHT.removeLight(1);
+            OVERLAY.showDialog(["hello there", "general kenobi"]);
             break;
         case 83://s
             PLAYER.moveDown();

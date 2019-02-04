@@ -19,6 +19,24 @@
                 padding: 0 10px 0 0;
             }
 
+            .dialog {
+                display: block;
+                padding: 15px;
+                position: fixed;
+                width: 75%;
+                height: 20%;
+                bottom: 0;
+                left: 12.5%;
+                color: white;
+                text-align: center;
+                font-size: 20pt;
+                font-weight: bold;
+                font-family: Arial, Helvetica, sans-serif;
+                background-color: rgba(128, 128, 128, 0.25);
+                -webkit-animation: dialogAnimation 5s linear 1;
+                animation: dialogAnimation 5s linear 1;
+            }
+
             #info {
                 display: none;
                 padding: 5px 0 5px 10px;
@@ -82,14 +100,26 @@
 
             @-webkit-keyframes loadingDotAnimation {
                 0%   { opacity: 0; }
-                20%  { opacity: 0.2; }
                 100% { opacity: 1; }
             }
 
             @keyframes loadingDotAnimation {
                 0%   { opacity: 0; }
-                20%  { opacity: 0.2; }
                 100% { opacity: 1; }
+            }
+
+            @-webkit-keyframes dialogAnimation {
+                0%   { opacity: 0; }
+                10%  { opacity: 1; }
+                90%  { opacity: 1; }
+                100% { opacity: 0; }
+            }
+
+            @keyframes dialogAnimation {
+                0%   { opacity: 0; }
+                10%  { opacity: 1; }
+                90%  { opacity: 1; }
+                100% { opacity: 0; }
             }
         </style>
     </head>
@@ -127,6 +157,7 @@
             <input type="button" value="Mute" id="info-sound">
         </div>
         <div id="canvas"></div>
+        <div id="dialog-box"></div>
     </body>
 
     <script src="parkmiller_prng/pm_prng.js"></script>

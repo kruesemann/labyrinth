@@ -103,6 +103,8 @@ export function idle(self, counter) {
         const prox = [MAPUTIL.coordsToTile(x, y)];
 
         for (let i = 0; prox.length < 50; i++) {
+            if (i >= prox.length) return { update: false, route: undefined };
+            
             const current = prox[i];
             for (let j = 0; j < 4; j++) {
                 const neighbor = { i: current.i + CONSTANTS.DIRECTIONS[j].i, j: current.j + CONSTANTS.DIRECTIONS[j].j };

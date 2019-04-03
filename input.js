@@ -62,6 +62,7 @@ function keyDownHandler(event) {
             case 4321:
                 for (let formID of transformBuffer.shrine.formIDs) {
                     if (formID === "snake" && PLAYER.transform("snake")) {
+                        transformBuffer.sequence = [ -1, -1, -1, -1 ];
                         SOUND.play("transform");
                         break;
                     }
@@ -70,6 +71,7 @@ function keyDownHandler(event) {
             case 3131:
             for (let formID of transformBuffer.shrine.formIDs) {
                 if (formID === "box" && PLAYER.transform("box")) {
+                    transformBuffer.sequence = [ -1, -1, -1, -1 ];
                     SOUND.play("transform");
                     break;
                 }
@@ -78,6 +80,7 @@ function keyDownHandler(event) {
             case 3142:
             for (let formID of transformBuffer.shrine.formIDs) {
                 if (formID === "dot" && PLAYER.transform("dot")) {
+                    transformBuffer.sequence = [ -1, -1, -1, -1 ];
                     SOUND.play("transform");
                     break;
                 }

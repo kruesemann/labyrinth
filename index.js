@@ -65,7 +65,7 @@ export function increaseScore() {
 function loadNextMap() {
     STAGE.resetScene();
     game.mapSeed = NOISE.nextMapSeed();
-    MAP.reset(game.mapSeed, 200, 200, game.level);
+    MAP.reset(game.mapSeed, 200, 200, game.seed, game.level);
 }
 
 function resolveCollisions() {

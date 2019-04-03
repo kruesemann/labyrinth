@@ -25,7 +25,8 @@
 ## Obstacles
 
 * monsters
-    * monsters in close proximity can be heard and every so often be seen (even behind walls)
+    * monsters in close proximity can be heard
+    * sometimes they can even be seen in the pitch black
 
 * map
     * narrow tunnels
@@ -44,10 +45,8 @@
 
 * behaviour with limited amount of steps until monster stops for a while
 
-* monsters attracted to light (further down?)
-    * maybe attracted to different colors
-
-* monster repelled by light (single levels?)
+* monsters attracted or repelled by light (further down)
+    * dependent on line of sight, distance, intensity, color
 
 ## Forms
 
@@ -79,17 +78,40 @@
 
 # Map Generation
 
+## Tile Map
+
+* different level types
+    * ground
+    * partially flooded
+    * flooded
+    * overgrown
+    * rock
+    * developed
+
+* different cave types
+    * caves systems
+    * grand cavern
+    * narrows
+
+* the game seed determines the map seed for each level
+    * the map seed directly determines the level type
+
+* generate a cave system
+    * generate caverns
+    * find caves
+    * link caves with tunnels
+
+## Objects
+
 * place objects in reasonable locations
-    * mark reasonable locations on map
 
-* generate tunnels between caverns
-    * select caverns to be linked
+## Shrines
 
-* place switches in reasonable locations
-    * mark reasonable locations on map
+* place shrines in reasonable locations
+
+## Secrets
 
 * place secret rooms and secret switches in reasonable locations
-    * mark reasonable locations on map
 
 * special maps on random levels
     * preceding levels tease this with sound and objects
@@ -102,6 +124,10 @@
     * seed
     * form
 
+* game options
+    * difficulty determines monster speed and AI cooldown
+    * separate audio sliders
+
 * menu
     * seed input
 
@@ -110,8 +136,8 @@
 * textures or dynamic colors
 
 * pixel-shaders with light and shadows
-    * everything without light is completely black (further down?)
+    * everything without light is completely black (further down)
 
-* monster eyes glow (further down?)
+* different terrain colors for different level types
 
-* different water (/terrain) colors for different levels
+* fade in and out at level transition

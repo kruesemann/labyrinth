@@ -19,6 +19,11 @@ export function nextMapSeed() {
     return x - Math.floor(x);
 }
 
+export function peekMapSeed(s) {
+    const x = Math.sin(s) * 1000000;
+    return x - Math.floor(x);
+}
+
 function noise(gen, nx, ny) {
     return gen.noise2D(nx, ny)/2 + 0.5;
 }

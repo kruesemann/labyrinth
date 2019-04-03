@@ -4,12 +4,22 @@ export const CAMERA_NEAR        = 1;
 export const CAMERA_FAR         = 1001;
 export const CAMERA_SCROLLSPEED = 0.001;
 
+export const MAP_TYPE_GROUND        = 0;
+export const MAP_TYPE_FLOODEDGROUND = 1;
+export const MAP_TYPE_DEVELOPED     = 2;
+export const MAP_TYPE_ROCK          = 3;
+export const MAP_TYPE_FLOODEDROCK   = 4;
+
+export const CAVE_TYPE_CAVESYSTEM   = 0;
+export const CAVE_TYPE_GRANDCAVERN  = 1;
+export const CAVE_TYPE_NARROWS      = 2;
+
 export const TILE_HIGHWALL      = 0;
 export const TILE_WALL          = 1;
 export const TILE_BRICKWALL     = 2;
 export const TILE_DEEPWATER     = 3;
 export const TILE_WATER         = 4;
-export const TILE_SHALLOWWATER  = 5;
+export const TILE_ROCK          = 5;
 export const TILE_DIRT          = 6;
 export const TILE_GRASS         = 7;
 export const TILE_PAVED         = 8;
@@ -19,6 +29,7 @@ export const TILE_SHRINE        = 11;
 
 export const GROUND_TILES = [
     TILE_DIRT,
+    TILE_ROCK,
     TILE_GRASS,
     TILE_PAVED,
     TILE_EXIT,
@@ -27,7 +38,6 @@ export const GROUND_TILES = [
 export const WATER_TILES = [
     TILE_DEEPWATER,
     TILE_WATER,
-    TILE_SHALLOWWATER,
     TILE_EXIT,
     TILE_ENTRANCE,
 ];
@@ -40,7 +50,6 @@ export const WALL_TILES = [
 export const FORBIDDEN_DOT_TILES = [
     TILE_DEEPWATER,
     TILE_WATER,
-    TILE_SHALLOWWATER,
     TILE_HIGHWALL,
     TILE_WALL,
     TILE_BRICKWALL,

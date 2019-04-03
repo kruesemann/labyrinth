@@ -11,12 +11,12 @@ import * as MAPUTIL from "./mapUtil.js";
 
 let map = undefined;
 
-export function reset(seed, numRows, numColumns, level) {
+export function reset(seed, numRows, numColumns, gameSeed, level) {
     OBJECT.reset();
     LIGHT.reset(numRows, numColumns, level);
     ITEM.reset();
 
-    const  { tileMap, start, enemies, items, secrets, colors } = RANDOMMAP.create(seed, numRows, numColumns, level);
+    const  { tileMap, start, enemies, items, secrets, colors } = RANDOMMAP.create(seed, numRows, numColumns, gameSeed, level);
 
     map = {
         seed,

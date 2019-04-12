@@ -98,7 +98,7 @@ export function createItems(itemList) {
             case "coin": createCoin(item.i, item.j); break;
             case "heal": createHeal(item.i, item.j); break;
             case "shrine": createShrine(item.i, item.j); break;
-            default: console.log("Unknown item"); return;
+            default: console.log("Unknown item"); break;
         }
     }
 }

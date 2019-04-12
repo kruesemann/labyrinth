@@ -1,6 +1,7 @@
 import * as CONSTANTS from "./constants.js";
 import * as SHADER from "./shader.js";
 import * as STAGE from "./stage.js";
+import * as SECRET from "./secret.js";
 
 export const lights = [];
 
@@ -188,6 +189,7 @@ export function flickerAll(counter) {
 }
 
 export function renderLighting(counter) {
+    SECRET.gleamAllWisps(counter);
     flickerAll(counter);
     SHADER.mapUniforms.u_texture.value = STAGE.renderToTexture([mapLightingMesh], dimensions[0], dimensions[1]);
 }

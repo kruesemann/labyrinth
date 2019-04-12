@@ -10,6 +10,38 @@ export const MAP_TYPE_DEVELOPED     = 2;
 export const MAP_TYPE_ROCK          = 3;
 export const MAP_TYPE_FLOODEDROCK   = 4;
 
+export const MAP_TYPE_FREQ_GROUND = [
+    70,
+    40,
+    15,
+];
+export const MAP_TYPE_FREQ_FLOODEDGROUND = [
+    0,
+    20,
+    25,
+];
+export const MAP_TYPE_FREQ_DEVELOPED = [
+    0,
+    0,
+    5
+];
+export const MAP_TYPE_FREQ_ROCK = [
+    30,
+    30,
+    20
+];
+export const MAP_TYPE_FREQ_FLOODEDROCK = [
+    0,
+    10,
+    35,
+];
+
+export const MAP_TYPE_LEVEL_THRESHHOLDS = [
+    //0,
+    5,
+    10,
+];
+
 export const CAVE_TYPE_CAVESYSTEM   = 0;
 export const CAVE_TYPE_GRANDCAVERN  = 1;
 export const CAVE_TYPE_NARROWS      = 2;

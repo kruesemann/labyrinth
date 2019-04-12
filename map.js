@@ -8,6 +8,7 @@ import * as ITEM from "./item.js";
 import * as OBJECT from "./object.js";
 import * as SOUND from "./sound.js";
 import * as MAPUTIL from "./mapUtil.js";
+import * as SECRET from "./secret.js";
 
 let map = undefined;
 
@@ -15,6 +16,7 @@ export function reset(seed, numRows, numColumns, gameSeed, level) {
     OBJECT.reset();
     LIGHT.reset(numRows, numColumns, level);
     ITEM.reset();
+    SECRET.reset();
 
     const  { tileMap, start, enemies, items, secrets, colors } = RANDOMMAP.create(seed, numRows, numColumns, gameSeed, level);
 
@@ -32,7 +34,8 @@ export function reset(seed, numRows, numColumns, gameSeed, level) {
     PLAYER.reset(start.i, start.j);
     OBJECT.createEnemies(enemies);
     ITEM.createItems(items);
-    ITEM.createItems(secrets);
+    ITEM.createItems(secrets); //temp
+    SECRET.createSecrets(secrets);
 
     function soundInList(soundID) {
         for (let ambientSoundID of map.ambientSoundIDs) {
@@ -42,6 +45,7 @@ export function reset(seed, numRows, numColumns, gameSeed, level) {
     }
 
     for (let secret of secrets) {
+        if (!secret.soundID) continue;
         if (!soundInList(secret.soundID)) {
             map.ambientSoundIDs.push(secret.soundID);
         }
@@ -248,6 +252,8 @@ export function ambientSound() {
 
     const playerPos = PLAYER.getCenter();
     for (let secret of map.secrets) {
+        if (!secret.soundID) continue;
+
         const { x, y } = MAPUTIL.tileToCenter(secret.i, secret.j);
         const volume = Math.max(0, (25 - Math.hypot(playerPos.x - x, playerPos.y - y)) / 25);
         map.ambientVolumes[secret.soundID].push(volume);

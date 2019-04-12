@@ -105,11 +105,11 @@
 
 * place objects in reasonable locations
 
-## Shrines
+## Secrets
 
 * place shrines in reasonable locations
 
-## Secrets
+* place will-o'-the-wisps in reasonable locations
 
 * place secret rooms and secret switches in reasonable locations
 

@@ -1086,10 +1086,9 @@ function placeSecrets() {
         let index = Math.floor(NOISE.random() * (generationData.gridRows * generationData.gridColumns - 1));
         for (let j = 0; j < generationData.gridRows * generationData.gridColumns; j++) {
             if (generationData.locationGrid[index] !== 0) {
-                const color = [NOISE.random(), NOISE.random(), NOISE.random(), Math.floor(NOISE.random() * (CONSTANTS.LIGHTPARTICLE_BRIGHTNESS - 1)) + 1];
-                const interval = Math.floor(NOISE.random() * 800) + 200;
-                const change = Math.floor(NOISE.random() * 20) / 10 + 0.5;
-                features.secrets.push({ type: "wisp", i: generationData.locationGrid[index].i, j: generationData.locationGrid[index].j, color, interval, change });
+                const color = [NOISE.random(), NOISE.random(), NOISE.random(), 0];
+                const change = (Math.floor(NOISE.random() * (CONSTANTS.LIGHT_WISP_CHANGE_MAX - CONSTANTS.LIGHT_WISP_CHANGE_MIN)) + CONSTANTS.LIGHT_WISP_CHANGE_MIN) / 10;
+                features.secrets.push({ type: "wisp", i: generationData.locationGrid[index].i, j: generationData.locationGrid[index].j, color, change });
                 generationData.locationGrid[index] = 0;
                 break;
             }

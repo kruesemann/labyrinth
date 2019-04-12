@@ -123,6 +123,15 @@ export const LIGHTPARTICLE_DEATH        = 1.5 * LIGHTMAP_PRECISION;
 
 export const LIGHT_PLAYER_GROWTH    = 1.3;
 
+export const LIGHT_WISP_JUMP            = 10;
+export const LIGHT_WISP_FLICKER         = LIGHTMAP_PRECISION * 0.5;
+export const LIGHT_WISP_INTENSITY_MIN   = 1;
+export const LIGHT_WISP_INTENSITY_MAX   = 10;
+export const LIGHT_WISP_INTERVAL_MIN    = 1000;
+export const LIGHT_WISP_INTERVAL_MAX    = 2000;
+export const LIGHT_WISP_CHANGE_MIN      = 5;
+export const LIGHT_WISP_CHANGE_MAX      = 25;
+
 export const ANIMATION_FADE_TIME    = 500;
 export const ANIMATION_OPACITY      = 0.5;
 export const ANIMATION_DANCE_TIME   = 2500;
@@ -138,7 +147,7 @@ export const DIRECTIONS = [
     { i: 1, j: 1 }
 ];
 
-export const MAX_COUNTER    = 1000;
+export const MAX_COUNTER    = 10000;
 
 export const ACTION_IDLE        = 0;
 export const ACTION_CHARGING    = 1;

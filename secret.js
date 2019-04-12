@@ -1,5 +1,7 @@
 import * as LIGHT from "./light.js";
 import * as MAPUTIL from "./mapUtil.js";
+import * as CONSTANTS from "./constants.js";
+import * as NOISE from "./noise.js";
 
 let secrets = {
     wisps: []
@@ -11,7 +13,7 @@ export function reset() {
     };
 }
 
-function createWisp(i, j, color, interval, change) {
+function createWisp(i, j, color, change) {
     const { x, y } = MAPUTIL.tileToCenter(i, j);
 
     let wisp = {
@@ -20,7 +22,7 @@ function createWisp(i, j, color, interval, change) {
         y,
         light: LIGHT.create(x, y, color),
         color,
-        interval,
+        interval: Math.floor(NOISE.random() * 800) + 200,
         change,
         gleaming: false,
         gleam: function() {
@@ -35,23 +37,28 @@ function createWisp(i, j, color, interval, change) {
                 && this.light.color[3] + this.change > 0) {
                 newColor.push(this.light.color[3] + this.change);
             } else if (this.light.color[3] + this.change <= 0) {
-                newColor.push(this.color[0]);
+                newColor.push(0);
                 this.change = - this.change;
                 this.gleaming = false;
             } else {
                 newColor.push(this.color[3]);
                 this.change = - this.change;
             }
+            if (newColor[3] > 1) {
+                newColor[3] += CONSTANTS.LIGHT_WISP_FLICKER * (Math.random() - 0.5);
+            }
 
             this.light.changeColor(newColor);
+
+            if (!this.gleaming) {
+                this.light.move(CONSTANTS.LIGHT_WISP_JUMP * (Math.random() - 0.5), CONSTANTS.LIGHT_WISP_JUMP * (Math.random() - 0.5));
+                this.color[3] = Math.floor(NOISE.random() * (CONSTANTS.LIGHT_WISP_INTENSITY_MAX - CONSTANTS.LIGHT_WISP_INTENSITY_MIN)) + CONSTANTS.LIGHT_WISP_INTENSITY_MIN;
+                this.interval = Math.floor(NOISE.random() * (CONSTANTS.LIGHT_WISP_INTERVAL_MAX - CONSTANTS.LIGHT_WISP_INTERVAL_MIN)) + CONSTANTS.LIGHT_WISP_INTERVAL_MIN;
+            }
         }
     };
     
-    const newColor = [];
-    for (let i = 0; i < 3; i++) {
-        newColor.push(wisp.light.color[i]);
-    }
-    wisp.light.changeColor(newColor);
+    wisp.light.flickering = false;
 
     secrets.wisps.push(wisp);
 }
@@ -59,7 +66,7 @@ function createWisp(i, j, color, interval, change) {
 export function createSecrets(secretList) {
     for (let secret of secretList) {
         switch(secret.type) {
-            case "wisp": createWisp(secret.i, secret.j, secret.color, secret.interval, secret.change); break;
+            case "wisp": createWisp(secret.i, secret.j, secret.color, secret.change); break;
             default: console.log("Unknown secret"); break;
         }
     }

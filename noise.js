@@ -11,11 +11,17 @@ export function setMapSeed(s) {
 
 export function random() {
     const x = Math.sin(mapSeed++) * 1000000;
+    if (mapSeed === 2147483647) {
+        mapSeed = 0;
+    }
     return x - Math.floor(x);
 }
 
 export function nextMapSeed() {
     const x = Math.sin(gameSeed++) * 1000000;
+    if (gameSeed === 2147483647) {
+        gameSeed = 0;
+    }
     return x - Math.floor(x);
 }
 

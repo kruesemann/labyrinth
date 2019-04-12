@@ -60,6 +60,7 @@ export function create(x, y, color) {
         uniformIndex: uniformIndex,
         pos: undefined,
         color: undefined,
+        flickering: true,
         fade: false,
         animationStep: 0,
         changeColor: function(newColor) {
@@ -92,9 +93,11 @@ export function create(x, y, color) {
         flicker: function() {
             const rand = CONSTANTS.LIGHTPARTICLE_FLICKER * (Math.random() - 0.5);
 
-            SHADER.mapLightingUniforms.u_lightColor.value[4 * this.uniformIndex + 3] = this.color[3] + rand;
+            const intensity = this.color[3] + rand < 0.1 ? 0 : this.color[3] + rand;
 
-            SHADER.objectUniforms.u_lightColor.value[4 * this.uniformIndex + 3] = this.color[3] + rand;
+            SHADER.mapLightingUniforms.u_lightColor.value[4 * this.uniformIndex + 3] = intensity;
+
+            SHADER.objectUniforms.u_lightColor.value[4 * this.uniformIndex + 3] = intensity;
         },
         die: function() {
             this.color[3] -= CONSTANTS.LIGHTPARTICLE_DECAY;
@@ -175,7 +178,9 @@ export function removeAllLights() {
 export function flickerAll(counter) {
     if (counter % 4 === 0) {
         for (let light of lights) {
-            light.flicker();
+            if (light.flickering) {
+                light.flicker();
+            }
         }
     }
     if (counter % 10 === 0) {

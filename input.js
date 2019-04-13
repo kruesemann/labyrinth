@@ -97,7 +97,7 @@ function keyDownHandler(event) {
                 transformBuffer.shrine = PLAYER.getNearestShrine();
                 if (transformBuffer.shrine.playerDist < 5) {
                     transformBuffer.ongoing = true;
-                    SOUND.repeat("transforming");
+                    SOUND.loop("transforming", 100);
                 }
             }
             break;

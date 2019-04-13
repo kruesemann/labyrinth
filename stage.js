@@ -88,7 +88,7 @@ export function removeMesh(mesh) {
 }
 
 export function resetScene() {
-    SOUND.fadeOutLevel(1000);
+    SOUND.fadeOutLevel();
     ANIMATION.stopAllRunning();
     while(stage.scene.children.length > 0){ 
         removeMesh(stage.scene.children[0]); 

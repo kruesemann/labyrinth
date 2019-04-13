@@ -33,8 +33,6 @@ let generationData = undefined;
  * @returns {array} colors          // the colors of the corresponding tiles
  */
 export function create(seed, numRows, numColumns, gameSeed, level) {
-    NOISE.setMapSeed(seed);
-    
     randomMap = {
         tileMap: [],    // primary return value
         numRows,
@@ -57,6 +55,7 @@ export function create(seed, numRows, numColumns, gameSeed, level) {
         waterChannel: 1,
         tunnelChannel: 2,
         terrainChannel: 3,
+        grassChannel: 4,
         map: [],
     };
 
@@ -93,7 +92,7 @@ export function create(seed, numRows, numColumns, gameSeed, level) {
     generateCaverns();      // fills generationData.caverns
     labelCaves();           // fills generationData.caves
     connectCaves();         // fills generationData.tunnels
-    placeWater();           // sets some parts of randomMap.tileMap to water tiles
+    placeOtherTiles();      // sets some parts of randomMap.tileMap to water, grass or secondary tiles
     labelAllBiomes();       // fills generationData.biomeGraph.biomes and generationData.biomeIDsOfType
     buildBiomeGraph();      // fills generationData.biomeGraph.adjMatrix
     placeStart();           // sets features.start
@@ -103,7 +102,6 @@ export function create(seed, numRows, numColumns, gameSeed, level) {
     placeSecrets();         // fills features.secrets
     placeItems();           // fills features.items
     placeEnemies();         // fills features.enemies
-    placePlants();          // sets some parts of randomMap.tileMap to grass tiles
     chooseColors();         // fills features.colors
     
     noiseData = undefined;
@@ -141,21 +139,8 @@ function initializeRandomMap() {
  * @modifies noiseData.map
  */
 function initializeNoiseData(mapSeed) {
-    // map
-    const numNoiseChannels = 4;
-    const noiseColors = [
-        [0.05, 0.1, 0.4, 0.15, 0.25, 0.05],
-        [1.0, 0.75, 0.625, 0.5, 0.375, 0.25],
-        [1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
-        [1.0, 0.5, 0.25, 0.13, 0.06, 0.03],
-    ];
-    const noiseExponents = [
-        2,
-        1,
-        3,
-        1,
-    ];
-    noiseData.map = NOISE.doubleNoise2D(mapSeed, numNoiseChannels, randomMap.numRows, randomMap.numColumns, noiseColors, noiseExponents);
+    NOISE.setMapSeed(mapSeed);
+    noiseData.map = NOISE.doubleNoise2D(mapSeed, CONSTANTS.NOISE_CHANNELS, randomMap.numRows, randomMap.numColumns, CONSTANTS.NOISE_COLORS, CONSTANTS.NOISE_EXPONENTS);
 }
 
 /**
@@ -654,11 +639,11 @@ function buildTunnel(cave, caveSystems, targetCave) {
 }
 
 /**
- * places water tiles based on metaData.waterLevel and noiseData.map values
+ * places water, grass and secondary tiles based on metaData.waterLevel and noiseData.map values
  * 
  * @modifies randomMap.tileMap[i].type
  */
-function placeWater() {
+function placeOtherTiles() {
     for (let i = 1; i < randomMap.numRows - 1; i++) {
         for (let j = 1; j < randomMap.numColumns - 1; j++) {
             if (getTile(i, j).type === metaData.primaryTile) {
@@ -668,8 +653,13 @@ function placeWater() {
                     } else {
                         getTile(i, j).type = CONSTANTS.TILE_WATER;
                     }
-                } else if (noiseData.map[i * randomMap.numColumns + j][noiseData.terrainChannel] > 0.6) {
-                    getTile(i, j).type = metaData.secondaryTile;
+                } else {
+                    if (noiseData.map[i * randomMap.numColumns + j][noiseData.terrainChannel] > 0.6) {
+                        getTile(i, j).type = metaData.secondaryTile;
+                    }
+                    if (noiseData.map[i * randomMap.numColumns + j][noiseData.grassChannel] > 0.3) {
+                        getTile(i, j).type = CONSTANTS.TILE_GRASS;
+                    }
                 }
             }
         }
@@ -1157,54 +1147,6 @@ function placeEnemies() {
 }
 
 /**
- * places plants in fitting locations around the map
- * 
- * @modifies randomMap.tileMap
- */
-function placePlants() {
-    const plants = [];
-    for (let j = 0; j < generationData.gridRows * generationData.gridColumns; j++) {
-        if (generationData.locationGrid[j] !== 0) {
-            plants.push({
-                i: generationData.locationGrid[j].i,
-                j: generationData.locationGrid[j].j,
-                angle: Math.PI * NOISE.random(),
-                plantSizeX: 5 + (10 - 5) * NOISE.random(),
-                plantSizeY: 5 + (10 - 5) * NOISE.random(),
-            });
-            generationData.locationGrid[j] = 0;
-        }
-    }
-
-    for (let i = 1; i < randomMap.numRows - 1; i++) {
-        for (let j = 1; j < randomMap.numColumns - 1; j++) {
-            const tileCenter = MAPUTIL.tileToCenter(i, j);
-            for (let k = 0; k < plants.length; k++) {
-                const plantCenter = MAPUTIL.tileToCenter(plants[k].i, plants[k].j);
-                const distToCenter = dist(tileCenter.x, tileCenter.y, plantCenter.x, plantCenter.y);
-
-                if (distToCenter < 2) {
-                    getTile(i, j).type = CONSTANTS.TILE_GRASS;
-                } else {
-                    const ellipseRadius = plants[k].plantSizeX * plants[k].plantSizeY;
-                    const distToMax = ellipseRadius - ellipseDist(tileCenter.x,
-                                                                  tileCenter.y,
-                                                                  plantCenter.x,
-                                                                  plantCenter.y,
-                                                                  plants[k].plantSizeX,
-                                                                  plants[k].plantSizeY,
-                                                                  plants[k].angle);
-
-                    if (Math.pow(noiseData.map[i * randomMap.numColumns + j][noiseData.caveChannel], 3) < distToMax / (30 * ellipseRadius)) {
-                        getTile(i, j).type = CONSTANTS.TILE_GRASS;
-                    }
-                }
-            }
-        }
-    }
-}
-
-/**
  * determines color variations of tiles based on their type and noiseData.map values
  * 
  * @modifies features.colors
@@ -1246,8 +1188,8 @@ function chooseColors() {
                 }
             } else if (tile.type === CONSTANTS.TILE_GRASS) {
                 for (let k = 0; k < 6; k++) {
-                    features.colors.push(noiseData.map[i * randomMap.numColumns + j][0] / 6);//features.colors.push(0.1);
-                    features.colors.push(noiseData.map[i * randomMap.numColumns + j][1] / 4);//features.colors.push(0.3);
+                    features.colors.push(noiseData.map[i * randomMap.numColumns + j][4] / 12);//features.colors.push(0.1);
+                    features.colors.push(noiseData.map[i * randomMap.numColumns + j][1] / 8);//features.colors.push(0.3);
                     features.colors.push(0.0);
                 }
             } else if (tile.type === CONSTANTS.TILE_HIGHWALL) {

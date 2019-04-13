@@ -5,6 +5,7 @@
 * player can control the light
     * light at player's head increases up to a certain level
     * when that level is reached the player can drop a fading particle and the light at their head dims
+    * player has to recharge their light, which later happens automatically
 
 * depleted health bar = death
     * collision with monsters depletes health bar
@@ -53,6 +54,7 @@
 * player can switch forms
     * by performing a transformation dance in close proximity to a shrine
     * initiating a dance will give a visual cue
+    * ongoing transformation changes player's lights
 
 * forms change the light particles
     * dot: white and dim
@@ -74,7 +76,11 @@
 
 * go deeper
 
+* light beacons
+
 * collect points to unlock stuff
+
+* find and kill Maw
 
 # Map Generation
 
@@ -103,13 +109,18 @@
 
 ## Objects
 
-* place objects in reasonable locations
+* place coins in reasonable locations
+
+* place health items in reasonable locations
 
 ## Secrets
 
 * place shrines in reasonable locations
+    * shrines light up when you are near
+    * the colors represent the forms you can change into
 
 * place will-o'-the-wisps in reasonable locations
+    * wisps can be collected for points or items
 
 * place secret rooms and secret switches in reasonable locations
 
@@ -141,3 +152,16 @@
 * different terrain colors for different level types
 
 * fade in and out at level transition
+
+# Story
+
+* witness Thorke, Lightbringer, great Queen of Fuse and Candle
+    * Thorke follows you into the depths to... bring light
+    * Thorke pities the creatures of dark, but without hesitation uses her light to route them
+    * you are waylaid by Maw, self-styled King of Salt
+    * Thorke is killed and Maw flees with most of her light into the depths
+    * you take what is left of her light and go after Maw
+
+* bear Thorke's light and light the beacons in her name
+    * Thorke whispers to you occasionally
+    * try to kill Maw whenever you have the chance

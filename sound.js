@@ -1,4 +1,5 @@
 import * as EVENT from "./event.js";
+import * as PLAYER from "./player.js";
 
 let audio = undefined;
 
@@ -24,6 +25,7 @@ export function reset() {
         { ID: "shrine", url: "assets/shrine.ogg", volume: 1, loop: true, play: false, levelStop: false },
         { ID: "hurt", url: "assets/hurt.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "heal", url: "assets/heal.ogg", volume: 1, loop: false, play: false, levelStop: true },
+        { ID: "wisp", url: "assets/wisp.ogg", volume: 1, loop: false, play: false, levelStop: true },
     ];
     
     loadSounds(soundsData, 0);
@@ -35,11 +37,19 @@ function loadSounds(soundsData, i) {
     audio.loader.load(soundsData[i].url, function(buffer) {
         const sound = new THREE.Audio(audio.listener);
         sound.setBuffer(buffer);
-        sound.setVolume(soundsData[i].volume);
-        sound.isFading = false;
+        if (soundsData[i].play) {
+            sound.play();
+            sound.volume = soundsData[i].volume;
+            sound.setVolume(soundsData[i].volume);
+        } else {
+            sound.volume = 0;
+            sound.setVolume(0);
+        }
+        sound.targetVolume = 0;
+        sound.targetVolumePriority = 0;
+        sound.targetVolumeStep = 0;
         sound.setLoop(soundsData[i].loop);
         sound.levelStop = soundsData[i].levelStop;
-        if (soundsData[i].play) sound.play();
 
         audio.sounds[soundsData[i].ID] = sound;
         audio.soundIDs.push(soundsData[i].ID);
@@ -60,127 +70,147 @@ function loadSounds(soundsData, i) {
     });
 }
 
-export function play(soundID, volume) {
-    if (!audio.sounds[soundID]) {
-        console.log("Unknown sound:", soundID);
-        return;
+function getVolume(position, maxDist) {
+    if (!position) {
+        return 1;
     }
-
-    if (volume || volume === 0) {
-        audio.sounds[soundID].setVolume(volume);
-    } else {
-        audio.sounds[soundID].setVolume(1);
-    }
-
-    if (audio.sounds[soundID].isPlaying) {
-        audio.sounds[soundID].stop();
-    }
-    audio.sounds[soundID].play();
+    const { x, y } = PLAYER.getCenter();
+    return Math.max(0, (maxDist - Math.hypot(position.x - x, position.y - y)) / maxDist);
 }
 
-export function repeat(soundID, volumes) {
+export function play(soundID, position, maxDist) {
     if (!audio.sounds[soundID]) {
         console.log("Unknown sound:", soundID);
         return;
     }
 
-    if (!volumes || volumes.length === 0) {
-        fadeIn(soundID, 100);
-    } else {
-        let volume = 0;
-        for (let vol of volumes) {
-            if (volume < vol) {
-                volume = vol;
-            }
+    const volume = getVolume(position, maxDist);
+    if (volume != 0) {
+        if (audio.sounds[soundID].isPlaying) {
+            audio.sounds[soundID].stop();
         }
-
         audio.sounds[soundID].setVolume(volume);
-        if (!audio.sounds[soundID].isPlaying) audio.sounds[soundID].play();
+        audio.sounds[soundID].volume = volume;
+        audio.sounds[soundID].play();
     }
 }
 
-export async function fadeIn(soundID, time) {
+export function loop(soundID, time, position, maxDist) {
     if (!audio.sounds[soundID]) {
         console.log("Unknown sound:", soundID);
         return;
     }
 
-    if (audio.sounds[soundID].isPlaying) return;
-
-    audio.sounds[soundID].play();
-    audio.sounds[soundID].setVolume(0);
-
-    function fade(volume) {
-        setTimeout(() => {
-            if (volume < 1) {
-                fade(volume + 0.1);
-                audio.sounds[soundID].setVolume(volume);
-            }
-        }, time / 10);
+    const volume = getVolume(position, maxDist);
+    if (audio.sounds[soundID].targetVolumePriority < 2) {
+        audio.sounds[soundID].targetVolume = volume;
+        audio.sounds[soundID].targetVolumePriority = 2;
+        audio.sounds[soundID].targetVolumeStep = 10 / time;
     }
-    fade(0.1);
 }
 
-export async function fadeOutLevel(time) {
-    const fades = [];
+export function loopClosest(soundID, time, positions, maxDist) {
+    if (!audio.sounds[soundID]) {
+        console.log("Unknown sound:", soundID);
+        return;
+    }
+
+    if (!positions || !positions.length) {
+        return;
+    }
+
+    const { x, y } = PLAYER.getCenter();
+    let minDist = -1;
+    for (let position of positions) {
+        const dist = Math.hypot(position.x - x, position.y - y);
+        if (minDist === -1 || dist < minDist) {
+            minDist = dist;
+        }
+    }
+
+    const volume = Math.max(0, (maxDist - minDist) / maxDist);
+    if (audio.sounds[soundID].targetVolumePriority < 2) {
+        audio.sounds[soundID].targetVolume = volume;
+        audio.sounds[soundID].targetVolumePriority = 2;
+        audio.sounds[soundID].targetVolumeStep = 10 / time;
+    }
+}
+
+export function forceFadeOut(soundID, time) {
+    if (!audio.sounds[soundID]) {
+        console.log("Unknown sound:", soundID);
+        return;
+    }
+
+    if (audio.sounds[soundID].targetVolumePriority < 3) {
+        audio.sounds[soundID].targetVolume = 0;
+        audio.sounds[soundID].targetVolumePriority = 3;
+        audio.sounds[soundID].targetVolumeStep = 10 / time;
+    }
+}
+
+export function fadeOut(soundID, time) {
+    if (!audio.sounds[soundID]) {
+        console.log("Unknown sound:", soundID);
+        return;
+    }
+
+    if (audio.sounds[soundID].targetVolumePriority < 1) {
+        audio.sounds[soundID].targetVolume = 0;
+        audio.sounds[soundID].targetVolumePriority = 1;
+        audio.sounds[soundID].targetVolumeStep = 10 / time;
+    }
+}
+
+export function fadeOutLevel() {
+    for (let soundID of audio.soundIDs) {
+        if (!audio.sounds[soundID]
+        || !audio.sounds[soundID].levelStop
+        || !audio.sounds[soundID].getLoop()) continue;
+
+        audio.sounds[soundID].targetVolume = 0;
+        audio.sounds[soundID].targetVolumePriority = 4;
+        audio.sounds[soundID].targetVolumeStep = 0.01;
+    }
+}
+
+export function controlVolume(counter) {
+    if (counter % 10 != 0) return;
 
     for (let soundID of audio.soundIDs) {
-        if (!audio.sounds[soundID]) continue;
+        if (audio.sounds[soundID].targetVolumePriority === 0) continue;
 
-        if (audio.sounds[soundID].levelStop
-        && audio.sounds[soundID].isPlaying
-        && !audio.sounds[soundID].isFading) {
-            audio.sounds[soundID].isFading = true;
-            fades.push(soundID);
+        const targetVolume = audio.sounds[soundID].targetVolume;
+        const currentVolume = audio.sounds[soundID].volume;
+        if (targetVolume < currentVolume) {
+            if (targetVolume < currentVolume - audio.sounds[soundID].targetVolumeStep) {
+                audio.sounds[soundID].volume -= audio.sounds[soundID].targetVolumeStep;
+            } else {
+                audio.sounds[soundID].volume = targetVolume;
+                audio.sounds[soundID].targetVolumePriority = 0;
+            }
+        } else if (targetVolume > currentVolume) {
+            if (targetVolume > currentVolume + audio.sounds[soundID].targetVolumeStep) {
+                audio.sounds[soundID].volume += audio.sounds[soundID].targetVolumeStep;
+            } else {
+                audio.sounds[soundID].volume = targetVolume;
+                audio.sounds[soundID].targetVolumePriority = 0;
+            }
+        } else {
+            audio.sounds[soundID].targetVolumePriority = 0;
+        }
+        audio.sounds[soundID].setVolume(audio.sounds[soundID].volume);
+
+        if (audio.sounds[soundID].isPlaying) {
+            if (audio.sounds[soundID].volume === 0) {
+                audio.sounds[soundID].stop();
+            }
+        } else {
+            if (audio.sounds[soundID].volume != 0) {
+                audio.sounds[soundID].play();
+            }
         }
     }
-
-    function fade(volume) {
-        setTimeout(() => {
-            if (volume > 0) {
-                fade(volume - 0.1);
-            }
-
-            for (let soundID of fades) {
-                if (!audio.sounds[soundID]) continue;
-
-                if (volume > 0) {
-                    audio.sounds[soundID].setVolume(volume);
-                } else {
-                    audio.sounds[soundID].stop();
-                    audio.sounds[soundID].isFading = false;
-                }
-            }
-        }, time / 10);
-    }
-    fade(0.9);
-}
-
-export async function fadeOut(soundID, time) {
-    if (!audio.sounds[soundID]) {
-        console.log("Unknown sound:", soundID);
-        return;
-    }
-
-    if (!audio.sounds[soundID].isPlaying
-    || audio.sounds[soundID].isFading) {
-        return;
-    }
-
-    audio.sounds[soundID].isFading = true;
-
-    function fade(volume) {
-        setTimeout(() => {
-            if (volume > 0) {
-                fade(volume - 0.1);
-                audio.sounds[soundID].setVolume(volume);
-            } else {
-                audio.sounds[soundID].stop();
-                audio.sounds[soundID].isFading = false;
-            }
-        }, time / 10);
-    }
-    fade(0.9);
 }
 
 export function toggle() {

@@ -310,13 +310,14 @@ function create(i, j, color, speed, formID, aiID) {
 
             const { update, route } = this.ai(this, counter);
 
+            const position = this.getCenter();
             if (update) {
                 if (route.length) {
                     this.route = route;
                     if (this.state.action !== CONSTANTS.ACTION_CHARGING) {
                         this.state = { action: CONSTANTS.ACTION_CHARGING, start: counter };
-                        SOUND.play("charge");
-                        SOUND.repeat("charging");
+                        SOUND.play("charge", position, 40);
+                        SOUND.loop("charging", 100, position, 40);
                     }
                     return;
                 }
@@ -326,18 +327,14 @@ function create(i, j, color, speed, formID, aiID) {
 
             if (this.state.action === CONSTANTS.ACTION_CHARGING) {
                 this.state = { action: CONSTANTS.ACTION_IDLE, start: counter };
-                SOUND.fadeOut("charging", 5000);
+                SOUND.fadeOut("charging", 1000);
             }
 
             const idlePlan = AI.idle(this, counter);
             if (!idlePlan.update) return;
 
-            const { x, y } = this.getHead();
-            const player = PLAYER.getHead();
-            const dist = Math.hypot(x - player.x, y - player.y);
-            if (dist < 50) {
-                SOUND.play("idle", Math.pow((50 - dist) / 50, 2));
-            }
+            SOUND.play("idle", position, 50);
+
             this.route = idlePlan.route;
         },
         move: function(counter) {

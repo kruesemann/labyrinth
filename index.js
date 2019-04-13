@@ -10,6 +10,7 @@ import * as ITEM from "./item.js";
 import * as NOISE from "./noise.js";
 import * as EVENT from "./event.js";
 import * as ANIMATION from "./animation.js";
+import * as SOUND from "./sound.js";
 
 let game = undefined;
 
@@ -111,6 +112,7 @@ function gameloop() {
     PLAYER.center();
     MAP.ambientSound();
     ANIMATION.animate();
+    SOUND.controlVolume(game.counter);
 
     LIGHT.renderLighting(game.counter);
     STAGE.render();

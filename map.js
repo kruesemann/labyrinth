@@ -27,8 +27,6 @@ export function reset(seed, numRows, numColumns, gameSeed, level) {
         numColumns,
         secrets,
         mesh: undefined,
-        ambientSoundIDs: [],
-        ambientVolumes: {},
     };
 
     PLAYER.reset(start.i, start.j);
@@ -36,20 +34,6 @@ export function reset(seed, numRows, numColumns, gameSeed, level) {
     ITEM.createItems(items);
     ITEM.createItems(secrets); //temp
     SECRET.createSecrets(secrets);
-
-    function soundInList(soundID) {
-        for (let ambientSoundID of map.ambientSoundIDs) {
-            if (ambientSoundID === soundID) return true;
-        }
-        return false;
-    }
-
-    for (let secret of secrets) {
-        if (!secret.soundID) continue;
-        if (!soundInList(secret.soundID)) {
-            map.ambientSoundIDs.push(secret.soundID);
-        }
-    }
 
     createTexture(colors);
     createMesh();
@@ -246,22 +230,15 @@ export function rayCast(start, target) {
 }
 
 export function ambientSound() {
-    for (let soundID of map.ambientSoundIDs) {
-        map.ambientVolumes[soundID] = [];
-    }
-
-    const playerPos = PLAYER.getCenter();
+    const shrinePostions = [];
     for (let secret of map.secrets) {
-        if (!secret.soundID) continue;
-
-        const { x, y } = MAPUTIL.tileToCenter(secret.i, secret.j);
-        const volume = Math.max(0, (25 - Math.hypot(playerPos.x - x, playerPos.y - y)) / 25);
-        map.ambientVolumes[secret.soundID].push(volume);
+        switch (secret.soundID) {
+            case "shrine": shrinePostions.push(MAPUTIL.tileToCenter(secret.i, secret.j)); break;
+            default: break;
+        }
     }
 
-    for (let soundID of map.ambientSoundIDs) {
-        SOUND.repeat(soundID, map.ambientVolumes[soundID]);
-    }
+    SOUND.loopClosest("shrine", 100, shrinePostions, 25);
 }
 
 export function getNearestShrine(position) {

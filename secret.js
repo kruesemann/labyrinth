@@ -2,6 +2,8 @@ import * as LIGHT from "./light.js";
 import * as MAPUTIL from "./mapUtil.js";
 import * as CONSTANTS from "./constants.js";
 import * as NOISE from "./noise.js";
+import * as SOUND from "./sound.js";
+import * as PLAYER from "./player.js";
 
 let secrets = {
     wisps: []
@@ -40,6 +42,7 @@ function createWisp(i, j, color, change) {
                 newColor.push(0);
                 this.change = - this.change;
                 this.gleaming = false;
+                SOUND.forceFadeOut("wisp", 2000);
             } else {
                 newColor.push(this.color[3]);
                 this.change = - this.change;
@@ -52,7 +55,7 @@ function createWisp(i, j, color, change) {
 
             if (!this.gleaming) {
                 this.light.move(CONSTANTS.LIGHT_WISP_JUMP * (Math.random() - 0.5), CONSTANTS.LIGHT_WISP_JUMP * (Math.random() - 0.5));
-                this.color[3] = Math.floor(NOISE.random() * (CONSTANTS.LIGHT_WISP_INTENSITY_MAX - CONSTANTS.LIGHT_WISP_INTENSITY_MIN)) + CONSTANTS.LIGHT_WISP_INTENSITY_MIN;
+                this.color[3] = Math.floor(NOISE.random() * (CONSTANTS.LIGHT_WISP_BRIGHTNESS_MAX - CONSTANTS.LIGHT_WISP_BRIGHTNESS_MIN)) + CONSTANTS.LIGHT_WISP_BRIGHTNESS_MIN;
                 this.interval = Math.floor(NOISE.random() * (CONSTANTS.LIGHT_WISP_INTERVAL_MAX - CONSTANTS.LIGHT_WISP_INTERVAL_MIN)) + CONSTANTS.LIGHT_WISP_INTERVAL_MIN;
             }
         }
@@ -76,6 +79,8 @@ export function gleamAllWisps(counter) {
     for (let wisp of secrets.wisps) {
         if (counter % wisp.interval === 0) {
             wisp.gleaming = true;
+            const position = MAPUTIL.tileToCenter(wisp.i, wisp.j);
+            SOUND.loop("wisp", 1000, position, 40);
         }
         if (counter % 4 === 0) {
             wisp.gleam();

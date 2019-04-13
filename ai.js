@@ -133,6 +133,7 @@ export function lightAffine(self, counter) {
     if (counter % 100 === 0) {
         let route = undefined;
         for (let i = LIGHT.lights.length - 1; i >= 0; i--) {
+            if (LIGHT.lights[i].color[3] === 0) continue;
             if (MAP.rayCast(self.getHead(), LIGHT.lights[i].pos)) {
                 route = aStar(MAP.getTileMapInfo(), self.getHead(), LIGHT.lights[i].pos, self);
                 if (route) {

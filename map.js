@@ -32,7 +32,6 @@ export function reset(seed, numRows, numColumns, gameSeed, level) {
     PLAYER.reset(start.i, start.j);
     OBJECT.createEnemies(enemies);
     ITEM.createItems(items);
-    ITEM.createItems(secrets); //temp
     SECRET.createSecrets(secrets);
 
     createTexture(colors);

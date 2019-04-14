@@ -3,6 +3,7 @@ import * as STAGE from "./stage.js";
 import * as SOUND from "./sound.js";
 import * as MAPUTIL from "./mapUtil.js";
 import * as PLAYER from "./player.js";
+import * as SECRET from "./secret.js";
 import { increaseScore } from "./index.js";
 
 let items = [];
@@ -12,40 +13,22 @@ export function reset() {
 }
 
 function create(i, j, color) {
-    const vertices = [
-        0.25, 0.25, 0.01,
-        0.75, 0.25, 0.01,
-        0.25, 0.75, 0.01,
-        0.75, 0.25, 0.01,
-        0.75, 0.75, 0.01,
-        0.25, 0.75, 0.01,
-    ];
-
-    const colors = [];
-
-    for (let k = 0; k < 6; k++) {
-        colors.push(color[0]);
-        colors.push(color[1]);
-        colors.push(color[2]);
-    }
-
-    const geometry = new THREE.BufferGeometry();
-    geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
-    geometry.addAttribute('a_color', new THREE.BufferAttribute(new Float32Array(colors), 3));
-
     const item = {
         index: items.length,
         x: 0,
         y: 0,
-        mesh: new THREE.Mesh(geometry, SHADER.getObjectMaterial()),
+        mesh: undefined,
         set: function(x, y) {
-            this.mesh.position.x = x;
-            this.mesh.position.y = y;
-            this.x = x + 0.5;
-            this.y = y + 0.5;
+            if (this.mesh) {
+                this.mesh.position.x = x - 0.5;
+                this.mesh.position.y = y - 0.5;
+            }
+            this.x = x;
+            this.y = y;
         },
         remove: function() {
-            STAGE.removeMesh(this.mesh);
+            if (this.mesh) STAGE.removeMesh(this.mesh);
+
             for (let item of items) {
                 if (item.index > this.index) {
                     item.index--;
@@ -55,11 +38,34 @@ function create(i, j, color) {
         }
     };
 
-    const { x, y } = MAPUTIL.tileToCoords(i, j);
-    item.set(x, y);
-    STAGE.addMesh(item.mesh);
+    
+    if (color) {
+        const vertices = [
+            0.25, 0.25, 0.01,
+            0.75, 0.25, 0.01,
+            0.25, 0.75, 0.01,
+            0.75, 0.25, 0.01,
+            0.75, 0.75, 0.01,
+            0.25, 0.75, 0.01,
+        ];
+        
+        const colors = [];
+        for (let k = 0; k < 6; k++) {
+            colors.push(color[0]);
+            colors.push(color[1]);
+            colors.push(color[2]);
+        }
+        const geometry = new THREE.BufferGeometry();
+        geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+        geometry.addAttribute('a_color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+        item.mesh = new THREE.Mesh(geometry, SHADER.getObjectMaterial());
+        STAGE.addMesh(item.mesh);
+    }
 
+    const { x, y } = MAPUTIL.tileToCenter(i, j);
+    item.set(x, y);
     items.push(item);
+
     return item;
 }
 
@@ -72,6 +78,8 @@ export function createCoin(i, j) {
         this.remove();
         SOUND.play("coin");
     };
+
+    return coin;
 }
 
 export function createHeal(i, j) {
@@ -83,13 +91,30 @@ export function createHeal(i, j) {
         this.remove();
         SOUND.play("heal");
     };
+
+    return heal;
 }
 
-export function createShrine(i, j) {
+export function createShrine(i, j, index) {
     const shrine = create(i, j, [0, 0.5, 0.75]);
 
     shrine.collect = function() {
     };
+
+    return shrine;
+}
+
+export function createWisp(i, j, index) {
+    const wisp = create(i, j);
+
+    wisp.collect = function() {
+        this.set(0, 0);
+        this.remove();
+        SECRET.removeWisp(index);
+        SOUND.play("heal");
+    };
+
+    return wisp;
 }
 
 export function createItems(itemList) {
@@ -97,7 +122,6 @@ export function createItems(itemList) {
         switch(item.type) {
             case "coin": createCoin(item.i, item.j); break;
             case "heal": createHeal(item.i, item.j); break;
-            case "shrine": createShrine(item.i, item.j); break;
             default: console.log("Unknown item"); break;
         }
     }

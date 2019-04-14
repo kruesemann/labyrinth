@@ -57,6 +57,7 @@ export function create(x, y, color) {
     }
 
     const light = {
+        index: lights.length,
         uniformIndex: uniformIndex,
         pos: undefined,
         color: undefined,
@@ -103,6 +104,9 @@ export function create(x, y, color) {
             this.color[3] -= CONSTANTS.LIGHTPARTICLE_DECAY;
             return this.color[3] <= CONSTANTS.LIGHTPARTICLE_DEATH;
         },
+        remove: function() {
+            removeLight(this.index);
+        }
     };
     
     light.changeColor(color);
@@ -127,11 +131,7 @@ export function createParticle(x, y, color) {
     return particle;
 }
 
-export function removeLight(index) {
-    if (index >= lights.length) return;
-
-    const uniformIndex = lights[index].uniformIndex;
-
+function removeShaderLight(uniformIndex) {
     SHADER.mapLightingUniforms.u_lightPos.value[2 * uniformIndex] = 0;
     SHADER.mapLightingUniforms.u_lightPos.value[2 * uniformIndex + 1] = 0;
     SHADER.mapLightingUniforms.u_lightColor.value[4 * uniformIndex] = 0;
@@ -145,6 +145,18 @@ export function removeLight(index) {
     SHADER.objectUniforms.u_lightColor.value[4 * uniformIndex + 1] = 0;
     SHADER.objectUniforms.u_lightColor.value[4 * uniformIndex + 2] = 0;
     SHADER.objectUniforms.u_lightColor.value[4 * uniformIndex + 3] = 0;
+}
+
+export function removeLight(index) {
+    if (index >= lights.length) return;
+
+    removeShaderLight(lights[index].uniformIndex);
+
+    for (let light of lights) {
+        if (light.index > index) {
+            light.index--;
+        }
+    }
 
     lights.splice(index, 1);
 }
@@ -152,21 +164,7 @@ export function removeLight(index) {
 export function removeLastLight() {
     if (lights.length === 0) return;
 
-    const light = lights.pop();
-
-    SHADER.mapLightingUniforms.u_lightPos.value[2 * light.uniformIndex] = 0;
-    SHADER.mapLightingUniforms.u_lightPos.value[2 * light.uniformIndex + 1] = 0;
-    SHADER.mapLightingUniforms.u_lightColor.value[4 * light.uniformIndex] = 0;
-    SHADER.mapLightingUniforms.u_lightColor.value[4 * light.uniformIndex + 1] = 0;
-    SHADER.mapLightingUniforms.u_lightColor.value[4 * light.uniformIndex + 2] = 0;
-    SHADER.mapLightingUniforms.u_lightColor.value[4 * light.uniformIndex + 3] = 0;
-
-    SHADER.objectUniforms.u_lightPos.value[2 * light.uniformIndex] = 0;
-    SHADER.objectUniforms.u_lightPos.value[2 * light.uniformIndex + 1] = 0;
-    SHADER.objectUniforms.u_lightColor.value[4 * light.uniformIndex] = 0;
-    SHADER.objectUniforms.u_lightColor.value[4 * light.uniformIndex + 1] = 0;
-    SHADER.objectUniforms.u_lightColor.value[4 * light.uniformIndex + 2] = 0;
-    SHADER.objectUniforms.u_lightColor.value[4 * light.uniformIndex + 3] = 0;
+    removeShaderLight(lights.pop().uniformIndex);
 }
 
 export function removeAllLights() {
@@ -184,10 +182,9 @@ export function flickerAll(counter) {
         }
     }
     if (counter % 10 === 0) {
-        for (let i = 0; i < lights.length; i++) {
-            if (lights[i].fade && lights[i].die()) {
-                removeLight(i);
-                i--;
+        for (let light of lights) {
+            if (light.fade && light.die()) {
+                light.remove();
             }
         }
     }

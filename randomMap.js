@@ -1002,11 +1002,25 @@ function findFreeLocations() {
 /**
  * places secrets in fitting locations around the map
  * 
+ * @modifies randomMap.tileMap
  * @modifies features.secrets
  * @modifies generationData.locationGrid
  */
 function placeSecrets() {
     // shrines
+    function placeShrineTiles(i, j) {
+        getTile(i, j).type = CONSTANTS.TILE_BRICKWALL;
+        getTile(i - 1, j - 1).type = CONSTANTS.TILE_PAVED;
+        getTile(i - 1, j).type = CONSTANTS.TILE_PAVED;
+        getTile(i - 1, j + 1).type = CONSTANTS.TILE_PAVED;
+        getTile(i, j - 1).type = CONSTANTS.TILE_PAVED;
+        getTile(i, j + 1).type = CONSTANTS.TILE_PAVED;
+        getTile(i + 1, j - 1).type = CONSTANTS.TILE_PAVED;
+        getTile(i + 1, j).type = CONSTANTS.TILE_PAVED;
+        getTile(i + 1, j + 1).type = CONSTANTS.TILE_PAVED;
+    }
+
+
     let dot = false;
     let box = false;
     let snake = false;
@@ -1053,14 +1067,17 @@ function placeSecrets() {
                 features.secrets.push({ type: "shrine", i: biome.locations[0].i, j: biome.locations[0].j, formIDs, soundID: "shrine" });
                 generationData.locationGrid[Math.round(biome.locations[0].i / CONSTANTS.LOCATION_DIST) * generationData.gridColumns + Math.round(biome.locations[0].j / CONSTANTS.LOCATION_DIST)] = 0;
                 dot = box = snake = false;
+                placeShrineTiles(biome.locations[0].i, biome.locations[0].j);
             } else if (i === generationData.pathToExit.length - 1 || i === 0) {
-                features.secrets.push({ type: "shrine", i: biome.i, j: biome.j + 1, formIDs, soundID: "shrine" });
+                features.secrets.push({ type: "shrine", i: biome.i, j: biome.j + 2, formIDs, soundID: "shrine" });
                 generationData.locationGrid[Math.round(biome.i / CONSTANTS.LOCATION_DIST) * generationData.gridColumns + Math.round(biome.j / CONSTANTS.LOCATION_DIST)] = 0;
                 dot = box = snake = false;
+                placeShrineTiles(biome.i, biome.j + 2);
             } else if (biome.size > 50) {
                 features.secrets.push({ type: "shrine", i: biome.i, j: biome.j, formIDs, soundID: "shrine" });
                 generationData.locationGrid[Math.round(biome.i / CONSTANTS.LOCATION_DIST) * generationData.gridColumns + Math.round(biome.j / CONSTANTS.LOCATION_DIST)] = 0;
                 dot = box = snake = false;
+                placeShrineTiles(biome.i, biome.j);
             }
         }
         
@@ -1200,9 +1217,9 @@ function chooseColors() {
                 }
             } else if (tile.type === CONSTANTS.TILE_PAVED) {
                 for (let k = 0; k < 6; k++) {
-                    features.colors.push(1.0);
-                    features.colors.push(0.2);
-                    features.colors.push(0.5);
+                    features.colors.push(0.05);
+                    features.colors.push(0.015);
+                    features.colors.push(0.0);
                 }
             } else if (tile.type === CONSTANTS.TILE_EXIT) {
                 for (let k = 0; k < 6; k++) {
@@ -1215,6 +1232,12 @@ function chooseColors() {
                     features.colors.push(0.1);
                     features.colors.push(0.1);
                     features.colors.push(0.0);
+                }
+            } else if (tile.type === CONSTANTS.TILE_BRICKWALL) {
+                for (let k = 0; k < 6; k++) {
+                    features.colors.push(0.0);
+                    features.colors.push(0.05);
+                    features.colors.push(0.1);
                 }
             }
 

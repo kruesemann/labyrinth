@@ -1,6 +1,7 @@
 import * as CONSTANTS from "./constants.js";
 import * as SOUND from "./sound.js";
 import * as ANIMATION from "./animation.js";
+import * as HELP from "./help.js";
 
 let stage = undefined;
 
@@ -90,6 +91,7 @@ export function removeMesh(mesh) {
 export function resetScene() {
     SOUND.fadeOutLevel();
     ANIMATION.stopAllRunning();
+    HELP.reset();
     while(stage.scene.children.length > 0){ 
         removeMesh(stage.scene.children[0]); 
     }

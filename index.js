@@ -113,6 +113,7 @@ function gameloop() {
     MAP.ambientSound();
     ANIMATION.animate();
     SOUND.controlVolume(game.counter);
+    OVERLAY.updateStatus(game.counter);
 
     LIGHT.renderLighting(game.counter);
     STAGE.render();

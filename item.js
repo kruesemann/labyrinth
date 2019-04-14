@@ -83,7 +83,7 @@ export function createCoin(i, j) {
 }
 
 export function createHeal(i, j) {
-    const heal = create(i, j, [0.75, 0, 0.1]);
+    const heal = create(i, j, [0.1, 0, 0.1]);
 
     heal.collect = function() {
         if (!PLAYER.heal()) return;

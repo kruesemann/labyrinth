@@ -1,6 +1,5 @@
 import * as SHADER from "./shader.js";
 import * as STAGE from "./stage.js";
-import * as PLAYER from "./player.js";
 import * as CONSTANTS from "./constants.js";
 
 let animations = {};
@@ -47,10 +46,9 @@ function endSnakeDance() {
     STAGE.removeMesh(animations["snakeDance"]);
 }
 
-export function playSnakeDance() {
+export function playSnakeDance(x, y) {
     SHADER.animationDanceUniforms.u_counter.value = 0;
 
-    const { x, y } = PLAYER.getCenter();
     playDance(x, y, 5, 5, "snakeDance", [
         0.4, -0.4,
         0.4,  0.4,

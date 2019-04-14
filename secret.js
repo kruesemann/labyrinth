@@ -4,6 +4,8 @@ import * as CONSTANTS from "./constants.js";
 import * as NOISE from "./noise.js";
 import * as SOUND from "./sound.js";
 import * as ITEM from "./item.js";
+import * as HELP from "./help.js";
+import * as ANIMATION from "./animation.js";
 
 let secrets = {
     wisps: []
@@ -17,9 +19,15 @@ export function reset() {
 }
 
 function createShrine(i, j) {
+    const { x, y } = MAPUTIL.tileToCenter(i, j);
     const shrine = {
         index: secrets.shrines.length,
-        item: ITEM.createShrine(i, j, secrets.shrines.length)
+        item: ITEM.createShrine(i, j, secrets.shrines.length),
+        help: HELP.create(i, j, [
+            { text: "This is a shrine. You can change form here." },
+            { text: "Hold down <b>SPACE</b> and do a little dance." },
+            { text: "The snake form requires this dance: <b>DOWN RIGHT UP LEFT</b>", trigger: function() { ANIMATION.playSnakeDance(x, y); } }
+        ])
     };
 
     secrets.shrines.push(shrine);

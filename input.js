@@ -1,8 +1,7 @@
 import * as STAGE from "./stage.js";
 import * as SOUND from "./sound.js";
 import * as PLAYER from "./player.js";
-import * as LIGHT from "./light.js";
-import * as OVERLAY from "./overlay.js";
+import * as HELP from "./help.js";
 import { nextLevel } from "./index.js";
 
 const KEY_SPACE = 32;
@@ -155,7 +154,10 @@ function keyDownHandler(event) {
             PLAYER.dropParticle();
             break;
         case 81://q
-            OVERLAY.showDialog(["hello there", "general kenobi"]);
+            const nearestHint = HELP.getNearestHint();
+            if (nearestHint.playerDist < 5) {
+                nearestHint.show();
+            }
             break;
         case 83://s
             PLAYER.moveDown();
@@ -173,7 +175,7 @@ function keyUpHandler(event) {
     switch (event.keyCode) {
         case KEY_SPACE:
             transformBuffer = { sequence: [-1, -1, -1, -1], startIndex: 0, ongoing: false, shrine: undefined };
-            SOUND.fadeOut("transforming", 100);
+            SOUND.forceFadeOut("transforming", 50);
             break;
         case KEY_LEFT:
             PLAYER.stopLeft();

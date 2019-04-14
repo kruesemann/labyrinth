@@ -120,10 +120,10 @@ export function loopClosest(soundID, time, positions, maxDist) {
     }
 
     const { x, y } = PLAYER.getCenter();
-    let minDist = -1;
+    let minDist = Infinity;
     for (let position of positions) {
         const dist = Math.hypot(position.x - x, position.y - y);
-        if (minDist === -1 || dist < minDist) {
+        if (dist < minDist) {
             minDist = dist;
         }
     }

@@ -62,6 +62,7 @@ export const TILE_PAVED         = 8;
 export const TILE_EXIT          = 9;
 export const TILE_ENTRANCE      = 10;
 export const TILE_SHRINE        = 11;
+export const TILE_BEACON        = 12;
 
 export const GROUND_TILES = [
     TILE_DIRT,

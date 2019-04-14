@@ -119,7 +119,7 @@ export function showDialog(dialog) {
 }
 
 export function updateStatus(counter) {
-    if (counter % 50 != 0) return;
+    if (counter % 50 !== 0) return;
 
     if (HELP.isPlayerNearHint()) {
         document.getElementById("status-help").style.opacity = 1;

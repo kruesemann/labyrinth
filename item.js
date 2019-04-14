@@ -111,7 +111,7 @@ export function createWisp(i, j, index) {
         this.set(0, 0);
         this.remove();
         SECRET.removeWisp(index);
-        SOUND.play("heal");
+        SOUND.play("wisp2");
     };
 
     return wisp;

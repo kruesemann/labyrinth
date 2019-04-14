@@ -8,13 +8,16 @@ import * as HELP from "./help.js";
 import * as ANIMATION from "./animation.js";
 
 let secrets = {
-    wisps: []
+    shrines: [],
+    wisps: [],
+    beacons: []
 };
 
 export function reset() {
     secrets = {
         shrines: [],
-        wisps: []
+        wisps: [],
+        beacons: []
     };
 }
 
@@ -65,7 +68,6 @@ function createWisp(i, j, color, change) {
                 newColor.push(0);
                 this.change = - this.change;
                 this.gleaming = false;
-                SOUND.forceFadeOut("wisp", 2000);
             } else {
                 newColor.push(this.color[3]);
                 this.change = - this.change;
@@ -80,6 +82,7 @@ function createWisp(i, j, color, change) {
                 this.set(0, 0);
                 this.color[3] = Math.floor(NOISE.random() * (CONSTANTS.LIGHT_WISP_BRIGHTNESS_MAX - CONSTANTS.LIGHT_WISP_BRIGHTNESS_MIN)) + CONSTANTS.LIGHT_WISP_BRIGHTNESS_MIN;
                 this.interval = Math.floor(NOISE.random() * (CONSTANTS.LIGHT_WISP_INTERVAL_MAX - CONSTANTS.LIGHT_WISP_INTERVAL_MIN)) + CONSTANTS.LIGHT_WISP_INTERVAL_MIN;
+                SOUND.forceFadeOut("wisp1", 100);
             }
         },
         remove: function() {
@@ -98,11 +101,33 @@ function createWisp(i, j, color, change) {
     secrets.wisps.push(wisp);
 }
 
+function createBeacon(i, j) {
+    const { x, y } = MAPUTIL.tileToCenter(i, j);
+
+    const beacon = {
+        index: secrets.beacons.length,
+        x,
+        y,
+        lit: false,
+        light: function() {
+            if (this.lit) return false;
+            if (LIGHT.create(x, y, [1, 1, 1, 20]) !== null) {
+                this.lit = true;
+            };
+            return this.lit;
+        }
+    };
+
+    secrets.beacons.push(beacon);
+    return beacon;
+}
+
 export function createSecrets(secretList) {
     for (let secret of secretList) {
         switch(secret.type) {
             case "shrine": createShrine(secret.i, secret.j); break;
             case "wisp": createWisp(secret.i, secret.j, secret.color, secret.change); break;
+            case "beacon": createBeacon(secret.i, secret.j); break;
             default: console.log("Unknown secret"); break;
         }
     }
@@ -112,8 +137,19 @@ export function removeWisp(index) {
     secrets.wisps[index].remove();
 }
 
-export function removeShrine(index) {
-    secrets.shrines[index].remove();
+export function lightBeacon(x, y) {
+    let nearestBeacon = undefined;
+    let minDist = Infinity;
+
+    for (let beacon of secrets.beacons) {
+        const dist = Math.hypot(beacon.x - x, beacon.y - y);
+        if (dist < minDist) {
+            nearestBeacon = beacon;
+            minDist = dist;
+        }
+    }
+
+    return nearestBeacon.light();
 }
 
 export function gleamAllWisps(counter) {
@@ -121,8 +157,7 @@ export function gleamAllWisps(counter) {
         if (counter % wisp.interval === 0) {
             wisp.set(wisp.x + CONSTANTS.LIGHT_WISP_JUMP * (Math.random() - 0.5), wisp.y + CONSTANTS.LIGHT_WISP_JUMP * (Math.random() - 0.5));
             wisp.gleaming = true;
-            const position = MAPUTIL.tileToCenter(wisp.i, wisp.j);
-            SOUND.loop("wisp", 1000, position, 40);
+            SOUND.loop("wisp1", 10, { x: wisp.x, y: wisp.y }, 40);
         }
         if (counter % 4 === 0) {
             wisp.gleam();

@@ -3,6 +3,7 @@ import * as MAP from "./map.js";
 import * as LIGHT from "./light.js";
 import * as SOUND from "./sound.js";
 import * as OVERLAY from "./overlay.js";
+import * as SECRET from "./secret.js";
 import { createPlayer } from "./object.js";
 
 let player = undefined;
@@ -33,6 +34,13 @@ export function transform(formID) {
 export function dropParticle() {
     if (player.light.color[3] >= CONSTANTS.LIGHTPARTICLE_BRIGHTNESS / 2) {
         const { x, y } = getLightPosition();
+        
+        if (MAP.isOnBeacon(player.form.nodes)
+        && SECRET.lightBeacon(x, y)) {
+            player.light.changeColor([1, 1, 1, 1]);
+            SOUND.play("beacon");
+            return;
+        }
         if (LIGHT.createParticle(x, y, [1.0, 1.0, 0.8, CONSTANTS.LIGHTPARTICLE_BRIGHTNESS]) !== null) {
             player.light.changeColor([1, 1, 1, 1]);
             SOUND.play("particle");

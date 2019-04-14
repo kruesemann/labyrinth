@@ -562,7 +562,7 @@ function buildTunnel(cave, caveSystems, targetCave) {
             const currentCave = generationData.caves[currentCaveID];
             const currentCaveSystemID = currentCave.systemID;
 
-            if ((!targetCave && cave.ID != currentCaveID)
+            if ((!targetCave && cave.ID !== currentCaveID)
             || (targetCave && targetCave.systemID === currentCaveSystemID)) {
                 // target found, build tunnel
                 generationData.tunnels.push({ i: current.i, j: current.j, ID: generationData.tunnels.length });
@@ -617,7 +617,7 @@ function buildTunnel(cave, caveSystems, targetCave) {
 
             const nCost = weightFunction(neighbor.i, neighbor.j);
             const g =
-                neighbor.i != current.i && neighbor.i != current.j
+                neighbor.i !== current.i && neighbor.i !== current.j
                 ? current.g + nCost * 1.5
                 : current.g + nCost;
 
@@ -829,7 +829,7 @@ function findBiomePath(startTile, targetTile) {
 function placeStart() {
     const wideGroundBiomes = getBiomesOfType(CONSTANTS.WIDE_GROUND_BIOME);
     let index = Math.floor((wideGroundBiomes.length - 1) * NOISE.random());
-    for (let i = index; i != index - 1; i = (i + 1) % (wideGroundBiomes.length - 1)) {
+    for (let i = index; i !== index - 1; i = (i + 1) % (wideGroundBiomes.length - 1)) {
         if (wideGroundBiomes[i].size > Math.sqrt(randomMap.numRows * randomMap.numColumns)) {
             index = i;
             break;
@@ -1009,7 +1009,7 @@ function findFreeLocations() {
 function placeSecrets() {
     // shrines
     function placeShrineTiles(i, j) {
-        getTile(i, j).type = CONSTANTS.TILE_BRICKWALL;
+        getTile(i, j).type = CONSTANTS.TILE_SHRINE;
         getTile(i - 1, j - 1).type = CONSTANTS.TILE_PAVED;
         getTile(i - 1, j).type = CONSTANTS.TILE_PAVED;
         getTile(i - 1, j + 1).type = CONSTANTS.TILE_PAVED;
@@ -1096,6 +1096,30 @@ function placeSecrets() {
                 const color = [NOISE.random(), NOISE.random(), NOISE.random(), 0];
                 const change = (Math.floor(NOISE.random() * (CONSTANTS.LIGHT_WISP_CHANGE_MAX - CONSTANTS.LIGHT_WISP_CHANGE_MIN)) + CONSTANTS.LIGHT_WISP_CHANGE_MIN) / 10;
                 features.secrets.push({ type: "wisp", i: generationData.locationGrid[index].i, j: generationData.locationGrid[index].j, color, change });
+                generationData.locationGrid[index] = 0;
+                break;
+            }
+            index = (index + 1) % (generationData.gridRows * generationData.gridColumns);
+        }
+    }
+
+    // beacons
+    function placeBeaconTiles(i, j) {
+        getTile(i - 1, j).type = CONSTANTS.TILE_BEACON;
+        getTile(i, j - 1).type = CONSTANTS.TILE_BEACON;
+        getTile(i, j).type = CONSTANTS.TILE_BEACON;
+        getTile(i, j + 1).type = CONSTANTS.TILE_BEACON;
+        getTile(i + 1, j).type = CONSTANTS.TILE_BEACON;
+    }
+
+    const numBeacons = Math.floor(NOISE.random() * 3);
+
+    for (let i = 0; i < numBeacons; i++) {
+        let index = Math.floor(NOISE.random() * (generationData.gridRows * generationData.gridColumns - 1));
+        for (let j = 0; j < generationData.gridRows * generationData.gridColumns; j++) {
+            if (generationData.locationGrid[index] !== 0) {
+                features.secrets.push({ type: "beacon", i: generationData.locationGrid[index].i, j: generationData.locationGrid[index].j });
+                placeBeaconTiles(generationData.locationGrid[index].i, generationData.locationGrid[index].j);
                 generationData.locationGrid[index] = 0;
                 break;
             }
@@ -1194,8 +1218,8 @@ function chooseColors() {
             } else if (tile.type === CONSTANTS.TILE_WATER) {
                 for (let k = 0; k < 6; k++) {
                     features.colors.push(noiseData.map[i * randomMap.numColumns + j][0] / 3);//noiseData.map[i * randomMap.numColumns + j][0] / 10 //features.colors.push(0.0);
-                    features.colors.push(noiseData.map[i * randomMap.numColumns + j][0] / 2);//noiseData.map[i * randomMap.numColumns + j][1] / 8 //features.colors.push(0.2);
-                    features.colors.push(noiseData.map[i * randomMap.numColumns + j][1] / 2);//noiseData.map[i * randomMap.numColumns + j][1] / 5 //features.colors.push(0.6);
+                    features.colors.push(Math.max(0.005, noiseData.map[i * randomMap.numColumns + j][0] / 2));//noiseData.map[i * randomMap.numColumns + j][1] / 8 //features.colors.push(0.2);
+                    features.colors.push(Math.max(0.05, noiseData.map[i * randomMap.numColumns + j][1] / 2));//noiseData.map[i * randomMap.numColumns + j][1] / 5 //features.colors.push(0.6);
                 }
             } else if (tile.type === CONSTANTS.TILE_DEEPWATER) {
                 for (let k = 0; k < 6; k++) {
@@ -1205,8 +1229,8 @@ function chooseColors() {
                 }
             } else if (tile.type === CONSTANTS.TILE_GRASS) {
                 for (let k = 0; k < 6; k++) {
-                    features.colors.push(noiseData.map[i * randomMap.numColumns + j][4] / 12);//features.colors.push(0.1);
-                    features.colors.push(noiseData.map[i * randomMap.numColumns + j][1] / 8);//features.colors.push(0.3);
+                    features.colors.push(Math.max(0.005, noiseData.map[i * randomMap.numColumns + j][4] / 12));//features.colors.push(0.1);
+                    features.colors.push(Math.max(0.05, noiseData.map[i * randomMap.numColumns + j][1] / 8));//features.colors.push(0.3);
                     features.colors.push(0.0);
                 }
             } else if (tile.type === CONSTANTS.TILE_HIGHWALL) {
@@ -1233,11 +1257,17 @@ function chooseColors() {
                     features.colors.push(0.1);
                     features.colors.push(0.0);
                 }
-            } else if (tile.type === CONSTANTS.TILE_BRICKWALL) {
+            } else if (tile.type === CONSTANTS.TILE_SHRINE) {
                 for (let k = 0; k < 6; k++) {
                     features.colors.push(0.0);
                     features.colors.push(0.05);
                     features.colors.push(0.1);
+                }
+            } else if (tile.type === CONSTANTS.TILE_BEACON) {
+                for (let k = 0; k < 6; k++) {
+                    features.colors.push(0.2);
+                    features.colors.push(0.1);
+                    features.colors.push(0);
                 }
             }
 

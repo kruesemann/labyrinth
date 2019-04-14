@@ -164,7 +164,7 @@ export function isTileNarrowWater(i, j) {
     return MAPUTIL.isTileNarrowWater(i, j, getTile);
 }
 
-export function isOnExit(nodes) {
+function isOnTileType(nodes, tileType) {
     const vertexOffsets = [
         { x: -0.5, y: -0.5 },
         { x: -0.5, y: 0 },
@@ -180,7 +180,7 @@ export function isOnExit(nodes) {
     for (let node of nodes) {
         for (let offset of vertexOffsets) {
             const { i, j } = MAPUTIL.coordsToTile(node.x + offset.x, node.y + offset.y);
-            if (getTile(i, j).type === CONSTANTS.TILE_EXIT)
+            if (getTile(i, j).type === tileType)
             {
                 return true;
             }
@@ -188,6 +188,14 @@ export function isOnExit(nodes) {
     }
 
     return false;
+}
+
+export function isOnExit(nodes) {
+    return isOnTileType(nodes, CONSTANTS.TILE_EXIT);
+}
+
+export function isOnBeacon(nodes) {
+    return isOnTileType(nodes, CONSTANTS.TILE_BEACON);
 }
 
 export function rayCast(start, target) {

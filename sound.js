@@ -25,7 +25,9 @@ export function reset() {
         { ID: "shrine", url: "assets/shrine.ogg", volume: 1, loop: true, play: false, levelStop: false },
         { ID: "hurt", url: "assets/hurt.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "heal", url: "assets/heal.ogg", volume: 1, loop: false, play: false, levelStop: true },
-        { ID: "wisp", url: "assets/wisp.ogg", volume: 1, loop: false, play: false, levelStop: true },
+        { ID: "wisp1", url: "assets/wisp1.ogg", volume: 1, loop: false, play: false, levelStop: true },
+        { ID: "wisp2", url: "assets/wisp2.ogg", volume: 1, loop: false, play: false, levelStop: true },
+        { ID: "beacon", url: "assets/beacon.ogg", volume: 1, loop: false, play: false, levelStop: true },
     ];
     
     loadSounds(soundsData, 0);
@@ -85,7 +87,7 @@ export function play(soundID, position, maxDist) {
     }
 
     const volume = getVolume(position, maxDist);
-    if (volume != 0) {
+    if (volume !== 0) {
         if (audio.sounds[soundID].isPlaying) {
             audio.sounds[soundID].stop();
         }
@@ -159,6 +161,14 @@ export function fadeOut(soundID, time) {
         audio.sounds[soundID].targetVolume = 0;
         audio.sounds[soundID].targetVolumePriority = 1;
         audio.sounds[soundID].targetVolumeStep = 10 / time;
+    } else {
+        setTimeout(function(){
+            if (audio.sounds[soundID].targetVolumePriority < 1) {
+                audio.sounds[soundID].targetVolume = 0;
+                audio.sounds[soundID].targetVolumePriority = 1;
+                audio.sounds[soundID].targetVolumeStep = 10 / time;
+            }
+        }, 500);
     }
 }
 
@@ -175,7 +185,7 @@ export function fadeOutLevel() {
 }
 
 export function controlVolume(counter) {
-    if (counter % 10 != 0) return;
+    if (counter % 10 !== 0) return;
 
     for (let soundID of audio.soundIDs) {
         if (audio.sounds[soundID].targetVolumePriority === 0) continue;
@@ -206,7 +216,7 @@ export function controlVolume(counter) {
                 audio.sounds[soundID].stop();
             }
         } else {
-            if (audio.sounds[soundID].volume != 0) {
+            if (audio.sounds[soundID].volume !== 0) {
                 audio.sounds[soundID].play();
             }
         }

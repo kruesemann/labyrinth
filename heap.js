@@ -25,7 +25,7 @@ BinaryHeap.prototype = {
 
     remove: function(node) {
         let i = 0;
-        while (i < this.size() && this.content[i] != node) {
+        while (i < this.size() && this.content[i] !== node) {
             i++;
         }
         if (i == this.size() - 1) return;

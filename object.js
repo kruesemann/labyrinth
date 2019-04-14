@@ -310,7 +310,7 @@ function create(i, j, color, speed, formID, aiID) {
 
             const position = this.getCenter();
             if (this.state.action === CONSTANTS.ACTION_CHARGING) {
-                SOUND.loop("charging", 100, position, 40);
+                SOUND.loop("charging", 100, position, 60);
             }
             
             const { update, route } = this.ai(this, counter);
@@ -319,7 +319,7 @@ function create(i, j, color, speed, formID, aiID) {
                     this.route = route;
                     if (this.state.action !== CONSTANTS.ACTION_CHARGING) {
                         this.state = { action: CONSTANTS.ACTION_CHARGING, start: counter };
-                        SOUND.play("charge", position, 40);
+                        SOUND.play("charge", position, 50);
                     }
                     return;
                 }
@@ -335,12 +335,12 @@ function create(i, j, color, speed, formID, aiID) {
             const idlePlan = AI.idle(this, counter);
             if (!idlePlan.update) return;
 
-            SOUND.play("idle", position, 50);
+            SOUND.play("idle", position, 40);
 
             this.route = idlePlan.route;
         },
         move: function(counter) {
-            if (counter % speed != 0) return false;
+            if (counter % speed !== 0) return false;
 
             if (this.route && this.route.length > 0) {
                 if (this.form.nodes[0].x >= this.route[this.route.length - 1].x && this.form.nodes[0].x <= this.route[this.route.length - 1].x
@@ -388,7 +388,7 @@ function create(i, j, color, speed, formID, aiID) {
                 dy = 0;
             }
 
-            if (dx != 0 && dy != 0 && this.form.isBlocked(dx, dy)) {
+            if (dx !== 0 && dy !== 0 && this.form.isBlocked(dx, dy)) {
                 if (this.form.isBlocked(-dx, dy)) {
                     dx = 0;
                 } else {
@@ -396,7 +396,7 @@ function create(i, j, color, speed, formID, aiID) {
                 }
             }
 
-            if (dx != 0 || dy != 0) {
+            if (dx !== 0 || dy !== 0) {
                 this.form.move(dx, dy);
                 return true;
             }

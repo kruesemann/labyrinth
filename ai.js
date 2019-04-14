@@ -61,15 +61,15 @@ function aStar(mapInfo, position, target, object) {
 
             if (neighbor.closed) continue;
             if (!object.form.isAllowed(ni, nj)) continue;
-            if (dir.i != 0
-                && dir.j != 0
+            if (dir.i !== 0
+                && dir.j !== 0
                 && !object.form.isAllowed(current.i + dir.i, current.j)
                 && !object.form.isAllowed(current.i, current.j + dir.j))
                 continue;
 
             const nCost = weightFunction(ni, nj);
             const g =
-                ni != current.i && nj != current.j
+                ni !== current.i && nj !== current.j
                 ? current.g + nCost * 1.5
                 : current.g + nCost;
 

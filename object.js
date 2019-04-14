@@ -308,16 +308,18 @@ function create(i, j, color, speed, formID, aiID) {
         plan: function(counter) {
             if (!this.ai) return;
 
-            const { update, route } = this.ai(this, counter);
-
             const position = this.getCenter();
+            if (this.state.action === CONSTANTS.ACTION_CHARGING) {
+                SOUND.loop("charging", 100, position, 40);
+            }
+            
+            const { update, route } = this.ai(this, counter);
             if (update) {
                 if (route.length) {
                     this.route = route;
                     if (this.state.action !== CONSTANTS.ACTION_CHARGING) {
                         this.state = { action: CONSTANTS.ACTION_CHARGING, start: counter };
                         SOUND.play("charge", position, 40);
-                        SOUND.loop("charging", 100, position, 40);
                     }
                     return;
                 }

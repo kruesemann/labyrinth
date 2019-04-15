@@ -147,7 +147,7 @@ export const LIGHTPARTICLE_FLICKER      = LIGHTMAP_PRECISION;
 export const LIGHTPARTICLE_DECAY        = 0.15 * LIGHTMAP_PRECISION;
 export const LIGHTPARTICLE_DEATH        = 1.5 * LIGHTMAP_PRECISION;
 
-export const LIGHT_PLAYER_GROWTH    = 1.3;
+export const LIGHT_PLAYER_GROWTH        = 1.3;
 
 export const LIGHT_WISP_JUMP            = 10;
 export const LIGHT_WISP_FLICKER         = LIGHTMAP_PRECISION * 0.5;
@@ -158,10 +158,19 @@ export const LIGHT_WISP_INTERVAL_MAX    = 2000;
 export const LIGHT_WISP_CHANGE_MIN      = 2.5 * LIGHTMAP_PRECISION;
 export const LIGHT_WISP_CHANGE_MAX      = 12 * LIGHTMAP_PRECISION;
 
+export const LIGHT_BEACON_BRIGHTNESS    = 15 * LIGHTMAP_PRECISION;
+export const LIGHT_BEACON_FLARE         = 25 * LIGHTMAP_PRECISION;
+
+export const LIGHT_FLARE_STEP_WIDTH     = 0.05;
+export const LIGHT_FLARE_STEP_TIME      = 50;
+
 // ANIMATION
-export const ANIMATION_FADE_TIME    = 500;
-export const ANIMATION_OPACITY      = 0.75;
-export const ANIMATION_DANCE_TIME   = 2500;
+export const ANIMATION_DANCE_FADE_TIME  = 500;
+export const ANIMATION_DANCE_OPACITY    = 0.75;
+export const ANIMATION_DANCE_TIME       = 2500;
+
+export const ANIMATION_SPARKS_SIZE      = 10;
+export const ANIMATION_SPARKS_TIME      = 250;
 
 // PATH FINDING
 export const DIRECTIONS = [

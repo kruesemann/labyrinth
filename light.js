@@ -72,6 +72,12 @@ export function create(x, y, color) {
                 SHADER.objectUniforms.u_lightColor.value[4 * this.uniformIndex + i] = newColor[i];
             }
         },
+        changeBrightness: function(newBrightness) {
+            this.color[3] = newBrightness;
+            SHADER.mapLightingUniforms.u_lightColor.value[4 * this.uniformIndex + 3] = newBrightness;
+            
+            SHADER.objectUniforms.u_lightColor.value[4 * this.uniformIndex + 3] = newBrightness;
+        },
         move: function(dx, dy) {
             this.pos.x += dx;
             this.pos.y += dy;
@@ -90,6 +96,25 @@ export function create(x, y, color) {
             
             SHADER.objectUniforms.u_lightPos.value[2 * this.uniformIndex] = this.pos.x;
             SHADER.objectUniforms.u_lightPos.value[2 * this.uniformIndex + 1] = this.pos.y;
+        },
+        flare: function(targetBrightness, maxBrightness) {
+            const lowerBound = flareUpInverse(this.color[3] / maxBrightness);
+            const upperBound = flareDownInverse(targetBrightness / maxBrightness);
+            const stepNum = (upperBound - lowerBound) / CONSTANTS.LIGHT_FLARE_STEP_WIDTH;
+
+            function flare(counter, light) {
+                setTimeout(() => {
+                    if (counter > stepNum) {
+                        light.changeBrightness(targetBrightness);
+                        return;
+                    }
+                    const x = lowerBound + counter * CONSTANTS.LIGHT_FLARE_STEP_WIDTH;
+                    if (x < 1) light.changeBrightness(maxBrightness * flareUp(x));
+                    else light.changeBrightness(maxBrightness * flareDown(x));
+                    flare(counter + 1, light);
+                }, CONSTANTS.LIGHT_BEACON_STEP_TIME);
+            }
+            flare(1, this);
         },
         flicker: function() {
             const rand = CONSTANTS.LIGHTPARTICLE_FLICKER * (Math.random() - 0.5);
@@ -194,4 +219,20 @@ export function renderLighting(counter) {
     SECRET.gleamAllWisps(counter);
     flickerAll(counter);
     SHADER.mapUniforms.u_texture.value = STAGE.renderToTexture([mapLightingMesh], dimensions[0], dimensions[1]);
+}
+
+function flareUp(x) {
+    return 1 - 2 * Math.pow(x - 1, 2);
+}
+
+function flareDown(x) {
+    return 1 - Math.pow(x - 1, 2);
+}
+
+function flareUpInverse(y) {
+    return 1 - Math.sqrt((1 - y) / 2);
+}
+
+function flareDownInverse(y) {
+    return 1 + Math.sqrt(1 - y);
 }

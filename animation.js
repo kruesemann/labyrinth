@@ -50,18 +50,74 @@ export function playSnakeDance(x, y) {
     SHADER.animationDanceUniforms.u_counter.value = 0;
 
     playDance(x, y, 5, 5, "snakeDance", [
-        0.4, -0.4,
-        0.4,  0.4,
-       -0.4,  0.4,
-       -0.4, -0.4,
-        0.4, -0.4,
+        -0.4,  0.4,
+        -0.4, -0.4,
+         0.4, -0.4,
+         0.4,  0.4,
+        -0.4,  0.4,
     ]);
 
     runningAnimations.push({
         uniformsID: "animationDanceUniforms",
         startTime: Date.now(),
-        time: 2 * CONSTANTS.ANIMATION_FADE_TIME + CONSTANTS.ANIMATION_DANCE_TIME,
+        time: 2 * CONSTANTS.ANIMATION_DANCE_FADE_TIME + CONSTANTS.ANIMATION_DANCE_TIME,
         onEnd: endSnakeDance,
+    });
+}
+
+function endSparks() {
+    STAGE.removeMesh(animations["sparks"]);
+}
+
+export function playSparks(x, y, baseColor) {
+    SHADER.animationSparksUniforms.u_counter.value = 0;
+
+    const size = 10;
+
+    const vertices = [
+                                      0,                               0, 0.03,
+        CONSTANTS.ANIMATION_SPARKS_SIZE,                               0, 0.03,
+                                      0, CONSTANTS.ANIMATION_SPARKS_SIZE, 0.03,
+        CONSTANTS.ANIMATION_SPARKS_SIZE,                               0, 0.03,
+        CONSTANTS.ANIMATION_SPARKS_SIZE, CONSTANTS.ANIMATION_SPARKS_SIZE, 0.03,
+                                      0, CONSTANTS.ANIMATION_SPARKS_SIZE, 0.03,
+    ];
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+
+    const animation = new THREE.Mesh(geometry, SHADER.getAnimationSparksMaterial());
+    animation.position.x = x - CONSTANTS.ANIMATION_SPARKS_SIZE / 2;
+    animation.position.y = y - CONSTANTS.ANIMATION_SPARKS_SIZE / 2;
+
+    const directions = [];
+    const colors = [];
+
+    function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    for (let i = 0; i < 12; ++i) {
+        directions.push(Math.random() - 0.5);
+        directions.push(Math.random() - 0.5);
+        colors.push(clamp(Math.random() * 0.1 + baseColor[0], 0, 1));
+        colors.push(clamp(Math.random() * 0.1 + baseColor[1], 0, 1));
+        colors.push(clamp(Math.random() * 0.1 + baseColor[2], 0, 1));
+        colors.push(Math.random() * 0.004 + 0.006);
+    }
+
+    SHADER.animationSparksUniforms.u_directions.value = new Float32Array(directions);
+    SHADER.animationSparksUniforms.u_colors.value = new Float32Array(colors);
+
+    if (animations["sparks"]) STAGE.removeMesh(animations["sparks"]);
+    STAGE.addMesh(animation);
+    animations["sparks"] = animation;
+
+    runningAnimations.push({
+        uniformsID: "animationSparksUniforms",
+        startTime: Date.now(),
+        time: 500,
+        onEnd: endSparks,
     });
 }
 

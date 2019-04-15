@@ -10,6 +10,8 @@
 * depleted health bar = death
     * collision with monsters depletes health bar
 
+* instead of health only light?
+
 ## Items
 
 * find or buy items to go along with play style

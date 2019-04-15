@@ -56,27 +56,24 @@ function createWisp(i, j, color, change) {
         gleam: function() {
             if (!this.gleaming) return;
 
-            const newColor = [];
-            for (let i = 0; i < 3; i++) {
-                newColor.push(this.light.color[i]);
-            }
+            let newBrightness = 0;
 
             if (this.light.color[3] + this.change <= this.color[3]
-                && this.light.color[3] + this.change > 0) {
-                newColor.push(this.light.color[3] + this.change);
+            && this.light.color[3] + this.change > 0) {
+                newBrightness = this.light.color[3] + this.change;
             } else if (this.light.color[3] + this.change <= 0) {
-                newColor.push(0);
+                newBrightness = 0;
                 this.change = - this.change;
                 this.gleaming = false;
             } else {
-                newColor.push(this.color[3]);
+                newBrightness = this.color[3];
                 this.change = - this.change;
             }
-            if (newColor[3] > 1) {
-                newColor[3] += CONSTANTS.LIGHT_WISP_FLICKER * (Math.random() - 0.5);
+            if (newBrightness > 1) {
+                newBrightness += CONSTANTS.LIGHT_WISP_FLICKER * (Math.random() - 0.5);
             }
 
-            this.light.changeColor(newColor);
+            this.light.changeBrightness(newBrightness);
 
             if (!this.gleaming) {
                 this.set(0, 0);
@@ -108,13 +105,13 @@ function createBeacon(i, j) {
         index: secrets.beacons.length,
         x,
         y,
-        lit: false,
-        light: function() {
-            if (this.lit) return false;
-            if (LIGHT.create(x, y, [1, 1, 1, 20]) !== null) {
-                this.lit = true;
-            };
-            return this.lit;
+        light: null,
+        lightUp: function(baseColor) {
+            if (this.light !== null) return false;
+            this.light = LIGHT.create(x, y, baseColor);
+            if (this.light === null) return false;
+            this.light.flare(CONSTANTS.LIGHT_BEACON_BRIGHTNESS, CONSTANTS.LIGHT_BEACON_FLARE);
+            return true;
         }
     };
 
@@ -137,7 +134,7 @@ export function removeWisp(index) {
     secrets.wisps[index].remove();
 }
 
-export function lightBeacon(x, y) {
+export function lightUpBeacon(x, y, baseColor) {
     let nearestBeacon = undefined;
     let minDist = Infinity;
 
@@ -149,7 +146,7 @@ export function lightBeacon(x, y) {
         }
     }
 
-    return nearestBeacon.light();
+    return nearestBeacon.lightUp(baseColor);
 }
 
 export function gleamAllWisps(counter) {

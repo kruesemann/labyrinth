@@ -4,6 +4,7 @@ import * as LIGHT from "./light.js";
 import * as SOUND from "./sound.js";
 import * as OVERLAY from "./overlay.js";
 import * as SECRET from "./secret.js";
+import * as ANIMATION from "./animation.js";
 import { createPlayer } from "./object.js";
 
 let player = undefined;
@@ -36,13 +37,13 @@ export function dropParticle() {
         const { x, y } = getLightPosition();
         
         if (MAP.isOnBeacon(player.form.nodes)
-        && SECRET.lightBeacon(x, y)) {
-            player.light.changeColor([1, 1, 1, 1]);
+        && SECRET.lightUpBeacon(x, y, [player.light.color[0], player.light.color[1], player.light.color[2], CONSTANTS.LIGHTPARTICLE_BRIGHTNESS])) {
+            player.light.changeBrightness(1);
             SOUND.play("beacon");
             return;
         }
         if (LIGHT.createParticle(x, y, [1.0, 1.0, 0.8, CONSTANTS.LIGHTPARTICLE_BRIGHTNESS]) !== null) {
-            player.light.changeColor([1, 1, 1, 1]);
+            player.light.changeBrightness(1);
             SOUND.play("particle");
         };
     }
@@ -51,7 +52,7 @@ export function dropParticle() {
 export function move(counter) {
     if (counter % 10 === 0) {
         if (player.light.color[3] < CONSTANTS.LIGHTPARTICLE_BRIGHTNESS / 2) {
-            player.light.changeColor([1, 1, 1, player.light.color[3] * CONSTANTS.LIGHT_PLAYER_GROWTH]);
+            player.light.changeBrightness(player.light.color[3] * CONSTANTS.LIGHT_PLAYER_GROWTH);
         }
     }
     if (player.move(counter)) {
@@ -128,6 +129,9 @@ function setHealth(health) {
 }
 
 export function hurt() {
+    const { x, y } = getCenter();
+    const baseColor = player.light.color;
+    ANIMATION.playSparks(x, y, baseColor);
     setHealth(Math.max(0, player.health - CONSTANTS.HEALTH_HURT));
     SOUND.play("hurt");
     return player.health === 0;
@@ -137,6 +141,11 @@ export function heal() {
     if (player.health === 100) return false;
     setHealth(Math.min(100, player.health + CONSTANTS.HEALTH_HEAL));
     return true;
+}
+
+export function flare(brightness, maxBrightness) {
+    player.light.flare(brightness, maxBrightness);
+    SOUND.play("flare");
 }
 
 export function getNearestShrine() {

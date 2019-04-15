@@ -319,17 +319,17 @@ void main(void) {
 `;
 
 const animationDanceFSrc = `
-#define FADE_TIME   ${CONSTANTS.ANIMATION_FADE_TIME}
-#define OPACITY     ${CONSTANTS.ANIMATION_OPACITY}
+#define FADE_TIME   ${CONSTANTS.ANIMATION_DANCE_FADE_TIME}
+#define OPACITY     ${CONSTANTS.ANIMATION_DANCE_OPACITY}
 #define TIME        ${CONSTANTS.ANIMATION_DANCE_TIME}
 #define STEP_TIME   ${CONSTANTS.ANIMATION_DANCE_TIME / 4}
-#define FADE_FACTOR ${CONSTANTS.ANIMATION_FADE_TIME / CONSTANTS.ANIMATION_OPACITY}
-#define SECOND_FADE ${CONSTANTS.ANIMATION_FADE_TIME + CONSTANTS.ANIMATION_DANCE_TIME}
-#define TOTAL_TIME  ${2 * CONSTANTS.ANIMATION_FADE_TIME + CONSTANTS.ANIMATION_DANCE_TIME}
-#define STEP_1      ${CONSTANTS.ANIMATION_FADE_TIME + 1 * CONSTANTS.ANIMATION_DANCE_TIME / 4}
-#define STEP_2      ${CONSTANTS.ANIMATION_FADE_TIME + 2 * CONSTANTS.ANIMATION_DANCE_TIME / 4}
-#define STEP_3      ${CONSTANTS.ANIMATION_FADE_TIME + 3 * CONSTANTS.ANIMATION_DANCE_TIME / 4}
-#define STEP_4      ${CONSTANTS.ANIMATION_FADE_TIME + 4 * CONSTANTS.ANIMATION_DANCE_TIME / 4}
+#define FADE_FACTOR ${CONSTANTS.ANIMATION_DANCE_FADE_TIME / CONSTANTS.ANIMATION_DANCE_OPACITY}
+#define SECOND_FADE ${CONSTANTS.ANIMATION_DANCE_FADE_TIME + CONSTANTS.ANIMATION_DANCE_TIME}
+#define TOTAL_TIME  ${2 * CONSTANTS.ANIMATION_DANCE_FADE_TIME + CONSTANTS.ANIMATION_DANCE_TIME}
+#define STEP_1      ${CONSTANTS.ANIMATION_DANCE_FADE_TIME + 1 * CONSTANTS.ANIMATION_DANCE_TIME / 4}
+#define STEP_2      ${CONSTANTS.ANIMATION_DANCE_FADE_TIME + 2 * CONSTANTS.ANIMATION_DANCE_TIME / 4}
+#define STEP_3      ${CONSTANTS.ANIMATION_DANCE_FADE_TIME + 3 * CONSTANTS.ANIMATION_DANCE_TIME / 4}
+#define STEP_4      ${CONSTANTS.ANIMATION_DANCE_FADE_TIME + 4 * CONSTANTS.ANIMATION_DANCE_TIME / 4}
 
 varying vec2 v_pos;
 
@@ -377,7 +377,7 @@ void main(void) {
         translate = u_moves[4];
     }
 
-    pos += translate;
+    pos -= translate;
 
     vec4 color = vec4(1.0, 1.0, 0.0, box(pos, vec2(0.2)));
 
@@ -404,4 +404,83 @@ const animationDanceShaderMaterial = new THREE.ShaderMaterial({
 
 export function getAnimationDanceMaterial() {
     return animationDanceShaderMaterial;
+}
+
+const animationSparksVSrc = `
+varying vec2 v_pos;
+
+void main(void) {
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    v_pos = position.xy;
+}
+`;
+
+const animationSparksFSrc = `
+#define TOTAL_TIME ${CONSTANTS.ANIMATION_SPARKS_TIME}
+#define SIZE       ${CONSTANTS.ANIMATION_SPARKS_SIZE}
+
+varying vec2 v_pos;
+
+uniform float u_gamma;
+uniform float u_counter;
+uniform vec2 u_directions[12];
+uniform vec4 u_colors[12];
+
+float spark(vec2 pos, vec2 direction, float brightness) {
+    vec2 radii = vec2(max(brightness * length(direction) * 10.0, brightness), brightness);
+    float angle = asin(direction.y / length(direction));
+    if (direction.x > 0.0) {
+        angle = radians(180.0) - angle;
+    }
+    return 1.0 - smoothstep(-4.0,
+                            1.0,
+                            pow(pos.x * cos(angle) - pos.y * sin(angle), 2.0)
+                            / pow(radii.x, 2.0)
+                            + pow(pos.x * sin(angle) + pos.y * cos(angle), 2.0)
+                            / pow(radii.y, 2.0));
+}
+
+void main(void) {
+    vec2 pos = v_pos.xy / vec2(float(SIZE)) - vec2(0.5);
+
+    vec4 color = vec4(0.0);
+    vec2 translate = vec2(0.0);
+    for (int i = 0; i < 12; i++) {
+        translate = u_directions[i] * u_counter / float(TOTAL_TIME);
+        float brightness = spark(pos - translate, u_directions[i], u_colors[i].a);
+        if (brightness > 0.0)
+            color += vec4(u_colors[i].rgb, 1.0);
+    }
+
+    gl_FragColor = min(vec4(1.0), color);
+
+    if (u_counter < 50.0) {
+        gl_FragColor.a *= pow(max(0.0, u_counter / 50.0), 2.0);
+    } else {
+        gl_FragColor.a *= pow(max(0.0, (float(TOTAL_TIME) - u_counter) / float(TOTAL_TIME)), 2.0);
+    }
+
+    gl_FragColor.r = pow(gl_FragColor.r, u_gamma);
+    gl_FragColor.g = pow(gl_FragColor.g, u_gamma);
+    gl_FragColor.b = pow(gl_FragColor.b, u_gamma);
+}
+`;
+
+export const animationSparksUniforms = {
+    u_gamma: { type: 'float', value: 1 },
+    u_counter: { type: 'float', value: 0 },
+    u_directions: { type: 'vec2', value: new Float32Array(24) },
+    u_colors: { type: 'vec4', value: new Float32Array(48) },
+};
+
+const animationSparksShaderMaterial = new THREE.ShaderMaterial({
+    uniforms: animationSparksUniforms,
+    vertexShader:   animationSparksVSrc,
+    fragmentShader: animationSparksFSrc,
+    depthWrite: false,
+    transparent: true,
+});
+
+export function getAnimationSparksMaterial() {
+    return animationSparksShaderMaterial;
 }

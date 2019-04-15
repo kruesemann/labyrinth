@@ -28,6 +28,7 @@ export function reset() {
         { ID: "wisp1", url: "assets/wisp1.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "wisp2", url: "assets/wisp2.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "beacon", url: "assets/beacon.ogg", volume: 1, loop: false, play: false, levelStop: true },
+        { ID: "flare", url: "assets/flare.ogg", volume: 1, loop: false, play: false, levelStop: true },
     ];
     
     loadSounds(soundsData, 0);

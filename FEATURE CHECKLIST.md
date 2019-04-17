@@ -1,0 +1,101 @@
+# Gameplay
+- [x] Basic Movement
+- [x] Particle dropping
+    - [x] Lighting beacons
+- [ ] Flaring
+    - [x] light.flare()
+    - [ ] player.flare() restrictions
+- [ ] Light recharging
+    - [ ] Beacons
+- [ ] Light as health
+    - [ ] Death when brightness reaches zero
+- [ ] Usable items
+    - [ ] Throwable lights
+    - [ ] Hint lights
+    - [ ] Nightvision
+    - [ ] Room keys
+    - [ ] Light recharger
+- [ ] Transformation
+    - [x] Shrines allowing different forms
+    - [x] Transformation dances
+- [ ] Forms
+    - [x] Dot
+    - [x] Box
+    - [x] Snake
+    - [ ] Fish
+    - [ ] Different lights for different forms
+- [ ] Enemies
+    - [x] Near monsters can be heard
+    - [x] Idle behaviour
+    - [x] Chasing AI
+    - [ ] Light-affine AI
+    - [ ] Light-avoiding AI
+    - [ ] Different sounds
+
+# Map Generation
+- [x] Cavern and cave generation
+- [ ] Different level types
+    - [x] (Flooded) Ground
+    - [x] (Flooded) Rock
+    - [ ] (Flooded) Overgrown
+    - [ ] (Flooded) Developed
+    - [ ] Flooded
+- [ ] Different cave types
+    - [x] Cave system
+    - [ ] Grand cavern
+    - [ ] Narrows
+- [x] Deterministic seeds
+- [ ] Item placement
+- [ ] Enemy placement
+- [ ] Secret placement
+    - [ ] Shrines
+    - [ ] Wisps
+    - [ ] Beacons
+    - [ ] Rooms
+
+# GUI
+- [x] Dialog system
+    - [x] triggers
+- [ ] Game Menu
+    - [ ] Seed selection
+    - [ ] Saving
+    - [ ] Options
+- [ ] Info
+    - [x] Score
+    - [ ] Seed
+    - [ ] Level
+- [ ] Status
+    - [x] Hint
+    - [ ] Form
+    - [ ] Inventory
+- [ ] Screens
+    - [x] Game
+    - [ ] Start
+    - [ ] Death
+    - [ ] Victory
+
+# Graphics
+- [ ] Lighting
+    - [x] Dynamic light and shadows
+    - [ ] More lights per map by way of dynamic shader uniform adaption
+- [ ] Textures
+- [ ] Level fade
+- [ ] Effects
+    - [x] Hit sparks
+    - [x] Snake dance animation
+    - [ ] Other dance animations
+    - [ ] Healing
+    - [ ] Transformation
+    - [ ] Particle drop sparks
+    - [ ] Death
+
+# Story
+- [ ] Tutorial following Thorke
+    - [ ] Special levels
+    - [ ] Explanation of controls and mechanics
+- [ ] Maw
+    - [ ] Appearances
+    - [ ] Fight
+- [ ] Dialog
+    - [ ] Text
+    - [ ] Sound

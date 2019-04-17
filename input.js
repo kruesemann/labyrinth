@@ -93,8 +93,9 @@ function keyDownHandler(event) {
     switch (event.keyCode) {
         case KEY_SPACE:
             if (!transformBuffer.ongoing) {
-                transformBuffer.shrine = PLAYER.getNearestShrine();
-                if (transformBuffer.shrine.playerDist < 5) {
+                transformBuffer.shrine = PLAYER.getNearestSecret("shrine");
+                if (transformBuffer.shrine
+                && transformBuffer.shrine.positionDist < 5) {
                     transformBuffer.ongoing = true;
                     SOUND.loop("transforming", 100);
                 }

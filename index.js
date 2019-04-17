@@ -78,8 +78,7 @@ function resolveCollisions() {
     if (!OBJECT.collisionWithPlayer()) return;
 
     const death = PLAYER.hurt();
-    OVERLAY.setHealth(PLAYER.getHealth());
-    game.immune = CONSTANTS.IMMUNE_TIME;
+    game.immune = CONSTANTS.PLAYER_IMMUNE_TIME;
 
     if (!death) return;
 
@@ -110,7 +109,7 @@ function gameloop() {
     OBJECT.moveEnemies(game.counter);
     game.nextLevel = PLAYER.move(game.counter);
     PLAYER.center();
-    MAP.ambientSound();
+    MAP.ambientSound(game.counter);
     ANIMATION.animate();
     SOUND.controlVolume(game.counter);
     OVERLAY.updateStatus(game.counter);

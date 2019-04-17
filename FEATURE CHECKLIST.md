@@ -15,7 +15,7 @@
     - [ ] Nightvision
     - [ ] Room keys
     - [ ] Light recharger
-- [ ] Transformation
+- [x] Transformation
     - [x] Shrines allowing different forms
     - [x] Transformation dances
 - [ ] Forms

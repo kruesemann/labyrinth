@@ -236,33 +236,16 @@ export function rayCast(start, target) {
     return true;
 }
 
-export function ambientSound() {
-    const shrinePostions = [];
-    for (let secret of map.secrets) {
-        switch (secret.soundID) {
-            case "shrine": shrinePostions.push(MAPUTIL.tileToCenter(secret.i, secret.j)); break;
-            default: break;
-        }
+export function ambientSound(counter) {
+    if (counter % 10 !== 0) return;
+
+    const nearestShrine = PLAYER.getNearestSecret("shrine");
+    const nearestBeacon = PLAYER.getNearestSecret("beacon", (beacon) => { return beacon.light !== null; });
+
+    if (nearestShrine) {
+        SOUND.loop("shrine", 100, { x: nearestShrine.x, y: nearestShrine.y }, 25);
     }
-
-    SOUND.loopClosest("shrine", 100, shrinePostions, 25);
-}
-
-export function getNearestShrine(position) {
-    let nearestShrine = undefined;
-    let minDist = Infinity;
-
-    for (let secret of map.secrets) {
-        if (secret.type !== "shrine") continue;
-
-        const { x, y } = MAPUTIL.tileToCenter(secret.i, secret.j);
-        const dist = Math.hypot(position.x - x, position.y - y);
-        if (dist < minDist) {
-            nearestShrine = secret;
-            minDist = dist;
-        }
+    if (nearestBeacon) {
+        SOUND.loop("beacon2", 100, { x: nearestBeacon.x, y: nearestBeacon.y }, 50);
     }
-
-    nearestShrine.playerDist = minDist;
-    return nearestShrine;
 }

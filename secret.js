@@ -21,10 +21,13 @@ export function reset() {
     };
 }
 
-function createShrine(i, j) {
+function createShrine(i, j, formIDs) {
     const { x, y } = MAPUTIL.tileToCenter(i, j);
     const shrine = {
         index: secrets.shrines.length,
+        x,
+        y,
+        formIDs,
         item: ITEM.createShrine(i, j, secrets.shrines.length),
         help: HELP.create(i, j, [
             { text: "This is a shrine. You can change form here." },
@@ -122,7 +125,7 @@ function createBeacon(i, j) {
 export function createSecrets(secretList) {
     for (let secret of secretList) {
         switch(secret.type) {
-            case "shrine": createShrine(secret.i, secret.j); break;
+            case "shrine": createShrine(secret.i, secret.j, secret.formIDs); break;
             case "wisp": createWisp(secret.i, secret.j, secret.color, secret.change); break;
             case "beacon": createBeacon(secret.i, secret.j); break;
             default: console.log("Unknown secret"); break;
@@ -160,4 +163,36 @@ export function gleamAllWisps(counter) {
             wisp.gleam();
         }
     }
+}
+
+export function getNearestSecret(position, secretID, pred) {
+    let nearestSecret = undefined;
+    let minDist = Infinity;
+
+    let list = undefined;
+    switch (secretID) {
+        case "shrine": list = secrets.shrines; break;
+        case "wisp": list = secrets.wisps; break;
+        case "beacon": list = secrets.beacons; break;
+        default: console.log("Unknown secret."); return;
+    }
+
+    for (let secret of list) {
+        if (pred) {
+            if (!pred(secret)) {
+                continue;
+            }
+        }
+
+        const dist = Math.hypot(position.x - secret.x, position.y - secret.y);
+        if (dist < minDist) {
+            nearestSecret = secret;
+            minDist = dist;
+        }
+    }
+
+    if (nearestSecret) {
+        nearestSecret.positionDist = minDist;
+    }
+    return nearestSecret;
 }

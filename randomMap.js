@@ -1064,17 +1064,17 @@ function placeSecrets() {
 
         if (formIDs.length) {
             if (biome.locations.length > 0) {
-                features.secrets.push({ type: "shrine", i: biome.locations[0].i, j: biome.locations[0].j, formIDs, soundID: "shrine" });
+                features.secrets.push({ type: "shrine", i: biome.locations[0].i, j: biome.locations[0].j, formIDs });
                 generationData.locationGrid[Math.round(biome.locations[0].i / CONSTANTS.LOCATION_DIST) * generationData.gridColumns + Math.round(biome.locations[0].j / CONSTANTS.LOCATION_DIST)] = 0;
                 dot = box = snake = false;
                 placeShrineTiles(biome.locations[0].i, biome.locations[0].j);
             } else if (i === generationData.pathToExit.length - 1 || i === 0) {
-                features.secrets.push({ type: "shrine", i: biome.i, j: biome.j + 2, formIDs, soundID: "shrine" });
+                features.secrets.push({ type: "shrine", i: biome.i, j: biome.j + 2, formIDs });
                 generationData.locationGrid[Math.round(biome.i / CONSTANTS.LOCATION_DIST) * generationData.gridColumns + Math.round(biome.j / CONSTANTS.LOCATION_DIST)] = 0;
                 dot = box = snake = false;
                 placeShrineTiles(biome.i, biome.j + 2);
             } else if (biome.size > 50) {
-                features.secrets.push({ type: "shrine", i: biome.i, j: biome.j, formIDs, soundID: "shrine" });
+                features.secrets.push({ type: "shrine", i: biome.i, j: biome.j, formIDs });
                 generationData.locationGrid[Math.round(biome.i / CONSTANTS.LOCATION_DIST) * generationData.gridColumns + Math.round(biome.j / CONSTANTS.LOCATION_DIST)] = 0;
                 dot = box = snake = false;
                 placeShrineTiles(biome.i, biome.j);
@@ -1112,7 +1112,7 @@ function placeSecrets() {
         getTile(i + 1, j).type = CONSTANTS.TILE_BEACON;
     }
 
-    const numBeacons = Math.floor(NOISE.random() * 3);
+    const numBeacons = Math.floor(NOISE.random() * 2) + 1;
 
     for (let i = 0; i < numBeacons; i++) {
         let index = Math.floor(NOISE.random() * (generationData.gridRows * generationData.gridColumns - 1));
@@ -1136,25 +1136,12 @@ function placeSecrets() {
  */
 function placeItems() {
     const numItems = Math.floor(NOISE.random() * 10) + 5;
-    const numHeals = Math.floor(NOISE.random() * 5) + 3;
 
     for (let i = 0; i < numItems; i++) {
         let index = Math.floor(NOISE.random() * (generationData.gridRows * generationData.gridColumns - 1));
         for (let j = 0; j < generationData.gridRows * generationData.gridColumns; j++) {
             if (generationData.locationGrid[index] !== 0) {
                 features.items.push({ type: "coin", i: generationData.locationGrid[index].i, j: generationData.locationGrid[index].j });
-                generationData.locationGrid[index] = 0;
-                break;
-            }
-            index = (index + 1) % (generationData.gridRows * generationData.gridColumns);
-        }
-    }
-
-    for (let i = 0; i < numHeals; i++) {
-        let index = Math.floor(NOISE.random() * (generationData.gridRows * generationData.gridColumns - 1));
-        for (let j = 0; j < generationData.gridRows * generationData.gridColumns; j++) {
-            if (generationData.locationGrid[index] !== 0) {
-                features.items.push({ type: "heal", i: generationData.locationGrid[index].i, j: generationData.locationGrid[index].j });
                 generationData.locationGrid[index] = 0;
                 break;
             }

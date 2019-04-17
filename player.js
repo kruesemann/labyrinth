@@ -10,17 +10,14 @@ import { createPlayer } from "./object.js";
 let player = undefined;
 
 export function reset(i, j) {
-    if (!player || player.health === 0) {
+    if (!player || getBrightness() === 0) {
         player = createPlayer(i, j, [0.1, 0.1, 0], 2, "dot");
-        setHealth(100);
     } else {
-        const health = player.health;
         player = createPlayer(i, j, [0.1, 0.1, 0], 2, player.form.ID);
-        setHealth(health);
     }
     OVERLAY.setForm(player.form.ID);
     const center = getCenter();
-    player.light = LIGHT.create(center.x, center.y, [1, 1, 1, 1]);
+    player.light = LIGHT.create(center.x, center.y, [1, 1, 1, getMaxBrightness() / 2]);
 }
 
 export function center() {
@@ -33,17 +30,17 @@ export function transform(formID) {
 }
 
 export function dropParticle() {
-    if (player.light.color[3] >= CONSTANTS.LIGHTPARTICLE_BRIGHTNESS / 2) {
+    if (getBrightness() >= CONSTANTS.PLAYER_LIGHT_PARTICLE_COST * 2) {
         const { x, y } = getLightPosition();
         
         if (MAP.isOnBeacon(player.form.nodes)
         && SECRET.lightUpBeacon(x, y, [player.light.color[0], player.light.color[1], player.light.color[2], CONSTANTS.LIGHTPARTICLE_BRIGHTNESS])) {
-            player.light.changeBrightness(1);
-            SOUND.play("beacon");
+            player.light.changeBrightness(getBrightness() - CONSTANTS.PLAYER_LIGHT_PARTICLE_COST);
+            SOUND.play("beacon1");
             return;
         }
         if (LIGHT.createParticle(x, y, [1.0, 1.0, 0.8, CONSTANTS.LIGHTPARTICLE_BRIGHTNESS]) !== null) {
-            player.light.changeBrightness(1);
+            player.light.changeBrightness(getBrightness() - CONSTANTS.PLAYER_LIGHT_PARTICLE_COST);
             SOUND.play("particle");
         };
     }
@@ -51,8 +48,11 @@ export function dropParticle() {
 
 export function move(counter) {
     if (counter % 10 === 0) {
-        if (player.light.color[3] < CONSTANTS.LIGHTPARTICLE_BRIGHTNESS / 2) {
-            player.light.changeBrightness(player.light.color[3] * CONSTANTS.LIGHT_PLAYER_GROWTH);
+        const nearestBeacon = getNearestSecret("beacon", (beacon) => { return beacon.light !== null; } );
+        if (nearestBeacon
+        && nearestBeacon.positionDist < 5
+        && getBrightness() < getMaxBrightness()) {
+            player.light.changeBrightness(getBrightness() * CONSTANTS.PLAYER_LIGHT_BEACON_GROWTH);
         }
     }
     if (player.move(counter)) {
@@ -119,28 +119,31 @@ export function getLightPosition() {
     return player.light.pos;
 }
 
-export function getHealth() {
-    return player.health;
+export function getMaxBrightness() {
+    switch (player.form.ID) {
+        case "dot": return CONSTANTS.PLAYER_LIGHT_MAX_BRIGHTNESS_DOT;
+        case "box": return CONSTANTS.PLAYER_LIGHT_MAX_BRIGHTNESS_BOX;
+        case "snake": return CONSTANTS.PLAYER_LIGHT_MAX_BRIGHTNESS_SNAKE;
+        default: console.log("Unknown player form."); return;
+    }
 }
 
-function setHealth(health) {
-    player.health = health;
-    OVERLAY.setHealth(health);
+export function getBrightness() {
+    return player.light.color[3];
+}
+
+export function increaseBrightness() {
+    player.light.changeBrightness(getBrightness() + CONSTANTS.PLAYER_LIGHT_HEAL);
 }
 
 export function hurt() {
     const { x, y } = getCenter();
     const baseColor = player.light.color;
     ANIMATION.playSparks(x, y, baseColor);
-    setHealth(Math.max(0, player.health - CONSTANTS.HEALTH_HURT));
     SOUND.play("hurt");
-    return player.health === 0;
-}
 
-export function heal() {
-    if (player.health === 100) return false;
-    setHealth(Math.min(100, player.health + CONSTANTS.HEALTH_HEAL));
-    return true;
+    player.light.changeBrightness(Math.max(0, getBrightness() - CONSTANTS.PLAYER_LIGHT_HURT));
+    return getBrightness() === 0;
 }
 
 export function flare(brightness, maxBrightness) {
@@ -148,6 +151,6 @@ export function flare(brightness, maxBrightness) {
     SOUND.play("flare");
 }
 
-export function getNearestShrine() {
-    return MAP.getNearestShrine(getCenter());
+export function getNearestSecret(secretID, pred) {
+    return SECRET.getNearestSecret(getCenter(), secretID, pred);
 }

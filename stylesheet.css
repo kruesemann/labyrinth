@@ -63,21 +63,6 @@ body {
     animation: loadingBoxAnimation 1s linear infinite alternate;
 }
 
-#info-health-bg {
-    display: inline-block;
-    width: 100px;
-    height: 18px;
-    background-color: red;
-    margin-bottom: -4px;
-    outline: 1px solid rgba(128, 128, 128, 0.25);
-}
-
-#info-health {
-    display: block;
-    background-color: green;
-    height: 100%;
-}
-
 #status {
     display: none;
     padding: 5px 0 5px 5px;

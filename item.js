@@ -75,24 +75,12 @@ export function createCoin(i, j) {
     coin.collect = function() {
         this.set(0, 0);
         increaseScore();
+        PLAYER.increaseBrightness();
         this.remove();
         SOUND.play("coin");
     };
 
     return coin;
-}
-
-export function createHeal(i, j) {
-    const heal = create(i, j, [0.1, 0, 0.1]);
-
-    heal.collect = function() {
-        if (!PLAYER.heal()) return;
-        this.set(0, 0);
-        this.remove();
-        SOUND.play("heal");
-    };
-
-    return heal;
 }
 
 export function createShrine(i, j, index) {
@@ -121,7 +109,6 @@ export function createItems(itemList) {
     for (let item of itemList) {
         switch(item.type) {
             case "coin": createCoin(item.i, item.j); break;
-            case "heal": createHeal(item.i, item.j); break;
             default: console.log("Unknown item"); break;
         }
     }

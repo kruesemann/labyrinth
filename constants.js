@@ -147,8 +147,6 @@ export const LIGHTPARTICLE_FLICKER      = LIGHTMAP_PRECISION;
 export const LIGHTPARTICLE_DECAY        = 0.15 * LIGHTMAP_PRECISION;
 export const LIGHTPARTICLE_DEATH        = 1.5 * LIGHTMAP_PRECISION;
 
-export const LIGHT_PLAYER_GROWTH        = 1.3;
-
 export const LIGHT_WISP_JUMP            = 10;
 export const LIGHT_WISP_FLICKER         = LIGHTMAP_PRECISION * 0.5;
 export const LIGHT_WISP_BRIGHTNESS_MIN  = 2.5 * LIGHTMAP_PRECISION;
@@ -192,6 +190,11 @@ export const ACTION_IDLE        = 0;
 export const ACTION_CHARGING    = 1;
 
 // PLAYER PARAMETERS
-export const IMMUNE_TIME    = 50;
-export const HEALTH_HURT    = 34;
-export const HEALTH_HEAL    = 34;
+export const PLAYER_IMMUNE_TIME                 = 50;
+export const PLAYER_LIGHT_HURT                  = 1;
+export const PLAYER_LIGHT_HEAL                  = 1;
+export const PLAYER_LIGHT_BEACON_GROWTH         = 1.3;
+export const PLAYER_LIGHT_PARTICLE_COST         = 2;
+export const PLAYER_LIGHT_MAX_BRIGHTNESS_DOT    = 5 * LIGHTMAP_PRECISION;
+export const PLAYER_LIGHT_MAX_BRIGHTNESS_BOX    = 5 * LIGHTMAP_PRECISION;
+export const PLAYER_LIGHT_MAX_BRIGHTNESS_SNAKE  = 4 * LIGHTMAP_PRECISION;

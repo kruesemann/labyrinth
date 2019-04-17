@@ -22,12 +22,12 @@ export function reset() {
         { ID: "coin", url: "assets/coin.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "charge", url: "assets/charge.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "idle", url: "assets/idle.ogg", volume: 1, loop: false, play: false, levelStop: true },
-        { ID: "shrine", url: "assets/shrine.ogg", volume: 1, loop: true, play: false, levelStop: false },
+        { ID: "shrine", url: "assets/shrine.ogg", volume: 1, loop: true, play: false, levelStop: true },
         { ID: "hurt", url: "assets/hurt.ogg", volume: 1, loop: false, play: false, levelStop: true },
-        { ID: "heal", url: "assets/heal.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "wisp1", url: "assets/wisp1.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "wisp2", url: "assets/wisp2.ogg", volume: 1, loop: false, play: false, levelStop: true },
-        { ID: "beacon", url: "assets/beacon.ogg", volume: 1, loop: false, play: false, levelStop: true },
+        { ID: "beacon1", url: "assets/beacon1.ogg", volume: 1, loop: false, play: false, levelStop: true },
+        { ID: "beacon2", url: "assets/beacon2.ogg", volume: 1, loop: true, play: false, levelStop: true },
         { ID: "flare", url: "assets/flare.ogg", volume: 1, loop: false, play: false, levelStop: true },
     ];
     
@@ -105,33 +105,6 @@ export function loop(soundID, time, position, maxDist) {
     }
 
     const volume = getVolume(position, maxDist);
-    if (audio.sounds[soundID].targetVolumePriority < 2) {
-        audio.sounds[soundID].targetVolume = volume;
-        audio.sounds[soundID].targetVolumePriority = 2;
-        audio.sounds[soundID].targetVolumeStep = 10 / time;
-    }
-}
-
-export function loopClosest(soundID, time, positions, maxDist) {
-    if (!audio.sounds[soundID]) {
-        console.log("Unknown sound:", soundID);
-        return;
-    }
-
-    if (!positions || !positions.length) {
-        return;
-    }
-
-    const { x, y } = PLAYER.getCenter();
-    let minDist = Infinity;
-    for (let position of positions) {
-        const dist = Math.hypot(position.x - x, position.y - y);
-        if (dist < minDist) {
-            minDist = dist;
-        }
-    }
-
-    const volume = Math.max(0, (maxDist - minDist) / maxDist);
     if (audio.sounds[soundID].targetVolumePriority < 2) {
         audio.sounds[soundID].targetVolume = volume;
         audio.sounds[soundID].targetVolumePriority = 2;

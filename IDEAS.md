@@ -68,6 +68,7 @@
 * game options
     * difficulty determines monster speed and AI cooldown
     * separate audio sliders
+    * customizable controls
 
 # Graphics
 

@@ -5,7 +5,7 @@ import * as HELP from "./help.js";
 import { loadSpecificLevel } from "./index.js";
 
 let display = undefined;
-let dialogActive = false;
+let dialog = undefined;
 
 export function reset(seed, level, score) {
     document.getElementById("loading-box").style.display = "none";
@@ -19,6 +19,8 @@ export function reset(seed, level, score) {
         score: document.getElementById("info-score"),
         form: document.getElementById("info-form"),
     };
+
+    dialog = undefined;
 
     document.getElementById("info-set").removeEventListener("click", loadLevel);
     document.getElementById("info-set").addEventListener("click", loadLevel);
@@ -34,6 +36,9 @@ export function reset(seed, level, score) {
 
     document.getElementById("info-gamma").removeEventListener("input", setGamma);
     document.getElementById("info-gamma").addEventListener("input", setGamma);
+
+    document.getElementById("dialog-skip").removeEventListener("click", skipDialog);
+    document.getElementById("dialog-skip").addEventListener("click", skipDialog);
 
     setSeed(seed);
     setLevel(level);
@@ -78,37 +83,78 @@ export function setForm(formID) {
     display.form.innerHTML = formID;
 }
 
-async function showText({ text, trigger }) {
-    const dialog = document.createElement("DIV");
-    dialog.classList.add("dialog");
-    dialog.innerHTML = text;
-    document.getElementById("dialog-box").appendChild(dialog);
+function clearDialog() {
+    document.getElementById("dialog-box").style.opacity = 0;
+    const dialog_buttons = document.getElementById("dialog-buttons");
+    while (dialog_buttons.firstChild) {
+        dialog_buttons.removeChild(dialog_buttons.firstChild);
+    }
+}
 
-    setTimeout(() => {
-        dialog.remove();
-    }, 5000);
+function skipDialog() {
+    clearDialog();
+    setTimeout( _ => { dialog = undefined; }, 500);
+}
+
+function showProperDialog(index) {
+    if (index === dialog.length) {
+        dialog = undefined;
+        return;
+    }
+
+    const { text, trigger, options } = dialog[index];
+    
+    document.getElementById("dialog-text").innerHTML = text;
+    document.getElementById("dialog-box").style.opacity = 1;
+
+    if (!options) {
+        const weiterButton = document.createElement("BUTTON");
+        weiterButton.classList.add("dialog-button");
+        weiterButton.innerHTML = index === dialog.length - 1 ? "Beenden" : "Weiter";
+        weiterButton.addEventListener("click", _ => { clearDialog(); setTimeout( _ => { showProperDialog(index + 1); }, 500); });
+        document.getElementById("dialog-buttons").appendChild(weiterButton);
+    } else {
+        for (let option of options) {
+            const button = document.createElement("BUTTON");
+            button.classList.add("dialog-button");
+            button.innerHTML = option.text;
+            weiterButton.addEventListener("click", _ => { clearDialog(); setTimeout( _ => { showProperDialog(option.index); }, 500); });
+            document.getElementById("dialog-buttons").appendChild(button);
+        }
+    }
 
     if (trigger) trigger();
 }
 
-async function showDialogAsync(dialog, index) {
+function showHintDialog(index) {
     if (index === dialog.length) {
-        dialogActive = false;
+        dialog = undefined;
         return;
     }
-    
-    const diologNode = dialog[index];
-    showText(diologNode);
 
-    setTimeout(() => {
-        showDialogAsync(dialog, index + 1);
-    }, 5200);
+    const { text, trigger } = dialog[index];
+    
+    document.getElementById("dialog-text").innerHTML = text;
+    document.getElementById("dialog-box").style.opacity = 1;
+
+    if (trigger) trigger();
+
+    setTimeout( _ => {
+        clearDialog();
+        setTimeout( _ => {
+            showHintDialog(index + 1);
+        }, 500);
+    }, 3000);
 }
 
-export function showDialog(dialog) {
-    if (dialogActive) return false;
-    dialogActive = true;
-    showDialogAsync(dialog, 0);
+export function showDialog(newDialog, halting) {
+    if (dialog) return false;
+    dialog = newDialog;
+    if (halting) {
+        showProperDialog(0);
+    } else {
+        showHintDialog(0);
+    }
     return true;
 }
 

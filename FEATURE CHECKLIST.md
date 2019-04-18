@@ -6,9 +6,11 @@
     - [x] light.flare()
     - [ ] player.flare() restrictions
 - [ ] Light recharging
+    - [ ] Light reserves
     - [ ] Beacons
 - [ ] Light as health
-    - [ ] Death when brightness reaches zero
+    - [x] Death when brightness reaches zero
+    - [ ] Light drain when touching enemies
 - [ ] Usable items
     - [ ] Throwable lights
     - [ ] Hint lights
@@ -54,8 +56,11 @@
     - [ ] Rooms
 
 # GUI
-- [x] Dialog system
-    - [x] triggers
+- [ ] Dialog system
+    - [x] Triggers
+    - [x] Options
+    - [x] Skip
+    - [ ] Nice Buttons
 - [ ] Game Menu
     - [ ] Seed selection
     - [ ] Saving
@@ -73,6 +78,9 @@
     - [ ] Start
     - [ ] Death
     - [ ] Victory
+- [ ] Pausing
+    - [ ] In Menu
+    - [ ] In Dialog
 
 # Graphics
 - [ ] Lighting

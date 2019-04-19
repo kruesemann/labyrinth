@@ -1,11 +1,11 @@
-import * as OVERLAY from "./overlay.js";
+import * as DIALOG from "./dialog.js";
 import * as MAPUTIL from "./mapUtil.js";
 import * as PLAYER from "./player.js";
 
-let help = [];
+let hints = [];
 
 export function reset() {
-    help = [];
+    hints = [];
 }
 
 export function create(i, j, dialog) {
@@ -14,11 +14,11 @@ export function create(i, j, dialog) {
         j,
         dialog,
         show: function() {
-            OVERLAY.showDialog(dialog);
+            DIALOG.show(dialog);
         }
     };
 
-    help.push(hint);
+    hints.push(hint);
 }
 
 export function getNearestHint() {
@@ -26,7 +26,7 @@ export function getNearestHint() {
     let nearestHint = undefined;
     let minDist = Infinity;
 
-    for (let hint of help) {
+    for (let hint of hints) {
         const position = MAPUTIL.tileToCoords(hint.i, hint.j);
         const dist = Math.hypot(position.x - x, position.y - y);
         if (dist < minDist) {

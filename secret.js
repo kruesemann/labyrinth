@@ -4,7 +4,7 @@ import * as CONSTANTS from "./constants.js";
 import * as NOISE from "./noise.js";
 import * as SOUND from "./sound.js";
 import * as ITEM from "./item.js";
-import * as HELP from "./help.js";
+import * as HINT from "./hint.js";
 import * as ANIMATION from "./animation.js";
 
 let secrets = {
@@ -29,7 +29,7 @@ function createShrine(i, j, formIDs) {
         y,
         formIDs,
         item: ITEM.createShrine(i, j, secrets.shrines.length),
-        help: HELP.create(i, j, [
+        hint: HINT.create(i, j, [
             { text: "This is a shrine. You can change form here." },
             { text: "Hold down <b>SPACE</b> and do a little dance." },
             { text: "The snake form requires this dance: <b>DOWN RIGHT UP LEFT</b>", trigger: function() { ANIMATION.playSnakeDance(x, y); } }

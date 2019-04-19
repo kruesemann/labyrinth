@@ -13,8 +13,8 @@
             --><span class="dot" style="animation-delay: 0.2s; -webkit-animation-delay: 0.2s;">.</span><!--
             --><span class="dot" style="animation-delay: 0.4s; -webkit-animation-delay: 0.4s;">.</span>
         </div>
-        <div id="info">
-            <input type="button" value="Help" id="info-help">
+        <div id="info" class="box">
+            <input type="button" class="button" value="Help" id="info-help">
 
             <label for="info-seed">Seed:</label>
             <!--<div class="info-block" id="info-seed"></div>-->
@@ -22,7 +22,7 @@
             <label for="info-level">Level:</label>
             <!--<div class="info-block" id="info-level"></div>-->
             <input type="number" min="1" style="width:50px" id="info-level">
-            <input type="button" value="set" id="info-set">
+            <input type="button" class="button" value="set" id="info-set">
 
             <div class="info-block" id="info-form"></div>
             <label for="info-form">Form:</label>
@@ -33,12 +33,11 @@
             <input type="range" min="0.25" step="0.05" max="1.25" value="1.00" id="info-gamma">
 
             <label>toggle:</label>
-            <input type="button" value="Fullscreen" id="info-fc">
-            <input type="button" value="Mute" id="info-sound">
+            <input type="button" class="button" value="Fullscreen" id="info-fc">
+            <input type="button" class="button" value="Mute" id="info-sound">
         </div>
         <div id="canvas"></div>
-        <div id="dialog-box">
-            <button id="dialog-skip">Skip</button>
+        <div id="dialog" class="box">
             <div id="dialog-text"></div>
             <div id="dialog-buttons"></div>
         </div>

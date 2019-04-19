@@ -1,7 +1,8 @@
 import * as STAGE from "./stage.js";
 import * as SOUND from "./sound.js";
 import * as PLAYER from "./player.js";
-import * as HELP from "./help.js";
+import * as HINT from "./hint.js";
+import * as DIALOG from "./dialog.js";
 import { nextLevel } from "./index.js";
 
 const KEY_SPACE = 32;
@@ -10,6 +11,7 @@ const KEY_UP    = 38;
 const KEY_RIGHT = 39;
 const KEY_DOWN  = 40;
 const KEY_F11   = 122;
+const KEY_DOT   = 190;
 
 let transformBuffer = { sequence: [-1, -1, -1, -1], startIndex: 0, ongoing: false, shrine: undefined };
 
@@ -136,6 +138,9 @@ function keyDownHandler(event) {
         case KEY_F11:
             toggleFullscreen(event);
             break;
+        case KEY_DOT:
+            DIALOG.skipCurrent();
+            break;
         case 49://1
             PLAYER.transform("dot");
             break;
@@ -148,6 +153,9 @@ function keyDownHandler(event) {
         case 65://a
             PLAYER.moveLeft();
             break;
+        case 66://c
+            nextLevel();
+            break;
         case 68://d
             PLAYER.moveRight();
             break;
@@ -158,7 +166,7 @@ function keyDownHandler(event) {
             PLAYER.flare();
             break;
         case 81://q
-            const nearestHint = HELP.getNearestHint();
+            const nearestHint = HINT.getNearestHint();
             if (nearestHint.playerDist < 5) {
                 nearestHint.show();
             }
@@ -170,7 +178,7 @@ function keyDownHandler(event) {
             PLAYER.moveUp();
             break;
         case 88://x
-            nextLevel();
+            DIALOG.reset();
             break;
     }
 }

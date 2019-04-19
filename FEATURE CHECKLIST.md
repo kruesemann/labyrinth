@@ -59,8 +59,10 @@
 - [ ] Dialog system
     - [x] Triggers
     - [x] Options
-    - [ ] Skip
-    - [ ] Nice Buttons
+    - [x] Skip
+    - [x] Nice Buttons
+    - [x] Skip current
+    - [ ] Keyboard based selection
 - [ ] Game Menu
     - [ ] Seed selection
     - [ ] Saving

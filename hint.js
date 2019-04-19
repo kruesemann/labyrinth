@@ -35,11 +35,13 @@ export function getNearestHint() {
         }
     }
 
-    nearestHint.playerDist = minDist;
+    if (nearestHint) {
+        nearestHint.playerDist = minDist;
+    }
     return nearestHint;
 }
 
 export function isPlayerNearHint() {
     const nearestHint = getNearestHint();
-    return nearestHint.playerDist < 5;
+    return nearestHint && nearestHint.playerDist < 5;
 }

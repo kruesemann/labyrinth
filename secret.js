@@ -95,6 +95,8 @@ function createWisp(i, j, color, change) {
             secrets.wisps.splice(this.index, 1);
         }
     };
+
+    if (wisp.light === null) return;
     
     wisp.light.flickering = false;
 

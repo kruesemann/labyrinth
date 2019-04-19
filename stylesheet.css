@@ -84,7 +84,7 @@ body {
     display: none;
     padding: 5px 0 5px 5px;
     width: 100px;
-    height: 100px;
+    height: 250px;
     position: absolute;
     bottom: 0px;
     left: 0;
@@ -94,12 +94,23 @@ body {
 }
 
 #status-help {
+    display: block;
+    margin: auto;
     font-size: 60px;
     opacity: 0;
     -webkit-transition: opacity 1s;
     transition: opacity 1s;
     -webkit-animation: helpAnimation 1s ease-in-out infinite alternate;
     animation: helpAnimation 1s ease-in-out infinite alternate;
+}
+
+#status-light {
+    display: block;
+    width: 0px;
+    height: 0px;
+    margin: auto;
+    background-color: rgba(255, 255, 255, 0);
+    box-shadow: 0px 0px 25px 25px rgb(255, 255, 255);
 }
 
 .dot {

@@ -81,11 +81,13 @@ function getVolume(position, maxDist) {
     return Math.max(0, (maxDist - Math.hypot(position.x - x, position.y - y)) / maxDist);
 }
 
-export function play(soundID, position, maxDist) {
+export function play(soundID, tryOnly, position, maxDist) {
     if (!audio.sounds[soundID]) {
         console.log("Unknown sound:", soundID);
         return;
     }
+
+    if (tryOnly && audio.sounds[soundID].isPlaying) return;
 
     const volume = getVolume(position, maxDist);
     if (volume !== 0) {

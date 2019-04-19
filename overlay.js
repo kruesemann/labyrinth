@@ -18,6 +18,7 @@ export function reset(seed, level, score) {
         level: document.getElementById("info-level"),
         score: document.getElementById("info-score"),
         form: document.getElementById("info-form"),
+        light: document.getElementById("status-light"),
     };
 
     dialog = undefined;
@@ -44,6 +45,7 @@ export function reset(seed, level, score) {
     setLevel(level);
     setScore(score);
     setForm("dot");
+    setLight([0, 0, 0, 0]);
 }
 
 function loadLevel() {
@@ -81,6 +83,10 @@ export function setScore(score) {
 
 export function setForm(formID) {
     display.form.innerHTML = formID;
+}
+
+export function setLight(color) {
+    display.light.style.boxShadow = `0px 0px ${color[3]}px ${color[3]}px rgb(${color[0] * 255},${color[1] * 255},${color[2] * 255})`;
 }
 
 function clearDialog() {

@@ -2,15 +2,15 @@
 - [x] Basic Movement
 - [x] Particle dropping
     - [x] Lighting beacons
-- [ ] Flaring
+- [x] Flaring
     - [x] light.flare()
-    - [ ] player.flare() restrictions
-- [ ] Light recharging
-    - [ ] Light reserves
-    - [ ] Beacons
-- [ ] Light as health
+    - [x] player.flare() restrictions
+- [x] Light recharging
+    - [x] Light reserves
+    - [x] Beacons
+- [x] Light as health
     - [x] Death when brightness reaches zero
-    - [ ] Light drain when touching enemies
+    - [x] Light drain when touching enemies
 - [ ] Usable items
     - [ ] Throwable lights
     - [ ] Hint lights
@@ -59,7 +59,7 @@
 - [ ] Dialog system
     - [x] Triggers
     - [x] Options
-    - [x] Skip
+    - [ ] Skip
     - [ ] Nice Buttons
 - [ ] Game Menu
     - [ ] Seed selection
@@ -73,6 +73,7 @@
     - [x] Hint
     - [ ] Form
     - [ ] Inventory
+    - [ ] Light
 - [ ] Screens
     - [x] Game
     - [ ] Start

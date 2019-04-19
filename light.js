@@ -64,6 +64,7 @@ export function create(x, y, color) {
         flickering: true,
         fade: false,
         animationStep: 0,
+        flaring: false,
         changeColor: function(newColor) {
             this.color = newColor;
             for (let i = 0; i < 4; i++) {
@@ -72,11 +73,15 @@ export function create(x, y, color) {
                 SHADER.objectUniforms.u_lightColor.value[4 * this.uniformIndex + i] = newColor[i];
             }
         },
-        changeBrightness: function(newBrightness) {
+        setBrightness: function(newBrightness) {
+            if (newBrightness < 0) newBrightness = 0;
             this.color[3] = newBrightness;
             SHADER.mapLightingUniforms.u_lightColor.value[4 * this.uniformIndex + 3] = newBrightness;
             
             SHADER.objectUniforms.u_lightColor.value[4 * this.uniformIndex + 3] = newBrightness;
+        },
+        changeBrightness: function(difference) {
+            this.setBrightness(this.color[3] + difference);
         },
         move: function(dx, dy) {
             this.pos.x += dx;
@@ -98,6 +103,8 @@ export function create(x, y, color) {
             SHADER.objectUniforms.u_lightPos.value[2 * this.uniformIndex + 1] = this.pos.y;
         },
         flare: function(targetBrightness, maxBrightness) {
+            if (this.flaring) return;
+            this.flaring = true;
             const lowerBound = flareUpInverse(this.color[3] / maxBrightness);
             const upperBound = flareDownInverse(targetBrightness / maxBrightness);
             const stepNum = (upperBound - lowerBound) / CONSTANTS.LIGHT_FLARE_STEP_WIDTH;
@@ -105,12 +112,13 @@ export function create(x, y, color) {
             function flare(counter, light) {
                 setTimeout(() => {
                     if (counter > stepNum) {
-                        light.changeBrightness(targetBrightness);
+                        light.setBrightness(targetBrightness);
+                        light.flaring = false;
                         return;
                     }
                     const x = lowerBound + counter * CONSTANTS.LIGHT_FLARE_STEP_WIDTH;
-                    if (x < 1) light.changeBrightness(maxBrightness * flareUp(x));
-                    else light.changeBrightness(maxBrightness * flareDown(x));
+                    if (x < 1) light.setBrightness(maxBrightness * flareUp(x));
+                    else light.setBrightness(maxBrightness * flareDown(x));
                     flare(counter + 1, light);
                 }, CONSTANTS.LIGHT_BEACON_STEP_TIME);
             }

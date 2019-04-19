@@ -24,7 +24,6 @@ export function reset() {
         mapSeed: 0,
         counter: 0,
         nextLevel: true,
-        immune: 0,
     };
 
     EVENT.on("soundReady", setup);
@@ -70,17 +69,9 @@ function loadNextMap() {
 }
 
 function resolveCollisions() {
-    if (game.immune !== 0) {
-        game.immune--;
-        return;
-    }
-
     if (!OBJECT.collisionWithPlayer()) return;
 
-    const death = PLAYER.hurt();
-    game.immune = CONSTANTS.PLAYER_IMMUNE_TIME;
-
-    if (!death) return;
+    if (!PLAYER.hurt()) return;
 
     alert("DEAD!! AHHHHHH!!!");
     setScore(0);

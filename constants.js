@@ -190,11 +190,13 @@ export const ACTION_IDLE        = 0;
 export const ACTION_CHARGING    = 1;
 
 // PLAYER PARAMETERS
-export const PLAYER_IMMUNE_TIME                 = 50;
-export const PLAYER_LIGHT_HURT                  = 1;
+export const PLAYER_LIGHT_HURT                  = 0.3;
 export const PLAYER_LIGHT_HEAL                  = 1;
-export const PLAYER_LIGHT_BEACON_GROWTH         = 1.3;
-export const PLAYER_LIGHT_PARTICLE_COST         = 2;
+export const PLAYER_LIGHT_BEACON_GROWTH         = 1;
+export const PLAYER_LIGHT_GROWTH_FACTOR         = 0.3;
 export const PLAYER_LIGHT_MAX_BRIGHTNESS_DOT    = 5 * LIGHTMAP_PRECISION;
 export const PLAYER_LIGHT_MAX_BRIGHTNESS_BOX    = 5 * LIGHTMAP_PRECISION;
 export const PLAYER_LIGHT_MAX_BRIGHTNESS_SNAKE  = 4 * LIGHTMAP_PRECISION;
+export const PLAYER_LIGHT_RESERVES_MAX_DOT      = 20 * LIGHTMAP_PRECISION;
+export const PLAYER_LIGHT_RESERVES_MAX_BOX      = 20 * LIGHTMAP_PRECISION;
+export const PLAYER_LIGHT_RESERVES_MAX_SNAKE    = 15 * LIGHTMAP_PRECISION;

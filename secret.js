@@ -76,7 +76,7 @@ function createWisp(i, j, color, change) {
                 newBrightness += CONSTANTS.LIGHT_WISP_FLICKER * (Math.random() - 0.5);
             }
 
-            this.light.changeBrightness(newBrightness);
+            this.light.setBrightness(newBrightness);
 
             if (!this.gleaming) {
                 this.set(0, 0);

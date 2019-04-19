@@ -155,7 +155,7 @@ function keyDownHandler(event) {
             PLAYER.dropParticle();
             break;
         case 70://f
-            PLAYER.flare(1, 30);
+            PLAYER.flare();
             break;
         case 81://q
             const nearestHint = HELP.getNearestHint();

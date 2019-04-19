@@ -44,6 +44,7 @@ function playDance(x, y, width, height, animationID, danceMoves) {
 
 function endSnakeDance() {
     STAGE.removeMesh(animations["snakeDance"]);
+    animations["snakeDance"] = undefined;
 }
 
 export function playSnakeDance(x, y) {
@@ -67,12 +68,11 @@ export function playSnakeDance(x, y) {
 
 function endSparks() {
     STAGE.removeMesh(animations["sparks"]);
+    animations["sparks"] = undefined;
 }
 
 export function playSparks(x, y, baseColor) {
-    SHADER.animationSparksUniforms.u_counter.value = 0;
-
-    const size = 10;
+    if (animations["sparks"]) return;
 
     const vertices = [
                                       0,                               0, 0.03,
@@ -106,17 +106,17 @@ export function playSparks(x, y, baseColor) {
         colors.push(Math.random() * 0.004 + 0.006);
     }
 
+    SHADER.animationSparksUniforms.u_counter.value = 0;
     SHADER.animationSparksUniforms.u_directions.value = new Float32Array(directions);
     SHADER.animationSparksUniforms.u_colors.value = new Float32Array(colors);
 
-    if (animations["sparks"]) STAGE.removeMesh(animations["sparks"]);
     STAGE.addMesh(animation);
     animations["sparks"] = animation;
 
     runningAnimations.push({
         uniformsID: "animationSparksUniforms",
         startTime: Date.now(),
-        time: 500,
+        time: CONSTANTS.ANIMATION_SPARKS_TIME,
         onEnd: endSparks,
     });
 }
@@ -124,9 +124,9 @@ export function playSparks(x, y, baseColor) {
 export function animate() {
     for (let i = 0; i < runningAnimations.length; i++) {
         const animation = runningAnimations[i];
-        if (SHADER[animation.uniformsID].u_counter.value === animation.time) {
-            animation.onEnd();
+        if (SHADER[animation.uniformsID].u_counter.value >= animation.time) {
             runningAnimations.splice(i--, 1);
+            animation.onEnd();
         } else {
             SHADER[animation.uniformsID].u_counter.value = Date.now() - animation.startTime;
         }

@@ -319,7 +319,7 @@ function create(i, j, color, speed, formID, aiID) {
                     this.route = route;
                     if (this.state.action !== CONSTANTS.ACTION_CHARGING) {
                         this.state = { action: CONSTANTS.ACTION_CHARGING, start: counter };
-                        SOUND.play("charge", position, 50);
+                        SOUND.play("charge", false, position, 50);
                     }
                     return;
                 }
@@ -335,7 +335,7 @@ function create(i, j, color, speed, formID, aiID) {
             const idlePlan = AI.idle(this, counter);
             if (!idlePlan.update) return;
 
-            SOUND.play("idle", position, 40);
+            SOUND.play("idle", false, position, 40);
 
             this.route = idlePlan.route;
         },

@@ -3,8 +3,10 @@ import * as SOUND from "./sound.js";
 import * as PLAYER from "./player.js";
 import * as HINT from "./hint.js";
 import * as DIALOG from "./dialog.js";
+import * as INVENTORY from "./inventory.js";
 import { nextLevel } from "./index.js";
 
+const KEY_TAB   = 9;
 const KEY_SPACE = 32;
 const KEY_LEFT  = 37;
 const KEY_UP    = 38;
@@ -93,6 +95,10 @@ function keyDownHandler(event) {
     }
 
     switch (event.keyCode) {
+        case KEY_TAB:
+            event.preventDefault();
+            INVENTORY.browseRight();
+            break;
         case KEY_SPACE:
             if (!transformBuffer.ongoing) {
                 transformBuffer.shrine = PLAYER.getNearestSecret("shrine");
@@ -153,7 +159,7 @@ function keyDownHandler(event) {
         case 65://a
             PLAYER.moveLeft();
             break;
-        case 66://c
+        case 67://c
             nextLevel();
             break;
         case 68://d
@@ -179,6 +185,13 @@ function keyDownHandler(event) {
             break;
         case 88://x
             DIALOG.reset();
+            break;
+        case 86://v
+            INVENTORY.useItem();
+            break;
+        case 66://b
+            INVENTORY.addHintlight(5);
+            INVENTORY.addSendlight(5);
             break;
     }
 }

@@ -2,6 +2,7 @@ import * as CONSTANTS from "./constants.js";
 import * as SOUND from "./sound.js";
 import * as ANIMATION from "./animation.js";
 import * as HINT from "./hint.js";
+import * as INVENTORY from "./inventory.js";
 
 let stage = undefined;
 
@@ -91,6 +92,7 @@ export function removeMesh(mesh) {
 export function resetScene() {
     SOUND.fadeOutLevel();
     ANIMATION.stopAllRunning();
+    INVENTORY.reset();
     HINT.reset();
     while(stage.scene.children.length > 0){ 
         removeMesh(stage.scene.children[0]); 

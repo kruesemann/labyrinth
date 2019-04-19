@@ -11,7 +11,7 @@ let dimensions = undefined;
 export function reset(numRows, numColumns, level) {
     removeAllLights();
 
-    dimensions = [CONSTANTS.LIGHTMAP_PRECISION * numColumns, CONSTANTS.LIGHTMAP_PRECISION * numRows];
+    dimensions = [CONSTANTS.LIGHT_MAP_PRECISION * numColumns, CONSTANTS.LIGHT_MAP_PRECISION * numRows];
 
     const lightGeometry = new THREE.BufferGeometry();
     lightGeometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array([
@@ -87,8 +87,8 @@ export function create(x, y, color) {
             this.pos.x += dx;
             this.pos.y += dy;
 
-            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex] = CONSTANTS.LIGHTMAP_PRECISION * this.pos.x;
-            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex + 1] = CONSTANTS.LIGHTMAP_PRECISION * this.pos.y;
+            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex] = CONSTANTS.LIGHT_MAP_PRECISION * this.pos.x;
+            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex + 1] = CONSTANTS.LIGHT_MAP_PRECISION * this.pos.y;
 
             SHADER.objectUniforms.u_lightPos.value[2 * this.uniformIndex] = this.pos.x;
             SHADER.objectUniforms.u_lightPos.value[2 * this.uniformIndex + 1] = this.pos.y;
@@ -96,8 +96,8 @@ export function create(x, y, color) {
         set: function(x, y) {
             this.pos = { x, y };
 
-            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex] = CONSTANTS.LIGHTMAP_PRECISION * this.pos.x;
-            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex + 1] = CONSTANTS.LIGHTMAP_PRECISION * this.pos.y;
+            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex] = CONSTANTS.LIGHT_MAP_PRECISION * this.pos.x;
+            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex + 1] = CONSTANTS.LIGHT_MAP_PRECISION * this.pos.y;
             
             SHADER.objectUniforms.u_lightPos.value[2 * this.uniformIndex] = this.pos.x;
             SHADER.objectUniforms.u_lightPos.value[2 * this.uniformIndex + 1] = this.pos.y;
@@ -125,7 +125,7 @@ export function create(x, y, color) {
             flare(1, this);
         },
         flicker: function() {
-            const rand = CONSTANTS.LIGHTPARTICLE_FLICKER * (Math.random() - 0.5);
+            const rand = CONSTANTS.LIGHT_PARTICLE_FLICKER * (Math.random() - 0.5);
 
             const intensity = this.color[3] + rand < 0.1 ? 0 : this.color[3] + rand;
 
@@ -134,8 +134,8 @@ export function create(x, y, color) {
             SHADER.objectUniforms.u_lightColor.value[4 * this.uniformIndex + 3] = intensity;
         },
         die: function() {
-            this.color[3] -= CONSTANTS.LIGHTPARTICLE_DECAY;
-            return this.color[3] <= CONSTANTS.LIGHTPARTICLE_DEATH;
+            this.color[3] -= CONSTANTS.LIGHT_PARTICLE_DECAY;
+            return this.color[3] <= CONSTANTS.LIGHT_PARTICLE_DEATH;
         },
         remove: function() {
             removeLight(this.index);

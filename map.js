@@ -18,7 +18,7 @@ export function reset(seed, numRows, numColumns, gameSeed, level) {
     ITEM.reset();
     SECRET.reset();
 
-    const  { tileMap, start, enemies, items, secrets, colors } = RANDOMMAP.create(seed, numRows, numColumns, gameSeed, level);
+    const  { tileMap, start, exit, enemies, items, secrets, colors } = RANDOMMAP.create(seed, numRows, numColumns, gameSeed, level);
 
     map = {
         seed,
@@ -27,6 +27,7 @@ export function reset(seed, numRows, numColumns, gameSeed, level) {
         numColumns,
         secrets,
         mesh: undefined,
+        exitCoords: MAPUTIL.tileToCenter(exit.i, exit.j)
     };
 
     PLAYER.reset(start.i, start.j);
@@ -44,6 +45,10 @@ export function getTileMapInfo() {
 
 export function getTile(i, j) {
     return map.tileMap[i * map.numColumns + j];
+}
+
+export function getExitCoords() {
+    return map.exitCoords;
 }
 
 function createTexture(colors) {
@@ -82,8 +87,8 @@ function createTexture(colors) {
     const mapMesh = new THREE.Mesh(geometry, SHADER.getMapTextureMaterial());
     SHADER.mapLightingUniforms.u_texture.value = STAGE.renderToTexture([mapMesh], numColumns, numRows);
     SHADER.objectUniforms.u_texture.value = SHADER.mapLightingUniforms.u_texture.value;
-    SHADER.objectUniforms.u_dimensions.value = [CONSTANTS.LIGHTMAP_PRECISION * numColumns, CONSTANTS.LIGHTMAP_PRECISION * numRows];
-    SHADER.objectUniforms.u_lightPrecision.value = CONSTANTS.LIGHTMAP_PRECISION;
+    SHADER.objectUniforms.u_dimensions.value = [CONSTANTS.LIGHT_MAP_PRECISION * numColumns, CONSTANTS.LIGHT_MAP_PRECISION * numRows];
+    SHADER.objectUniforms.u_lightPrecision.value = CONSTANTS.LIGHT_MAP_PRECISION;
 }
 
 function createMesh() {

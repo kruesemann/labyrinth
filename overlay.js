@@ -123,3 +123,11 @@ export function updateStatus(counter) {
         document.getElementById("status-help").style.opacity = 0;
     }
 }
+
+export function setActiveItem(item) {
+    if (!item) {
+        document.getElementById("status-item").innerHTML = "";
+        return;
+    }
+    document.getElementById("status-item").innerHTML = item.name + " [" + item.number + "]";
+}

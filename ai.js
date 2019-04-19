@@ -3,96 +3,10 @@ import * as MAPUTIL from "./mapUtil.js";
 import * as PLAYER from "./player.js";
 import * as CONSTANTS from "./constants.js";
 import * as LIGHT from "./light.js";
-import { BinaryHeap } from "./heap.js";
-
-function aStar(mapInfo, position, target, object) {
-    const { numColumns, numRows } = mapInfo;
-    const startTile = MAPUTIL.coordsToTile(position.x, position.y);
-    const targetTile = MAPUTIL.coordsToTile(target.x, target.y);
-    const compMap = [];
-  
-    const weightFunction = function(i, j) {
-        if (object.form.isAllowed(i, j)) return 1;
-        return 2;
-    };
-  
-    for (let i = 0; i < numColumns; i++) {
-        for (let j = 0; j < numRows; j++) {
-            compMap.push({
-                i: i,
-                j: j,
-                visited: false,
-                closed: false,
-                pred: null,
-                f: undefined,
-                g: undefined
-            });
-        }
-    }
-  
-    const heap = new BinaryHeap(node => node.f);
-  
-    const start = compMap[startTile.i * numColumns + startTile.j];
-    start.g = 0;
-    start.f = MAPUTIL.manhattan(startTile.i, startTile.j, targetTile.i, targetTile.j);
-  
-    heap.push(start);
-  
-    while (heap.size() > 0) {
-        let current = heap.pop();
-
-        if (current.i === targetTile.i && current.j === targetTile.j) {
-            const path = [];
-            while (current) {
-                path.push(MAPUTIL.tileToCenter(current.i, current.j));
-                current = current.pred;
-            }
-
-            return path;
-        }
-
-        current.closed = true;
-
-        for (let dir of CONSTANTS.DIRECTIONS) {
-            const ni = current.i + dir.i;
-            const nj = current.j + dir.j;
-
-            const neighbor = compMap[ni * numColumns + nj];
-
-            if (neighbor.closed) continue;
-            if (!object.form.isAllowed(ni, nj)) continue;
-            if (dir.i !== 0
-                && dir.j !== 0
-                && !object.form.isAllowed(current.i + dir.i, current.j)
-                && !object.form.isAllowed(current.i, current.j + dir.j))
-                continue;
-
-            const nCost = weightFunction(ni, nj);
-            const g =
-                ni !== current.i && nj !== current.j
-                ? current.g + nCost * 1.5
-                : current.g + nCost;
-
-            if (neighbor.visited && g >= neighbor.g) continue;
-            neighbor.pred = current;
-            neighbor.g = g;
-            neighbor.f = g + MAPUTIL.manhattan(ni, nj, targetTile.i, targetTile.j);
-
-            if (!neighbor.visited) {
-                neighbor.visited = true;
-                heap.push(neighbor);
-            } else {
-                heap.rescoreElement(neighbor);
-            }
-        }
-    }
-
-    return [];
-}
 
 export function test(self, counter) {
     if (counter % 100 === 0) {
-        return { update: true, route: aStar(MAP.getTileMapInfo(), self.getHead(), PLAYER.getHead(), self) };
+        return { update: true, route: MAPUTIL.aStar(MAP.getTileMapInfo(), self.getHead(), PLAYER.getHead(), self.form.isAllowed) };
     }
     return { update: false, route: undefined };
 }
@@ -115,7 +29,7 @@ export function idle(self, counter) {
         }
 
         const targetTile = prox[Math.floor((prox.length - 1) * Math.random() + 1)];
-        const route = aStar(MAP.getTileMapInfo(), { x, y }, MAPUTIL.tileToCenter(targetTile.i, targetTile.j), self);
+        const route = MAPUTIL.aStar(MAP.getTileMapInfo(), { x, y }, MAPUTIL.tileToCenter(targetTile.i, targetTile.j), self.form.isAllowed);
         return { update: true, route };
     }
     return { update: false, route: undefined };
@@ -123,7 +37,7 @@ export function idle(self, counter) {
 
 export function proxHunter(self, counter) {
     if (counter % 100 === 0) {
-        const route = aStar(MAP.getTileMapInfo(), self.getHead(), PLAYER.getTail(), self);
+        const route = MAPUTIL.aStar(MAP.getTileMapInfo(), self.getHead(), PLAYER.getTail(), self.form.isAllowed);
         return { update: true, route: route.length < 25 ? route : [] };
     }
     return { update: false, route: undefined };
@@ -135,7 +49,7 @@ export function lightAffine(self, counter) {
         for (let i = LIGHT.lights.length - 1; i >= 0; i--) {
             if (LIGHT.lights[i].color[3] === 0) continue;
             if (MAP.rayCast(self.getHead(), LIGHT.lights[i].pos)) {
-                route = aStar(MAP.getTileMapInfo(), self.getHead(), LIGHT.lights[i].pos, self);
+                route = MAPUTIL.aStar(MAP.getTileMapInfo(), self.getHead(), LIGHT.lights[i].pos, self.form.isAllowed);
                 if (route) {
                     return { update: true, route: route.length > 5 ? route : [] };
                 }

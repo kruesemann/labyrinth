@@ -11,6 +11,7 @@ import * as NOISE from "./noise.js";
 import * as EVENT from "./event.js";
 import * as ANIMATION from "./animation.js";
 import * as SOUND from "./sound.js";
+import * as INVENTORY from "./inventory.js";
 
 let game = undefined;
 
@@ -95,6 +96,7 @@ function gameloop() {
         game.counter++;
     }
     
+    INVENTORY.processActiveItems(game.counter);
     ITEM.collectItemsUnderPlayer();
     OBJECT.planEnemies(game.counter);
     OBJECT.moveEnemies(game.counter);

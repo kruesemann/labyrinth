@@ -4,6 +4,7 @@ import * as SOUND from "./sound.js";
 import * as MAPUTIL from "./mapUtil.js";
 import * as PLAYER from "./player.js";
 import * as SECRET from "./secret.js";
+import * as INVENTORY from "./inventory.js";
 import { increaseScore } from "./index.js";
 
 let items = [];
@@ -97,6 +98,7 @@ export function createWisp(i, j, index) {
 
     wisp.collect = function() {
         this.set(0, 0);
+        INVENTORY.addHintlight();
         this.remove();
         SECRET.removeWisp(index);
         SOUND.play("wisp2");

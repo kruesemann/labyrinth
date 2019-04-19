@@ -29,6 +29,7 @@ export function reset() {
         { ID: "beacon1", url: "assets/beacon1.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "beacon2", url: "assets/beacon2.ogg", volume: 1, loop: true, play: false, levelStop: true },
         { ID: "flare", url: "assets/flare.ogg", volume: 1, loop: false, play: false, levelStop: true },
+        { ID: "hintlight", url: "assets/hintlight.ogg", volume: 1, loop: false, play: false, levelStop: true },
     ];
     
     loadSounds(soundsData, 0);

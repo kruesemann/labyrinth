@@ -340,7 +340,7 @@ function create(i, j, color, speed, formID, aiID) {
             this.route = idlePlan.route;
         },
         move: function(counter) {
-            if (counter % speed !== 0) return false;
+            if (counter % this.speed !== 0) return false;
 
             if (this.route && this.route.length > 0) {
                 if (this.form.nodes[0].x >= this.route[this.route.length - 1].x && this.form.nodes[0].x <= this.route[this.route.length - 1].x

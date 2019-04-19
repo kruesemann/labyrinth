@@ -44,13 +44,13 @@ export function dropParticle() {
     const { x, y } = getLightPosition();
     
     if (MAP.isOnBeacon(player.form.nodes)
-    && SECRET.lightUpBeacon(x, y, [player.light.color[0], player.light.color[1], player.light.color[2], CONSTANTS.LIGHTPARTICLE_BRIGHTNESS])) {
+    && SECRET.lightUpBeacon(x, y, [player.light.color[0], player.light.color[1], player.light.color[2], CONSTANTS.LIGHT_PARTICLE_BRIGHTNESS])) {
         player.light.setBrightness(1);
         updateStatusLight();
         SOUND.play("beacon1");
         return;
     }
-    if (LIGHT.createParticle(x, y, [1.0, 1.0, 0.8, CONSTANTS.LIGHTPARTICLE_BRIGHTNESS]) !== null) {
+    if (LIGHT.createParticle(x, y, [1.0, 1.0, 0.8, CONSTANTS.LIGHT_PARTICLE_BRIGHTNESS]) !== null) {
         player.light.setBrightness(1);
         updateStatusLight();
         SOUND.play("particle");

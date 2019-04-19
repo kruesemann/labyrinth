@@ -158,10 +158,10 @@ body {
 
 @-webkit-keyframes helpAnimation {
     0%   { text-shadow: 0 0 3px #ffff55; }
-    100% { text-shadow: 0 0 10px #ffff55; }
+    100% { text-shadow: 0 0 15px #ffff55; }
 }
 
 @keyframes helpAnimation {
     0%   { text-shadow: 0 0 3px #ffff55; }
-    100% { text-shadow: 0 0 10px #ffff55; }
+    100% { text-shadow: 0 0 15px #ffff55; }
 }

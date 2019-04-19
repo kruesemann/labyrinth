@@ -110,6 +110,7 @@ export function create(seed, numRows, numColumns, gameSeed, level) {
     return {
         tileMap: randomMap.tileMap,
         start: features.start,
+        exit: features.exit,
         enemies: features.enemies,
         items: features.items,
         secrets: features.secrets,

@@ -5,7 +5,7 @@ import * as MAPUTIL from "./mapUtil.js";
 import * as PLAYER from "./player.js";
 import * as SECRET from "./secret.js";
 import * as INVENTORY from "./inventory.js";
-import { increaseScore } from "./index.js";
+import * as GAME from "./game.js";
 
 let items = [];
 
@@ -75,7 +75,7 @@ export function createCoin(i, j) {
 
     coin.collect = function() {
         this.set(0, 0);
-        increaseScore();
+        GAME.increaseScore();
         PLAYER.increaseBrightness();
         this.remove();
         SOUND.play("coin");

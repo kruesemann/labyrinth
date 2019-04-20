@@ -12,8 +12,8 @@
     - [x] Death when brightness reaches zero
     - [x] Light drain when touching enemies
 - [ ] Usable items
-    - [ ] Throwable lights
-    - [ ] Hint lights
+    - [x] Throwable lights
+    - [x] Hint lights
     - [ ] Nightvision
     - [ ] Room keys
     - [ ] Light recharger
@@ -64,13 +64,14 @@
     - [x] Skip current
     - [ ] Keyboard based selection
 - [ ] Game Menu
-    - [ ] Seed selection
+    - [x] Seed selection
     - [ ] Saving
-    - [ ] Options
+    - [x] Options
 - [ ] Info
     - [x] Score
-    - [ ] Seed
-    - [ ] Level
+    - [x] Seed
+    - [x] Level
+    - [ ] Not form
 - [ ] Status
     - [x] Hint
     - [ ] Form
@@ -81,9 +82,9 @@
     - [ ] Start
     - [ ] Death
     - [ ] Victory
-- [ ] Pausing
-    - [ ] In Menu
-    - [ ] In Dialog
+- [x] Pausing
+    - [x] In Menu
+    - [x] In Dialog
 
 # Graphics
 - [ ] Lighting

@@ -4,9 +4,12 @@ import * as PLAYER from "./player.js";
 import * as HINT from "./hint.js";
 import * as DIALOG from "./dialog.js";
 import * as INVENTORY from "./inventory.js";
-import { nextLevel } from "./index.js";
+import * as GAME from "./game.js";
+import * as OVERLAY from "./overlay.js";
+import * as CONSTANTS from "./constants.js";
 
 const KEY_TAB   = 9;
+const KEY_ESC   = 27;
 const KEY_SPACE = 32;
 const KEY_LEFT  = 37;
 const KEY_UP    = 38;
@@ -16,6 +19,19 @@ const KEY_F11   = 122;
 const KEY_DOT   = 190;
 
 let transformBuffer = { sequence: [-1, -1, -1, -1], startIndex: 0, ongoing: false, shrine: undefined };
+let state = CONSTANTS.STATE_MENU;
+
+export function menuControls() {
+    state = CONSTANTS.STATE_MENU;
+}
+
+export function gameControls() {
+    state = CONSTANTS.STATE_GAME;
+}
+
+export function dialogControls() {
+    state = CONSTANTS.STATE_DIALOG;
+}
 
 function enterFullscreen() {
     if (document.documentElement.requestFullscreen) {
@@ -41,19 +57,30 @@ function exitFullscreen() {
 
 export function toggleFullscreen(event) {
     event.preventDefault();
-    if ((document.fullScreenElement && document.fullScreenElement !== null)
-    || (document.mozFullScreen || document.webkitIsFullScreen)) {
+    if (isFullscreenOn()) {
         exitFullscreen();
     } else {
         enterFullscreen();
     }
 }
 
+export function isFullscreenOn() {
+    return (document.fullScreenElement && document.fullScreenElement !== null) || (document.mozFullScreen || document.webkitIsFullScreen);
+}
+
+export function setFullscreen(on) {
+    if (isFullscreenOn()) {
+        if (!on) exitFullscreen();
+    } else if (on) enterFullscreen();
+}
+
 function wheelHandler(event) {
+    if (state !== CONSTANTS.STATE_GAME) return;
+
     STAGE.zoom(event.wheelDelta || -event.detail);
 }
 
-function keyDownHandler(event) {
+function keyDownGame(event) {
     function checkTransformationSequence() {
         let transformationCode = 0;
         for (let i = 0; i < 4; i++) {
@@ -99,6 +126,9 @@ function keyDownHandler(event) {
             event.preventDefault();
             INVENTORY.browseRight();
             break;
+        case KEY_ESC:
+            OVERLAY.ingameMenu();
+            break;
         case KEY_SPACE:
             if (!transformBuffer.ongoing) {
                 transformBuffer.shrine = PLAYER.getNearestSecret("shrine");
@@ -141,12 +171,6 @@ function keyDownHandler(event) {
                 checkTransformationSequence();
             }
             break;
-        case KEY_F11:
-            toggleFullscreen(event);
-            break;
-        case KEY_DOT:
-            DIALOG.skipCurrent();
-            break;
         case 49://1
             PLAYER.transform("dot");
             break;
@@ -160,7 +184,7 @@ function keyDownHandler(event) {
             PLAYER.moveLeft();
             break;
         case 67://c
-            nextLevel();
+            GAME.nextLevel();
             break;
         case 68://d
             PLAYER.moveRight();
@@ -183,9 +207,6 @@ function keyDownHandler(event) {
         case 87://w
             PLAYER.moveUp();
             break;
-        case 88://x
-            DIALOG.reset();
-            break;
         case 86://v
             INVENTORY.useItem();
             break;
@@ -193,10 +214,13 @@ function keyDownHandler(event) {
             INVENTORY.addHintlight(5);
             INVENTORY.addSendlight(5);
             break;
+        case 80://p
+            GAME.togglePause();
+            break;
     }
 }
 
-function keyUpHandler(event) {
+function keyUpGame(event) {
     switch (event.keyCode) {
         case KEY_SPACE:
             transformBuffer = { sequence: [-1, -1, -1, -1], startIndex: 0, ongoing: false, shrine: undefined };
@@ -226,6 +250,56 @@ function keyUpHandler(event) {
         case 87://w
             PLAYER.stopUp();
             break;
+    }
+}
+
+function keyDownMenu(event) {
+    if (document.getElementById("menu-ingame").style.display === "block"
+    && event.keyCode === KEY_ESC) {
+        document.getElementById("menu-ingame-back").dispatchEvent(new MouseEvent("click"));
+        return;
+    }
+    if (document.getElementById("menu-options").style.display === "block"
+    && event.keyCode === KEY_ESC) {
+        document.getElementById("menu-options-back").dispatchEvent(new MouseEvent("click"));
+        return;
+    }
+}
+
+function keyUpMenu(event) {}
+
+function keyDownDialog(event) {
+    switch (event.keyCode) {
+        case KEY_DOT:
+            DIALOG.skipCurrent();
+            break;
+        case 88://x
+            DIALOG.reset();
+            break;
+    }
+}
+
+function keyUpDialog(event) {}
+
+function keyDownHandler(event) {
+    console.log(event.keyCode);
+    if (event.keyCode === KEY_F11) {
+        toggleFullscreen(event);
+        return;
+    }
+
+    switch (state) {
+        case CONSTANTS.STATE_GAME: keyDownGame(event); break;
+        case CONSTANTS.STATE_MENU: keyDownMenu(event); break;
+        case CONSTANTS.STATE_DIALOG: keyDownDialog(event); break;
+    }
+}
+
+function keyUpHandler(event) {
+    switch (state) {
+        case CONSTANTS.STATE_GAME: keyUpGame(event); break;
+        case CONSTANTS.STATE_MENU: keyUpMenu(event); break;
+        case CONSTANTS.STATE_DIALOG: keyUpDialog(event); break;
     }
 }
 

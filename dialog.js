@@ -1,4 +1,6 @@
 import * as OVERLAY from "./overlay.js";
+import * as GAME from "./game.js";
+import * as INPUT from "./input.js";
 
 let dialog = [];
 let dialogNumber = 0;
@@ -9,6 +11,8 @@ export function reset() {
     currentIndex = -1;
     document.removeEventListener("nextDialog", next);
     OVERLAY.hideDialog();
+    GAME.resumeGame();
+    INPUT.gameControls();
     setTimeout( _ => { dialog = []; }, 500);
 }
 
@@ -48,9 +52,13 @@ function showWithIndex(index, number) {
     OVERLAY.showDialog();
 }
 
-export function show(newDialog) {
+export function show(newDialog, pause) {
     if (dialog.length || !newDialog || !newDialog.length) return false;
     dialog = newDialog;
+    if (pause) {
+        GAME.pauseGame();
+        INPUT.dialogControls();
+    }
     document.addEventListener("nextDialog", next);
     showWithIndex(0, dialogNumber);
     return true;
@@ -76,5 +84,5 @@ export function showHelp() {
         { text: "In Box form you can swim but will not fit everywhere." },
         { text: "In Snake form you can go anywhere but cannot easily dodge enemies." },
         { text: "When you see a big glowing <b>Q</b> in the down-left corner, press <b>Q</b> to see a hint.", buttons: [{ text: "Done", index: Infinity }] }
-    ]);
+    ], true);
 }

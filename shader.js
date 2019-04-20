@@ -484,3 +484,13 @@ const animationSparksShaderMaterial = new THREE.ShaderMaterial({
 export function getAnimationSparksMaterial() {
     return animationSparksShaderMaterial;
 }
+
+export function getGamma() {
+    return mapUniforms.u_gamma.value;
+}
+
+export function setGamma(gamma) {
+    mapUniforms.u_gamma.value = gamma;
+    objectUniforms.u_gamma.value = gamma;
+    animationDanceUniforms.u_gamma.value = gamma;
+}

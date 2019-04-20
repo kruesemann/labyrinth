@@ -10,7 +10,7 @@ export function reset() {
     if (stage) {
         if (stage.camera) {
             while(stage.camera.children.length > 0){ 
-                removeMesh(stage.camera.children[0]); 
+                stage.camera.remove(stage.camera.children[0]); 
             }
         }
         if (stage.scene) {
@@ -34,7 +34,7 @@ export function reset() {
     stage.renderer.setSize(stage.width, stage.height);
     stage.canvas.appendChild(stage.renderer.domElement);
 
-    stage.camera.add(SOUND.reset());
+    stage.camera.add(SOUND.getAudioListener());
     stage.camera.position.z = CONSTANTS.CAMERA_DIST;
     ANIMATION.reset();
 

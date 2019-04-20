@@ -1,4 +1,3 @@
-import * as EVENT from "./event.js";
 import * as PLAYER from "./player.js";
 
 let audio = undefined;
@@ -15,6 +14,7 @@ export function reset() {
     audio.listener.setMasterVolume(audio.masterVolume);
 
     const soundsData = [
+        { ID: "music1", url: "assets/music1.ogg", volume: 0.25, loop: true, play: true, levelStop: false },
         { ID: "transforming", url: "assets/transforming.ogg", volume: 1, loop: true, play: false, levelStop: true },
         { ID: "transform", url: "assets/transform.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "charging", url: "assets/charging.ogg", volume: 1, loop: true, play: false, levelStop: true },
@@ -33,7 +33,9 @@ export function reset() {
     ];
     
     loadSounds(soundsData, 0);
+}
 
+export function getAudioListener() {
     return audio.listener;
 }
 
@@ -61,7 +63,7 @@ function loadSounds(soundsData, i) {
         if (i < soundsData.length - 1) {
             loadSounds(soundsData, i + 1);
         } else {
-            EVENT.trigger("soundReady");
+            document.dispatchEvent(new Event("soundReady"));
         }
     }, _ => {}, function(_) {
         console.log(soundsData[i].url + " not found");
@@ -69,7 +71,7 @@ function loadSounds(soundsData, i) {
         if (i < soundsData.length - 1) {
             loadSounds(soundsData, i + 1);
         } else {
-            EVENT.trigger("soundReady");
+            document.dispatchEvent(new Event("soundReady"));
         }
     });
 }
@@ -198,6 +200,15 @@ export function controlVolume(counter) {
             }
         }
     }
+}
+
+export function getMasterVolume() {
+    return audio.masterVolume;
+}
+
+export function setMasterVolume(value) {
+    audio.masterVolume = value;
+    audio.listener.setMasterVolume(audio.masterVolume);
 }
 
 export function toggle() {

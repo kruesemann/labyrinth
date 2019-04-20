@@ -153,6 +153,7 @@ ${RAYCAST}
 void main(void) {
     vec4 color = texture2D(u_texture, v_texelCoords);
     vec3 RGB = vec3(0.0);
+    vec3 light = vec3(0.0);
     vec2 mapCoords = v_texelCoords * u_dimensions;
 
     for (int i = 0; i < MAXNUM; i++) {
@@ -163,12 +164,14 @@ void main(void) {
             if (dist < float(MAXDIST)) {
                 if (rayCast(mapCoords, u_lightPos[i])) {
                     RGB += u_lightColor[i].a * u_lightColor[i].rgb / pow(dist, float(DISTEXP));
+                    light += u_lightColor[i].a * u_lightColor[i].rgb / pow(dist + 3.0, 3.0);
                 }
             }
         }
     }
 
     gl_FragColor.rgb = color.rgb * max(u_ambientLight.a * u_ambientLight.rgb, RGB);
+    gl_FragColor.rgb = min(vec3(1.0), gl_FragColor.rgb + light);
     gl_FragColor.a = color.a;
 }
 `;

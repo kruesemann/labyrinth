@@ -282,7 +282,6 @@ function keyDownDialog(event) {
 function keyUpDialog(event) {}
 
 function keyDownHandler(event) {
-    console.log(event.keyCode);
     if (event.keyCode === KEY_F11) {
         toggleFullscreen(event);
         return;

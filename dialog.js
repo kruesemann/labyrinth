@@ -1,23 +1,35 @@
-import * as OVERLAY from "./overlay.js";
 import * as GAME from "./game.js";
 import * as INPUT from "./input.js";
+import * as OVERLAY from "./overlay.js";
 
-let dialog = [];
-let dialogNumber = 0;
-let currentIndex = -1;
+let dialog = {
+    list: [],
+    number: 0,
+    currentIndex: -1
+};
 
 export function reset() {
-    if (++dialogNumber === 10000) dialogNumber = 0;
-    currentIndex = -1;
+    document.removeEventListener("nextDialog", next);
+    OVERLAY.hideDialog();
+    dialog = {
+        list: [],
+        number: 0,
+        currentIndex: -1
+    };
+}
+
+export function stop() {
+    if (++dialog.number === 10000) dialog.number = 0;
+    dialog.currentIndex = -1;
     document.removeEventListener("nextDialog", next);
     OVERLAY.hideDialog();
     GAME.resumeGame();
     INPUT.gameControls();
-    setTimeout( _ => { dialog = []; }, 500);
+    setTimeout( _ => { list = []; }, 500);
 }
 
 function next(event) {
-    const number = dialogNumber;
+    const number = dialog.number;
     if (event.detail.dialogNumber !== number) return;
     
     OVERLAY.hideDialog();
@@ -27,16 +39,16 @@ function next(event) {
 }
 
 function showWithIndex(index, number) {
-    if (!dialog.length || number !== dialogNumber) return;
+    if (!list.length || number !== dialog.number) return;
 
-    if (index >= dialog.length) {
-        reset();
+    if (index >= list.length) {
+        stop();
         return;
     }
-    OVERLAY.setDialogText(dialog[index].text);
+    OVERLAY.setDialogText(list[index].text);
 
-    if (dialog[index].buttons && dialog[index].buttons.length) {
-        OVERLAY.setDialogButtons(dialog[index].buttons, number);
+    if (list[index].buttons && list[index].buttons.length) {
+        OVERLAY.setDialogButtons(list[index].buttons, number);
     } else {
         OVERLAY.setDialogButtons([]);
         setTimeout(_ => {
@@ -44,31 +56,31 @@ function showWithIndex(index, number) {
         }, 3000);
     }
 
-    if (dialog[index].trigger) {
-        dialog[index].trigger();
+    if (list[index].trigger) {
+        list[index].trigger();
     }
 
-    currentIndex = index;
+    dialog.currentIndex = index;
     OVERLAY.showDialog();
 }
 
 export function show(newDialog, pause) {
-    if (dialog.length || !newDialog || !newDialog.length) return false;
-    dialog = newDialog;
+    if (list.length || !newDialog || !newDialog.length) return false;
+    list = newDialog;
     if (pause) {
         GAME.pauseGame();
         INPUT.dialogControls();
     }
     document.addEventListener("nextDialog", next);
-    showWithIndex(0, dialogNumber);
+    showWithIndex(0, dialog.number);
     return true;
 }
 
 export function skipCurrent() {
-    if (currentIndex < 0 || currentIndex >= dialog.length || (dialog[currentIndex].buttons && dialog[currentIndex].buttons.length)) return;
-    const number = dialogNumber + 1;
-    dialogNumber = number;
-    document.dispatchEvent(new CustomEvent("nextDialog", { detail: { index: currentIndex + 1, dialogNumber: number } }));
+    if (dialog.currentIndex < 0 || dialog.currentIndex >= list.length || (list[dialog.currentIndex].buttons && list[dialog.currentIndex].buttons.length)) return;
+    const number = dialog.number + 1;
+    dialog.number = number;
+    document.dispatchEvent(new CustomEvent("nextDialog", { detail: { index: dialog.currentIndex + 1, dialogNumber: number } }));
 }
 
 export function showHelp() {

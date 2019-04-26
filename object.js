@@ -1,11 +1,11 @@
-import * as STAGE from "./stage.js";
-import * as SOUND from "./sound.js";
-import * as MAP from "./map.js";
-import * as MAPUTIL from "./mapUtil.js";
-import * as SHADER from "./shader.js";
 import * as AI from "./ai.js";
 import * as CONSTANTS from "./constants.js";
+import * as MAP from "./map.js";
+import * as MAPUTIL from "./mapUtil.js";
 import * as PLAYER from "./player.js";
+import * as SHADER from "./shader.js";
+import * as SOUND from "./sound.js";
+import * as STAGE from "./stage.js";
 
 let enemies = [];
 
@@ -31,9 +31,11 @@ function createDotForm(x, y, color) {
         colors.push(color[2]);
     }
 
-    const geometry = new THREE.BufferGeometry();
+    const geometry = new THREE.BufferGeometry(); 
     geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
     geometry.addAttribute('a_color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+    const t = SHADER.getObjectMaterial();
+    console.log(t);
 
     const form = {
         ID: "dot",

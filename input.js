@@ -1,12 +1,12 @@
-import * as STAGE from "./stage.js";
-import * as SOUND from "./sound.js";
-import * as PLAYER from "./player.js";
-import * as HINT from "./hint.js";
-import * as DIALOG from "./dialog.js";
-import * as INVENTORY from "./inventory.js";
-import * as GAME from "./game.js";
-import * as OVERLAY from "./overlay.js";
 import * as CONSTANTS from "./constants.js";
+import * as DIALOG from "./dialog.js";
+import * as GAME from "./game.js";
+import * as HINT from "./hint.js";
+import * as INVENTORY from "./inventory.js";
+import * as OVERLAY from "./overlay.js";
+import * as PLAYER from "./player.js";
+import * as SOUND from "./sound.js";
+import * as STAGE from "./stage.js";
 
 const KEY_TAB   = 9;
 const KEY_ESC   = 27;
@@ -274,7 +274,7 @@ function keyDownDialog(event) {
             DIALOG.skipCurrent();
             break;
         case 88://x
-            DIALOG.reset();
+            DIALOG.stop();
             break;
     }
 }
@@ -302,7 +302,7 @@ function keyUpHandler(event) {
     }
 }
 
-export function reset() {
+export function initialize() {
     transformBuffer = { sequence: [-1, -1, -1, -1], startIndex: 0, ongoing: false, shrine: undefined };
 
     document.removeEventListener("mousewheel", wheelHandler);

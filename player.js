@@ -1,15 +1,19 @@
+import * as ANIMATION from "./animation.js";
 import * as CONSTANTS from "./constants.js";
-import * as MAP from "./map.js";
 import * as LIGHT from "./light.js";
-import * as SOUND from "./sound.js";
+import * as MAP from "./map.js";
 import * as OVERLAY from "./overlay.js";
 import * as SECRET from "./secret.js";
-import * as ANIMATION from "./animation.js";
+import * as SOUND from "./sound.js";
 import { createPlayer } from "./object.js";
 
 let player = undefined;
 
-export function reset(i, j) {
+export function reset() {
+    player = undefined;
+}
+
+export function initialize(i, j) {
     let brightness;
     if (!player || getBrightness() === 0) {
         brightness = 1;
@@ -40,18 +44,18 @@ export function transform(formID) {
 
 export function dropParticle() {
     if (getBrightness() < getMaxBrightness() / 2
-    || player.light.flaring) return;
+    || player.light.isFlaring) return;
     const { x, y } = getLightPosition();
     
     if (MAP.isOnBeacon(player.form.nodes)
     && SECRET.lightUpBeacon(x, y, [player.light.color[0], player.light.color[1], player.light.color[2], CONSTANTS.LIGHT_PARTICLE_BRIGHTNESS])) {
-        player.light.setBrightness(1);
+        player.light.brightness = 1;
         updateStatusLight();
         SOUND.play("beacon1");
         return;
     }
     if (LIGHT.createParticle(x, y, [1.0, 1.0, 0.8, CONSTANTS.LIGHT_PARTICLE_BRIGHTNESS]) !== null) {
-        player.light.setBrightness(1);
+        player.light.brightness = 1;
         updateStatusLight();
         SOUND.play("particle");
     };
@@ -86,7 +90,7 @@ export function move(counter) {
     }
     if (player.move(counter)) {
         const center = getCenter();
-        player.light.set(center.x, center.y);
+        player.light.position = {x: center.x, y: center.y};
         return MAP.isOnExit(player.form.nodes);
     }
     return false;
@@ -145,7 +149,7 @@ export function getCenter() {
 }
 
 export function getLightPosition() {
-    return player.light.pos;
+    return player.light.position;
 }
 
 function getMaxBrightness() {
@@ -158,7 +162,7 @@ function getMaxBrightness() {
 }
 
 export function getBrightness() {
-    return player.light.color[3];
+    return player.light.brightness;
 }
 
 export function increaseBrightness() {

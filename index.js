@@ -1,11 +1,11 @@
-import * as GAME from "./game.js";
-import * as SHADER from "./shader.js";
-import * as INPUT from "./input.js";
-import * as SOUND from "./sound.js";
 import * as DIALOG from "./dialog.js";
+import * as GAME from "./game.js";
+import * as INPUT from "./input.js";
+import * as SHADER from "./shader.js";
+import * as SOUND from "./sound.js";
 
-SOUND.reset();
-INPUT.reset();
+SOUND.initialize();
+INPUT.initialize();
 
 document.getElementById("menu-main-start").addEventListener("click", gameMenu);
 document.getElementById("menu-main-options").addEventListener("click", mainOptionsMenu);
@@ -18,7 +18,7 @@ document.getElementById("menu-options-sound").addEventListener("input", setMaste
 document.getElementById("menu-ingame-back").addEventListener("click", resumeGame);
 document.getElementById("menu-ingame-options").addEventListener("click", ingameOptionsMenu);
 document.getElementById("menu-ingame-help").addEventListener("click", showHelp);
-document.getElementById("menu-ingame-exit").addEventListener("click", mainMenu);
+document.getElementById("menu-ingame-exit").addEventListener("click", resetGame);
 
 function mainMenu() {
     document.getElementById("screen-game").style.display = "none";
@@ -34,7 +34,7 @@ function startGame() {
     document.getElementById("screen-start").style.display = "none";
     document.getElementById("loading-box").style.display = "block";
     INPUT.gameControls();
-    GAME.reset(Number(document.getElementById("menu-game-seed").value));
+    GAME.initialize(Number(document.getElementById("menu-game-seed").value));
 }
 
 function gameMenu() {
@@ -88,6 +88,11 @@ export function resumeGame() {
     document.getElementById("menu-ingame").style.display = "none";
     INPUT.gameControls();
     GAME.resumeGame();
+}
+
+function resetGame() {
+    GAME.reset();
+    mainMenu();
 }
 
 function showHelp() {

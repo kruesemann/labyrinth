@@ -1,5 +1,10 @@
-let mapSeed = 1;
-let gameSeed = 1;
+let mapSeed = 0;
+let gameSeed = 0;
+
+export function reset() {
+    mapSeed = 0;
+    gameSeed = 0;
+}
 
 export function setGameSeed(s) {
     gameSeed = s;

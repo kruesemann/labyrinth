@@ -1,26 +1,193 @@
 import * as CONSTANTS from "./constants.js";
+import * as SECRET from "./secret.js";
 import * as SHADER from "./shader.js";
 import * as STAGE from "./stage.js";
-import * as SECRET from "./secret.js";
 
-export const lights = [];
+let lightingMap = {
+    lights: {},
+    dimensions: undefined,
+    mesh: undefined
+};
 
-let mapLightingMesh = undefined;
-let dimensions = undefined;
+class Light {
+    constructor(position, color, brightness, flickering, fading) {
+        this._uuid = `light${position.x}${position.y}${Date.now()}`;
+        this._uniformIndex = -1;
+        this._position = position;
+        this._color = color;
+        this._brightness = brightness;
+        this._flickering = flickering;
+        this._fading = fading;
+        this._isFlaring = false;
+        lightingMap.lights[this.uuid] = this;
+    }
 
-export function reset(numRows, numColumns, level) {
-    removeAllLights();
+    get uuid() {
+        return this._uuid;
+    }
 
-    dimensions = [CONSTANTS.LIGHT_MAP_PRECISION * numColumns, CONSTANTS.LIGHT_MAP_PRECISION * numRows];
+    set uniformIndex(newUniformIndex) {
+        this._uniformIndex = newUniformIndex;
+        this.position = this.position;
+        this.color = this.color;
+        this.brightness = this.brightness;
+    }
+
+    get uniformIndex() {
+        return this._uniformIndex;
+    }
+
+    set position(newPosition) {
+        this._position = newPosition;
+        if (this.uniformIndex !== -1) {
+            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex] = CONSTANTS.LIGHT_MAP_PRECISION * newPosition.x;
+            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex + 1] = CONSTANTS.LIGHT_MAP_PRECISION * newPosition.y;
+            
+            SHADER.objectUniforms.u_lightPos.value[2 * this.uniformIndex] = newPosition.x;
+            SHADER.objectUniforms.u_lightPos.value[2 * this.uniformIndex + 1] = newPosition.y;
+        }
+    }
+
+    get position() {
+        return this._position;
+    }
+
+    changePosition(dPosition) {
+        this.position = {
+            x: this.position.x + dPosition.x,
+            y: this.position.y + dPosition.y
+        };
+    }
+
+    set color(newColor) {
+        this._color = newColor;
+        if (this.uniformIndex !== -1) {
+            for (let i = 0; i < 3; i++) {
+                SHADER.mapLightingUniforms.u_lightColor.value[4 * this.uniformIndex + i] = newColor[i];
+                SHADER.objectUniforms.u_lightColor.value[4 * this.uniformIndex + i] = newColor[i];
+            }
+        }
+    }
+
+    get color() {
+        return this._color;
+    }
+
+    set brightness(newBrightness) {
+        this._brightness = newBrightness;
+        if (this.uniformIndex !== -1) {
+            SHADER.mapLightingUniforms.u_lightColor.value[4 * this.uniformIndex + 3] = newBrightness;
+            SHADER.objectUniforms.u_lightColor.value[4 * this.uniformIndex + 3] = newBrightness;
+        }
+    }
+
+    get brightness() {
+        return this._brightness;
+    }
+
+    changeBrightness(dBrightness) {
+        this.brightness += dBrightness;
+        if (this.brightness < 0) this.brightness = 0;
+    }
+
+    set flickering(newFlickering) {
+        this._flickering = newFlickering;
+    }
+
+    get flickering() {
+        return this._flickering;
+    }
+
+    set fading(newFading) {
+        this._fading = newFading;
+    }
+
+    get fading() {
+        return this._fading;
+    }
+
+    set isFlaring(newIsFlaring) {
+        this._isFlaring = newIsFlaring;
+    }
+
+    get isFlaring() {
+        return this._isFlaring;
+    }
+
+    flare(targetBrightness, maxBrightness) {
+        if (this.isFlaring) return;
+        this.isFlaring = true;
+
+        const lowerBound = flareUpInverse(this.brightness / maxBrightness);
+        const upperBound = flareDownInverse(targetBrightness / maxBrightness);
+        const stepNum = (upperBound - lowerBound) / CONSTANTS.LIGHT_FLARE_STEP_WIDTH;
+
+        function flareStep(counter, self) {
+            setTimeout(() => {
+                if (counter > stepNum) {
+                    self.brightness = targetBrightness;
+                    self.isFlaring = false;
+                    return;
+                }
+                const x = lowerBound + counter * CONSTANTS.LIGHT_FLARE_STEP_WIDTH;
+                if (x < 1) self.brightness = maxBrightness * flareUp(x);
+                else self.brightness = maxBrightness * flareDown(x);
+                flareStep(counter + 1, self);
+            }, CONSTANTS.LIGHT_BEACON_STEP_TIME);
+        }
+        flareStep(1, this);
+    }
+
+    flicker() {
+        if (this.uniformIndex !== -1) {
+            const rand = CONSTANTS.LIGHT_PARTICLE_FLICKER * (Math.random() - 0.5);
+            SHADER.mapLightingUniforms.u_lightColor.value[4 * this.uniformIndex + 3] = this.brightness + rand < 0.1 ? 0 : this.brightness + rand;
+            SHADER.objectUniforms.u_lightColor.value[4 * this.uniformIndex + 3] = this.brightness + rand < 0.1 ? 0 : this.brightness + rand;
+        }
+    }
+
+    die() {
+        this.brightness -= CONSTANTS.LIGHT_PARTICLE_DECAY;
+        return this.brightness <= CONSTANTS.LIGHT_PARTICLE_DEATH;
+    }
+
+    remove() {
+        if (this.uniformIndex !== -1) {
+            for (let i = 0; i < 4; i++) {
+                SHADER.mapLightingUniforms.u_lightColor.value[4 * this.uniformIndex + i] = 0;
+                SHADER.objectUniforms.u_lightColor.value[4 * this.uniformIndex + i] = 0;
+            }
+            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex] = 0;
+            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex + 1] = 0;
+
+            SHADER.objectUniforms.u_lightPos.value[2 * this.uniformIndex] = 0;
+            SHADER.objectUniforms.u_lightPos.value[2 * this.uniformIndex + 1] = 0;
+        }
+
+        delete lightingMap.lights[this.uuid];
+    }
+}
+
+export function reset() {
+    lightingMap = {
+        lights: {},
+        dimensions: undefined,
+        mesh: undefined
+    };
+}
+
+export function initialize(mapDimensions) {
+    const dimensions = {x: mapDimensions.x * CONSTANTS.LIGHT_MAP_PRECISION, y: mapDimensions.y * CONSTANTS.LIGHT_MAP_PRECISION};
+    SHADER.mapLightingUniforms.u_dimensions.value = new Float32Array([dimensions.x, dimensions.y]);
 
     const lightGeometry = new THREE.BufferGeometry();
     lightGeometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array([
-                    0,             0, 0.01,
-        dimensions[0],             0, 0.01,
-                    0, dimensions[1], 0.01,
-        dimensions[0],             0, 0.01,
-        dimensions[0], dimensions[1], 0.01,
-                    0, dimensions[1], 0.01,
+                   0,            0, 0.01,
+        dimensions.x,            0, 0.01,
+                   0, dimensions.y, 0.01,
+        dimensions.x,            0, 0.01,
+        dimensions.x, dimensions.y, 0.01,
+                   0, dimensions.y, 0.01,
     ]), 3));
     lightGeometry.addAttribute('a_texelCoords', new THREE.BufferAttribute(new Float32Array([
         0, 0,
@@ -31,10 +198,22 @@ export function reset(numRows, numColumns, level) {
         0, 1,
     ]), 2));
 
-    SHADER.mapLightingUniforms.u_dimensions.value = dimensions;
-    SHADER.mapLightingUniforms.u_ambientLight.value = [1.0, 1.0, 1.0, Math.max(0.0, CONSTANTS.LIGHT_AMBIENT_INITIAL - level * CONSTANTS.LIGHT_AMBIENT_DECREASE)];
-    SHADER.objectUniforms.u_ambientLight.value = SHADER.mapLightingUniforms.u_ambientLight.value;
-    mapLightingMesh = new THREE.Mesh(lightGeometry, SHADER.getMapLightingMaterial());
+    lightingMap = {
+        lights: {},
+        dimensions,
+        mesh: new THREE.Mesh(lightGeometry, SHADER.getMapLightingMaterial())
+    };
+}
+
+export function levelReset(level) {
+    const ambientLightBrightness = Math.max(0.0, CONSTANTS.LIGHT_AMBIENT_INITIAL - level * CONSTANTS.LIGHT_AMBIENT_DECREASE);
+    SHADER.mapLightingUniforms.u_ambientLight.value[3] = ambientLightBrightness;
+    SHADER.objectUniforms.u_ambientLight.value[3] = ambientLightBrightness;
+
+    SHADER.mapLightingUniforms.u_lightPos.value = new Float32Array(2 * CONSTANTS.LIGHT_MAXNUM);
+    SHADER.mapLightingUniforms.u_lightColor.value = new Float32Array(4 * CONSTANTS.LIGHT_MAXNUM);
+
+    lightingMap.lights = {};
 }
 
 export function create(x, y, color) {
@@ -48,6 +227,7 @@ export function create(x, y, color) {
         && SHADER.mapLightingUniforms.u_lightColor.value[4 * i + 2] === 0
         && SHADER.mapLightingUniforms.u_lightColor.value[4 * i + 3] === 0) {
             uniformIndex = i;
+            break;
         }
     }
 
@@ -56,96 +236,8 @@ export function create(x, y, color) {
         return null;
     }
 
-    const light = {
-        index: lights.length,
-        uniformIndex: uniformIndex,
-        pos: undefined,
-        color: undefined,
-        flickering: true,
-        fade: false,
-        animationStep: 0,
-        flaring: false,
-        changeColor: function(newColor) {
-            this.color = newColor;
-            for (let i = 0; i < 4; i++) {
-                SHADER.mapLightingUniforms.u_lightColor.value[4 * this.uniformIndex + i] = newColor[i];
-                
-                SHADER.objectUniforms.u_lightColor.value[4 * this.uniformIndex + i] = newColor[i];
-            }
-        },
-        setBrightness: function(newBrightness) {
-            if (newBrightness < 0) newBrightness = 0;
-            this.color[3] = newBrightness;
-            SHADER.mapLightingUniforms.u_lightColor.value[4 * this.uniformIndex + 3] = newBrightness;
-            
-            SHADER.objectUniforms.u_lightColor.value[4 * this.uniformIndex + 3] = newBrightness;
-        },
-        changeBrightness: function(difference) {
-            this.setBrightness(this.color[3] + difference);
-        },
-        move: function(dx, dy) {
-            this.pos.x += dx;
-            this.pos.y += dy;
-
-            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex] = CONSTANTS.LIGHT_MAP_PRECISION * this.pos.x;
-            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex + 1] = CONSTANTS.LIGHT_MAP_PRECISION * this.pos.y;
-
-            SHADER.objectUniforms.u_lightPos.value[2 * this.uniformIndex] = this.pos.x;
-            SHADER.objectUniforms.u_lightPos.value[2 * this.uniformIndex + 1] = this.pos.y;
-        },
-        set: function(x, y) {
-            this.pos = { x, y };
-
-            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex] = CONSTANTS.LIGHT_MAP_PRECISION * this.pos.x;
-            SHADER.mapLightingUniforms.u_lightPos.value[2 * this.uniformIndex + 1] = CONSTANTS.LIGHT_MAP_PRECISION * this.pos.y;
-            
-            SHADER.objectUniforms.u_lightPos.value[2 * this.uniformIndex] = this.pos.x;
-            SHADER.objectUniforms.u_lightPos.value[2 * this.uniformIndex + 1] = this.pos.y;
-        },
-        flare: function(targetBrightness, maxBrightness) {
-            if (this.flaring) return;
-            this.flaring = true;
-            const lowerBound = flareUpInverse(this.color[3] / maxBrightness);
-            const upperBound = flareDownInverse(targetBrightness / maxBrightness);
-            const stepNum = (upperBound - lowerBound) / CONSTANTS.LIGHT_FLARE_STEP_WIDTH;
-
-            function flare(counter, light) {
-                setTimeout(() => {
-                    if (counter > stepNum) {
-                        light.setBrightness(targetBrightness);
-                        light.flaring = false;
-                        return;
-                    }
-                    const x = lowerBound + counter * CONSTANTS.LIGHT_FLARE_STEP_WIDTH;
-                    if (x < 1) light.setBrightness(maxBrightness * flareUp(x));
-                    else light.setBrightness(maxBrightness * flareDown(x));
-                    flare(counter + 1, light);
-                }, CONSTANTS.LIGHT_BEACON_STEP_TIME);
-            }
-            flare(1, this);
-        },
-        flicker: function() {
-            const rand = CONSTANTS.LIGHT_PARTICLE_FLICKER * (Math.random() - 0.5);
-
-            const intensity = this.color[3] + rand < 0.1 ? 0 : this.color[3] + rand;
-
-            SHADER.mapLightingUniforms.u_lightColor.value[4 * this.uniformIndex + 3] = intensity;
-
-            SHADER.objectUniforms.u_lightColor.value[4 * this.uniformIndex + 3] = intensity;
-        },
-        die: function() {
-            this.color[3] -= CONSTANTS.LIGHT_PARTICLE_DECAY;
-            return this.color[3] <= CONSTANTS.LIGHT_PARTICLE_DEATH;
-        },
-        remove: function() {
-            removeLight(this.index);
-        }
-    };
-    
-    light.changeColor(color);
-    light.set(x, y);
-
-    lights.push(light);
+    const light = new Light({x, y}, [color[0], color[1], color[2]], color[3], true, false);
+    light.uniformIndex = uniformIndex;
 
     return light;
 }
@@ -159,64 +251,28 @@ export function createLights(lightList) {
 export function createParticle(x, y, color) {
     const particle = create(x, y, color);
     if (particle !== null) {
-        particle.fade = true;
+        particle.fading = true;
     }
     return particle;
 }
 
-function removeShaderLight(uniformIndex) {
-    SHADER.mapLightingUniforms.u_lightPos.value[2 * uniformIndex] = 0;
-    SHADER.mapLightingUniforms.u_lightPos.value[2 * uniformIndex + 1] = 0;
-    SHADER.mapLightingUniforms.u_lightColor.value[4 * uniformIndex] = 0;
-    SHADER.mapLightingUniforms.u_lightColor.value[4 * uniformIndex + 1] = 0;
-    SHADER.mapLightingUniforms.u_lightColor.value[4 * uniformIndex + 2] = 0;
-    SHADER.mapLightingUniforms.u_lightColor.value[4 * uniformIndex + 3] = 0;
-    
-    SHADER.objectUniforms.u_lightPos.value[2 * uniformIndex] = 0;
-    SHADER.objectUniforms.u_lightPos.value[2 * uniformIndex + 1] = 0;
-    SHADER.objectUniforms.u_lightColor.value[4 * uniformIndex] = 0;
-    SHADER.objectUniforms.u_lightColor.value[4 * uniformIndex + 1] = 0;
-    SHADER.objectUniforms.u_lightColor.value[4 * uniformIndex + 2] = 0;
-    SHADER.objectUniforms.u_lightColor.value[4 * uniformIndex + 3] = 0;
-}
-
-export function removeLight(index) {
-    if (index >= lights.length) return;
-
-    removeShaderLight(lights[index].uniformIndex);
-
-    for (let light of lights) {
-        if (light.index > index) {
-            light.index--;
-        }
-    }
-
-    lights.splice(index, 1);
-}
-
-export function removeLastLight() {
-    if (lights.length === 0) return;
-
-    removeShaderLight(lights.pop().uniformIndex);
-}
-
-export function removeAllLights() {
-    while (lights.length > 0) {
-        removeLastLight();
-    }
-}
-
 export function flickerAll(counter) {
     if (counter % 4 === 0) {
-        for (let light of lights) {
+        for (const uuid in lightingMap.lights) {
+            if (!lightingMap.lights.hasOwnProperty(uuid)) continue;
+            const light = lightingMap.lights[uuid];
+
             if (light.flickering) {
                 light.flicker();
             }
         }
     }
     if (counter % 10 === 0) {
-        for (let light of lights) {
-            if (light.fade && light.die()) {
+        for (const uuid in lightingMap.lights) {
+            if (!lightingMap.lights.hasOwnProperty(uuid)) continue;
+            const light = lightingMap.lights[uuid];
+
+            if (light.fading && light.die()) {
                 light.remove();
             }
         }
@@ -226,7 +282,7 @@ export function flickerAll(counter) {
 export function renderLighting(counter) {
     SECRET.gleamAllWisps(counter);
     flickerAll(counter);
-    SHADER.mapUniforms.u_texture.value = STAGE.renderToTexture([mapLightingMesh], dimensions[0], dimensions[1]);
+    SHADER.mapUniforms.u_texture.value = STAGE.renderToTexture([lightingMap.mesh], lightingMap.dimensions);
 }
 
 function flareUp(x) {
@@ -243,4 +299,24 @@ function flareUpInverse(y) {
 
 function flareDownInverse(y) {
     return 1 + Math.sqrt(1 - y);
+}
+
+export function getBrightestLight(pred) {
+    let brightestLight = undefined;
+
+    for (const uuid in lightingMap.lights) {
+        if (!lightingMap.lights.hasOwnProperty(uuid)) continue;
+        const light = lightingMap.lights[uuid];
+
+        if (light.brightness < 0.1 || !pred(light)) continue;
+        if (!brightestLight) {
+            brightestLight = light;
+            continue;
+        }
+        if (brightestLight.brightness < light.brightness) {
+            brightestLight = light;
+        }
+    }
+
+    return brightestLight;
 }

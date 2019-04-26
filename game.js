@@ -1,21 +1,45 @@
-import * as CONSTANTS from "./constants.js";
-import * as STAGE from "./stage.js";
-import * as OVERLAY from "./overlay.js";
-import * as INPUT from "./input.js";
-import * as MAP from "./map.js";
-import * as OBJECT from "./object.js";
-import * as PLAYER from "./player.js";
-import * as LIGHT from "./light.js";
-import * as ITEM from "./item.js";
-import * as NOISE from "./noise.js";
 import * as ANIMATION from "./animation.js";
-import * as SOUND from "./sound.js";
+import * as CONSTANTS from "./constants.js";
 import * as INVENTORY from "./inventory.js";
+import * as ITEM from "./item.js";
+import * as LIGHT from "./light.js";
+import * as MAP from "./map.js";
+import * as NOISE from "./noise.js";
+import * as OBJECT from "./object.js";
+import * as OVERLAY from "./overlay.js";
+import * as PLAYER from "./player.js";
+import * as SOUND from "./sound.js";
+import * as STAGE from "./stage.js";
 
-let game = undefined;
-let assetsLoaded = false;
+let game = {
+    seed: 0,
+    level: 0,
+    score: 0,
+    mapSeed: 0,
+    counter: 0,
+    nextLevel: true,
+    paused: false,
+    assetsLoaded: false
+};
 
-export function reset(seed) {
+export function reset() {
+    game = {
+        seed: 0,
+        level: 0,
+        score: 0,
+        mapSeed: 0,
+        counter: 0,
+        nextLevel: true,
+        paused: false,
+        assetsLoaded: false
+    };
+
+    STAGE.reset();
+    OVERLAY.reset();
+    NOISE.reset();
+}
+
+export function initialize(seed) {
     game = {
         seed,
         level: 0,
@@ -26,28 +50,28 @@ export function reset(seed) {
         paused: false,
     };
 
-    STAGE.reset();
+    STAGE.initialize();
+    NOISE.setGameSeed(game.seed);
 
-    if (assetsLoaded) setup();
+    if (game.assetsLoaded) setup();
     else waitForAssets();
 }
 
 document.addEventListener("soundReady", assetsReady);
 
 function assetsReady() {
-    assetsLoaded = true;
+    game.assetsLoaded = true;
 }
 
 function waitForAssets() {
     document.addEventListener("soundReady", setup);
+    if (game.assetsLoaded) setup();
 }
 
 function setup() {
-    document.removeEventListener("soundReady", assetsReady);
     document.removeEventListener("soundReady", setup);
-
-    OVERLAY.reset(game.seed, game.level, game.score);
-    NOISE.setGameSeed(game.seed);
+    document.removeEventListener("soundReady", assetsReady);
+    OVERLAY.initialize(game.seed, game.level, game.score);
     gameloop();
 }
 
@@ -76,7 +100,7 @@ export function increaseScore() {
 function loadNextMap() {
     STAGE.resetScene();
     game.mapSeed = NOISE.nextMapSeed();
-    MAP.reset(game.mapSeed, 200, 200, game.seed, game.level);
+    MAP.initialize(game.mapSeed, 200, 200, game.seed, game.level);
 }
 
 function resolveCollisions() {

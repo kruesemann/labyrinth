@@ -1,8 +1,14 @@
 import * as PLAYER from "./player.js";
 
-let audio = undefined;
+let audio = {
+    listener: undefined,
+    loader: undefined,
+    masterVolume: 1,
+    sounds: {},
+    soundIDs: [],
+};
 
-export function reset() {
+export function initialize() {
     audio = {
         listener: new THREE.AudioListener(),
         loader: new THREE.AudioLoader(),
@@ -14,7 +20,7 @@ export function reset() {
     audio.listener.setMasterVolume(audio.masterVolume);
 
     const soundsData = [
-        { ID: "music1", url: "assets/music1.ogg", volume: 0.25, loop: true, play: true, levelStop: false },
+        /*{ ID: "music1", url: "assets/music1.ogg", volume: 0.25, loop: true, play: true, levelStop: false },
         { ID: "transforming", url: "assets/transforming.ogg", volume: 1, loop: true, play: false, levelStop: true },
         { ID: "transform", url: "assets/transform.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "charging", url: "assets/charging.ogg", volume: 1, loop: true, play: false, levelStop: true },
@@ -28,7 +34,7 @@ export function reset() {
         { ID: "wisp2", url: "assets/wisp2.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "beacon1", url: "assets/beacon1.ogg", volume: 1, loop: false, play: false, levelStop: true },
         { ID: "beacon2", url: "assets/beacon2.ogg", volume: 1, loop: true, play: false, levelStop: true },
-        { ID: "flare", url: "assets/flare.ogg", volume: 1, loop: false, play: false, levelStop: true },
+        { ID: "flare", url: "assets/flare.ogg", volume: 1, loop: false, play: false, levelStop: true },*/
         { ID: "hintlight", url: "assets/hintlight.ogg", volume: 1, loop: false, play: false, levelStop: true },
     ];
     

@@ -10,7 +10,23 @@ let metaData = undefined;
 let generationData = undefined;
 
 /**
- * the only export function
+ * resets all variables
+ * 
+ * @modifies randomMap
+ * @modifies features
+ * @modifies noiseData
+ * @modifies metaData
+ * @modifies generationData
+ */
+export function reset() {
+    randomMap = undefined;
+    features = undefined;
+    noiseData = undefined;
+    metaData = undefined;
+    generationData = undefined;
+}
+
+/**
  * generates a new random map
  * 
  * @param {number} seed             // map seed generated with game seed and level

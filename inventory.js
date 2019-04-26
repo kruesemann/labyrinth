@@ -1,22 +1,30 @@
-import * as OVERLAY from "./overlay.js";
-import * as LIGHT from "./light.js";
-import * as PLAYER from "./player.js";
 import * as CONSTANTS from "./constants.js";
+import * as LIGHT from "./light.js";
 import * as MAP from "./map.js";
 import * as MAPUTIL from "./mapUtil.js";
-import * as SOUND from "./sound.js";
+import * as OVERLAY from "./overlay.js";
+import * as PLAYER from "./player.js";
 import * as SECRET from "./secret.js";
+import * as SOUND from "./sound.js";
 
 let inventory = {
     activeIndex: -1,
     items: [],
-    indices: {}
+    indices: {},
+    activeItems: []
 };
 
-let activeItems = [];
-
 export function reset() {
-    activeItems = [];
+    inventory = {
+        activeIndex: -1,
+        items: [],
+        indices: {},
+        activeItems: []
+    };
+}
+
+export function levelReset() {
+    inventory.activeItems = [];
 }
 
 function changeItemNumber(id, amount) {
@@ -51,6 +59,159 @@ export function browseRight() {
     OVERLAY.setActiveItem(inventory.items[inventory.activeIndex]);
 }
 
+function addMovingLightProcessFunction(light) {
+    light.process = function(counter) {
+        if (counter % 10 === 0) {
+            if (this.die()) {
+                for (let i = this.activeItemIndex + 1; i < inventory.activeItems.length; i++) {
+                    --inventory.activeItems[i].activeItemIndex;
+                }
+                inventory.activeItems.splice(this.activeItemIndex, 1);
+                this.remove();
+                return;
+            }
+        }
+        this.moveStep(counter);
+    };
+}
+
+function addHintlightMoveStepFunction(light) {
+    light.moveStep = function(counter) {
+        if (counter % CONSTANTS.LIGHT_HINTLIGHT_SPEED !== 0) return;
+
+        if (this.route && this.route.length > 0) {
+            if (this.position.x >= this.route[this.route.length - 1].x && this.position.x <= this.route[this.route.length - 1].x
+                && this.position.y >= this.route[this.route.length - 1].y && this.position.y <= this.route[this.route.length - 1].y) {
+                this.route.pop();
+            }
+            if (this.route.length > 0) {
+                this.moving.right = this.position.x < this.route[this.route.length - 1].x;
+                this.moving.left = this.position.x > this.route[this.route.length - 1].x;
+                this.moving.up = this.position.y < this.route[this.route.length - 1].y;
+                this.moving.down = this.position.y > this.route[this.route.length - 1].y;
+            } else {
+                this.moving = { left: false, up: false, right: false, down: false };
+            }
+        }
+
+        let x = 0;
+        let y = 0;
+
+        if (this.moving.left) {
+            x = -CONSTANTS.OBJECT_STRIDE;
+        }
+        if (this.moving.right) {
+            if (x === 0) {
+                x = CONSTANTS.OBJECT_STRIDE;
+            } else {
+                x = 0;
+            }
+        }
+
+        if (this.moving.up) {
+            y = CONSTANTS.OBJECT_STRIDE;
+        }
+        if (this.moving.down) {
+            if (y === 0) {
+                y = -CONSTANTS.OBJECT_STRIDE;
+            } else {
+                y = 0;
+            }
+        }
+
+        if (x !== 0 || y !== 0) {
+            this.changePosition({x, y});
+        }
+
+        return;
+    };
+}
+
+function addSendlightMoveStepFunction(light) {
+    light.moveStep = function(counter) {
+        if (counter % CONSTANTS.LIGHT_SENDLIGHT_SPEED !== 0) return;
+
+        if (MAP.isOnBeacon([this.position])
+        && SECRET.lightUpBeacon(this.position.x, this.position.y, [this.color[0], this.color[1], this.color[2], CONSTANTS.LIGHT_PARTICLE_BRIGHTNESS])) {
+            SOUND.play("beacon1");
+        }
+
+        let x = 0;
+        let y = 0;
+
+        if (this.moving.left) {
+            x = -CONSTANTS.OBJECT_STRIDE;
+        }
+        if (this.moving.right) {
+            if (x === 0) {
+                x = CONSTANTS.OBJECT_STRIDE;
+            } else {
+                x = 0;
+            }
+        }
+
+        if (this.moving.up) {
+            y = CONSTANTS.OBJECT_STRIDE;
+        }
+        if (this.moving.down) {
+            if (y === 0) {
+                y = -CONSTANTS.OBJECT_STRIDE;
+            } else {
+                y = 0;
+            }
+        }
+
+        if (MAP.isNextTileOfType(this.position.x, this.position.y, x, y, CONSTANTS.WALL_TILES)) {
+            x = 0;
+            y = 0;
+        }
+
+        if (x !== 0 || y !== 0) {
+            this.changePosition({x, y});
+        }
+
+        return;
+    };
+}
+
+function useHintlight() {
+    const { x, y } = PLAYER.getCenter();
+    const light = LIGHT.create(x, y, [0.8, 0.5, 1, CONSTANTS.LIGHT_HINTLIGHT_BRIGHTNESS]);
+
+    if (light === null) return;
+
+    light.moving = { left: false, up: false, right: false, down: false };
+    light.activeItemIndex = inventory.activeItems.length;
+    light.route = MAPUTIL.aStar(MAP.getTileMapInfo(), { x, y }, MAP.getExitCoords(), MAP.isTileNotWall);
+
+    addHintlightMoveStepFunction(light);
+    addMovingLightProcessFunction(light);
+
+    inventory.activeItems.push(light);
+    changeItemNumber("hintlight", -1);
+    SOUND.play("hintlight");
+}
+
+function useSendlight() {
+    const moving = PLAYER.get().moving;
+    if (!moving.left && !moving.up && !moving.right && !moving.down) return;
+
+    const { x, y } = PLAYER.getCenter();
+    const light = LIGHT.create(x, y, [1, 0.8, 0.5, CONSTANTS.LIGHT_SENDLIGHT_BRIGHTNESS]);
+
+    if (light === null) return;
+
+    light.moving = { left: moving.left, up: moving.up, right: moving.right, down: moving.down };
+    light.activeItemIndex = inventory.activeItems.length;
+
+    addSendlightMoveStepFunction(light);
+    addMovingLightProcessFunction(light);
+
+    inventory.activeItems.push(light);
+    changeItemNumber("sendlight", -1);
+    SOUND.play("particle");
+}
+
 export function addHintlight(number) {
     if (inventory.indices["hintlight"] !== undefined) {
         changeItemNumber("hintlight", number === undefined ? 1 : number);
@@ -62,84 +223,7 @@ export function addHintlight(number) {
         id: "hintlight",
         name: "Hint light",
         number: number === undefined ? 0 : number - 1,
-        use: function() {
-            const { x, y } = PLAYER.getCenter();
-            const light = LIGHT.create(x, y, [0.8, 0.5, 1, CONSTANTS.LIGHT_HINTLIGHT_BRIGHTNESS]);
-
-            if (light === null) return;
-
-            light.moving = { left: false, up: false, right: false, down: false };
-            light.activeItemIndex = activeItems.length;
-            light.route = MAPUTIL.aStar(MAP.getTileMapInfo(), { x, y }, MAP.getExitCoords(), function(i, j) { return !MAP.isTileWall(i, j); });
-
-            light.moveStep = function(counter) {
-                if (counter % CONSTANTS.LIGHT_HINTLIGHT_SPEED !== 0) return;
-
-                if (this.route && this.route.length > 0) {
-                    if (this.pos.x >= this.route[this.route.length - 1].x && this.pos.x <= this.route[this.route.length - 1].x
-                        && this.pos.y >= this.route[this.route.length - 1].y && this.pos.y <= this.route[this.route.length - 1].y) {
-                        this.route.pop();
-                    }
-                    if (this.route.length > 0) {
-                        this.moving.right = this.pos.x < this.route[this.route.length - 1].x;
-                        this.moving.left = this.pos.x > this.route[this.route.length - 1].x;
-                        this.moving.up = this.pos.y < this.route[this.route.length - 1].y;
-                        this.moving.down = this.pos.y > this.route[this.route.length - 1].y;
-                    } else {
-                        this.moving = { left: false, up: false, right: false, down: false };
-                    }
-                }
-
-                let dx = 0;
-                let dy = 0;
-
-                if (this.moving.left) {
-                    dx = -CONSTANTS.OBJECT_STRIDE;
-                }
-                if (this.moving.right) {
-                    if (dx === 0) {
-                        dx = CONSTANTS.OBJECT_STRIDE;
-                    } else {
-                        dx = 0;
-                    }
-                }
-
-                if (this.moving.up) {
-                    dy = CONSTANTS.OBJECT_STRIDE;
-                }
-                if (this.moving.down) {
-                    if (dy === 0) {
-                        dy = -CONSTANTS.OBJECT_STRIDE;
-                    } else {
-                        dy = 0;
-                    }
-                }
-
-                if (dx !== 0 || dy !== 0) {
-                    this.move(dx, dy);
-                }
-
-                return;
-            };
-
-            light.process = function(counter) {
-                if (counter % 10 === 0) {
-                    if (this.die()) {
-                        for (let i = this.activeItemIndex + 1; i < activeItems.length; i++) {
-                            --activeItems[i].activeItemIndex;
-                        }
-                        activeItems.splice(this.activeItemIndex, 1);
-                        this.remove();
-                        return;
-                    }
-                }
-                this.moveStep(counter);
-            };
-
-            activeItems.push(light);
-            changeItemNumber("hintlight", -1);
-            SOUND.play("hintlight");
-        }
+        use: useHintlight
     };
 
     inventory.indices["hintlight"] = hintlight.index;
@@ -158,81 +242,7 @@ export function addSendlight(number) {
         id: "sendlight",
         name: "Send light",
         number: number === undefined ? 0 : number - 1,
-        use: function() {
-            const moving = PLAYER.get().moving;
-            if (!moving.left && !moving.up && !moving.right && !moving.down) return;
-
-            const { x, y } = PLAYER.getCenter();
-            const light = LIGHT.create(x, y, [1, 0.8, 0.5, CONSTANTS.LIGHT_SENDLIGHT_BRIGHTNESS]);
-
-            if (light === null) return;
-
-            light.moving = { left: moving.left, up: moving.up, right: moving.right, down: moving.down };
-            light.activeItemIndex = activeItems.length;
-
-            light.moveStep = function(counter) {
-                if (counter % CONSTANTS.LIGHT_SENDLIGHT_SPEED !== 0) return;
-
-                if (MAP.isOnBeacon([this.pos])
-                && SECRET.lightUpBeacon(this.pos.x, this.pos.y, [this.color[0], this.color[1], this.color[2], CONSTANTS.LIGHT_PARTICLE_BRIGHTNESS])) {
-                    SOUND.play("beacon1");
-                }
-
-                let dx = 0;
-                let dy = 0;
-
-                if (this.moving.left) {
-                    dx = -CONSTANTS.OBJECT_STRIDE;
-                }
-                if (this.moving.right) {
-                    if (dx === 0) {
-                        dx = CONSTANTS.OBJECT_STRIDE;
-                    } else {
-                        dx = 0;
-                    }
-                }
-
-                if (this.moving.up) {
-                    dy = CONSTANTS.OBJECT_STRIDE;
-                }
-                if (this.moving.down) {
-                    if (dy === 0) {
-                        dy = -CONSTANTS.OBJECT_STRIDE;
-                    } else {
-                        dy = 0;
-                    }
-                }
-
-                if (MAP.isNextTileOfType(this.pos.x, this.pos.y, dx, dy, CONSTANTS.WALL_TILES)) {
-                    dx = 0;
-                    dy = 0;
-                }
-
-                if (dx !== 0 || dy !== 0) {
-                    this.move(dx, dy);
-                }
-
-                return;
-            };
-
-            light.process = function(counter) {
-                if (counter % 10 === 0) {
-                    if (this.die()) {
-                        for (let i = this.activeItemIndex + 1; i < activeItems.length; i++) {
-                            --activeItems[i].activeItemIndex;
-                        }
-                        activeItems.splice(this.activeItemIndex, 1);
-                        this.remove();
-                        return;
-                    }
-                }
-                this.moveStep(counter);
-            };
-
-            activeItems.push(light);
-            changeItemNumber("sendlight", -1);
-            SOUND.play("particle");
-        }
+        use: useSendlight
     };
 
     inventory.indices["sendlight"] = sendlight.index;
@@ -246,7 +256,7 @@ export function useItem() {
 }
 
 export function processActiveItems(counter) {
-    for (let item of activeItems) {
+    for (let item of inventory.activeItems) {
         item.process(counter);
     }
 }

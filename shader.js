@@ -1,5 +1,18 @@
 import * as CONSTANTS from "./constants.js";
 
+/**
+ * COMMON
+ */
+
+let materials = {
+    mapTexture: undefined,
+    mapLighting: undefined,
+    map: undefined,
+    object: undefined,
+    animationDance: undefined,
+    animationSparks: undefined
+};
+
 const RAYCAST = `
 bool compLEQ(vec2 a, vec2 b) {
     return a.x <= b.x && a.y <= b.y;
@@ -85,6 +98,10 @@ bool rayCast(vec2 start, vec2 target) {
 }
 `;
 
+/**
+ * MAP TEXTURE
+ */
+
 const mapTextureVSrc = `
 attribute vec4 a_color;
 
@@ -107,19 +124,9 @@ void main(void) {
 }
 `;
 
-export const mapTextureUniforms = {
-    u_dimensions: { type: 'vec2', value: new Float32Array(2) },
-};
-
-const mapTextureShaderMaterial = new THREE.ShaderMaterial({
-    uniforms: mapTextureUniforms,
-    vertexShader:   mapTextureVSrc,
-    fragmentShader: mapTextureFSrc,
-});
-
-export function getMapTextureMaterial() {
-    return mapTextureShaderMaterial;
-}
+/**
+ * MAP LIGHTING
+ */
 
 const mapLightingVSrc = `
 attribute vec2 a_texelCoords;
@@ -164,35 +171,24 @@ void main(void) {
             if (dist < float(MAXDIST)) {
                 if (rayCast(mapCoords, u_lightPos[i])) {
                     RGB += u_lightColor[i].a * u_lightColor[i].rgb / pow(dist, float(DISTEXP));
-                    light += u_lightColor[i].a * u_lightColor[i].rgb / pow(dist + 3.0, 3.0);
+                    if (dist < 5.0) {
+                        light += u_lightColor[i].a * u_lightColor[i].rgb / pow(dist + 1.0, 4.0);
+                    }
                 }
             }
         }
     }
 
-    gl_FragColor.rgb = color.rgb * max(u_ambientLight.a * u_ambientLight.rgb, RGB);
-    gl_FragColor.rgb = min(vec3(1.0), gl_FragColor.rgb + light);
+    if (light != vec3(0.0)) gl_FragColor.rgb = light;
+    else gl_FragColor.rgb = color.rgb * max(u_ambientLight.a * u_ambientLight.rgb, RGB);
+    gl_FragColor.rgb = max(light, color.rgb * max(u_ambientLight.a * u_ambientLight.rgb, RGB));
     gl_FragColor.a = color.a;
 }
 `;
 
-export const mapLightingUniforms = {
-    u_texture: { type: 'sampler2D', value: undefined },
-    u_dimensions: { type: 'vec2', value: new Float32Array(2) },
-    u_ambientLight: { type: 'vec3', value: new Float32Array([1.0, 1.0, 1.0, 1.0]) },
-    u_lightPos: { type: 'vec2', value: new Float32Array(2 * CONSTANTS.LIGHT_MAXNUM) },
-    u_lightColor: { type: 'vec4', value: new Float32Array(4 * CONSTANTS.LIGHT_MAXNUM) },
-};
-
-const mapLightingShaderMaterial = new THREE.ShaderMaterial({
-    uniforms: mapLightingUniforms,
-    vertexShader:   mapLightingVSrc,
-    fragmentShader: mapLightingFSrc,
-});
-
-export function getMapLightingMaterial() {
-    return mapLightingShaderMaterial;
-}
+/**
+ * MAP
+ */
 
 const mapVSrc = `
 attribute vec2 a_texelCoords;
@@ -222,20 +218,9 @@ void main(void) {
 }
 `;
 
-export const mapUniforms = {
-    u_gamma: { type: 'float', value: 1 },
-    u_texture: { type: 'sampler2D', value: undefined },
-};
-
-const mapShaderMaterial = new THREE.ShaderMaterial({
-    uniforms: mapUniforms,
-    vertexShader:   mapVSrc,
-    fragmentShader: mapFSrc,
-});
-
-export function getMapMaterial() {
-    return mapShaderMaterial;
-}
+/**
+ * OBJECT
+ */
 
 const objectVSrc = `
 attribute vec4 a_color;
@@ -292,25 +277,9 @@ void main() {
 }
 `;
 
-export const objectUniforms = {
-    u_gamma: { type: 'float', value: 1 },
-    u_texture: { type: 'sampler2D', value: undefined },
-    u_dimensions: { type: 'vec2', value: new Float32Array(2) },
-    u_ambientLight: { type: 'vec3', value: new Float32Array([1.0, 1.0, 1.0, 1.0]) },
-    u_lightPos: { type: 'vec2', value: new Float32Array(2 * CONSTANTS.LIGHT_MAXNUM) },
-    u_lightColor: { type: 'vec4', value: new Float32Array(4 * CONSTANTS.LIGHT_MAXNUM) },
-    u_lightPrecision: { type: 'float', value: 1 },
-};
-
-const objectShaderMaterial = new THREE.ShaderMaterial({
-    uniforms: objectUniforms,
-    vertexShader:   objectVSrc,
-    fragmentShader: objectFSrc,
-});
-
-export function getObjectMaterial() {
-    return objectShaderMaterial;
-}
+/**
+ * ANIMATION DANCE
+ */
 
 const animationDanceVSrc = `
 varying vec2 v_pos;
@@ -391,23 +360,9 @@ void main(void) {
 }
 `;
 
-export const animationDanceUniforms = {
-    u_gamma: { type: 'float', value: 1 },
-    u_counter: { type: 'float', value: 0 },
-    u_moves: { type: 'vec2', value: new Float32Array(10)},
-};
-
-const animationDanceShaderMaterial = new THREE.ShaderMaterial({
-    uniforms: animationDanceUniforms,
-    vertexShader:   animationDanceVSrc,
-    fragmentShader: animationDanceFSrc,
-    depthWrite: false,
-    transparent: true,
-});
-
-export function getAnimationDanceMaterial() {
-    return animationDanceShaderMaterial;
-}
+/**
+ * ANIMATION SPARKS
+ */
 
 const animationSparksVSrc = `
 varying vec2 v_pos;
@@ -469,23 +424,148 @@ void main(void) {
 }
 `;
 
-export const animationSparksUniforms = {
-    u_gamma: { type: 'float', value: 1 },
-    u_counter: { type: 'float', value: 0 },
-    u_directions: { type: 'vec2', value: new Float32Array(24) },
-    u_colors: { type: 'vec4', value: new Float32Array(48) },
+/**
+ * MAP TEXTURE
+ */
+
+export const mapTextureUniforms = {
+    u_dimensions: {type: 'vec2', value: new Float32Array(2)},
 };
 
-const animationSparksShaderMaterial = new THREE.ShaderMaterial({
-    uniforms: animationSparksUniforms,
-    vertexShader:   animationSparksVSrc,
-    fragmentShader: animationSparksFSrc,
-    depthWrite: false,
-    transparent: true,
-});
+export function getMapTextureMaterial() {
+    return materials.mapTexture;
+}
+
+/**
+ * MAP LIGHTING
+ */
+
+export const mapLightingUniforms = {
+    u_texture: {type: 'sampler2D', value: undefined},
+    u_dimensions: {type: 'vec2', value: new Float32Array(2)},
+    u_ambientLight: {type: 'vec3', value: new Float32Array([1.0, 1.0, 1.0, 1.0])},
+    u_lightPos: {type: 'vec2', value: new Float32Array(2 * CONSTANTS.LIGHT_MAXNUM)},
+    u_lightColor: {type: 'vec4', value: new Float32Array(4 * CONSTANTS.LIGHT_MAXNUM)},
+};
+
+export function getMapLightingMaterial() {
+    return materials.mapLighting;
+}
+
+/**
+ * MAP
+ */
+
+export const mapUniforms = {
+    u_gamma: {type: 'float', value: 1},
+    u_texture: {type: 'sampler2D', value: undefined},
+};
+
+export function getMapMaterial() {
+    return materials.map;
+}
+
+/**
+ * OBJECT
+ */
+
+export const objectUniforms = {
+    u_gamma: {type: 'float', value: 1},
+    u_texture: {type: 'sampler2D', value: undefined},
+    u_dimensions: {type: 'vec2', value: new Float32Array(2)},
+    u_ambientLight: {type: 'vec3', value: new Float32Array([1.0, 1.0, 1.0, 1.0])},
+    u_lightPos: {type: 'vec2', value: new Float32Array(2 * CONSTANTS.LIGHT_MAXNUM)},
+    u_lightColor: {type: 'vec4', value: new Float32Array(4 * CONSTANTS.LIGHT_MAXNUM)},
+    u_lightPrecision: {type: 'float', value: 1},
+};
+
+export function getObjectMaterial() {
+    return materials.object;
+}
+
+/**
+ * ANIMATION DANCE
+ */
+
+export const animationDanceUniforms = {
+    u_gamma: {type: 'float', value: 1},
+    u_counter: {type: 'float', value: 0},
+    u_moves: {type: 'vec2', value: new Float32Array(10)},
+};
+
+export function getAnimationDanceMaterial() {
+    return materials.animationDance;
+}
+
+/** 
+ * ANIMATION SPARKS
+ */
+
+export const animationSparksUniforms = {
+    u_gamma: {type: 'float', value: 1},
+    u_counter: {type: 'float', value: 0},
+    u_directions: {type: 'vec2', value: new Float32Array(24)},
+    u_colors: {type: 'vec4', value: new Float32Array(48)},
+};
 
 export function getAnimationSparksMaterial() {
-    return animationSparksShaderMaterial;
+    return materials.animationSparks;
+}
+
+/**
+ * GENERAL
+ */
+
+export function reset() {
+    materials = {
+        mapTexture: undefined,
+        mapLighting: undefined,
+        map: undefined,
+        object: undefined,
+        animationDance: undefined,
+        animationSparks: undefined
+    };
+}
+
+export function initialize() {
+    materials = {
+        mapTexture: new THREE.ShaderMaterial({
+            uniforms: mapTextureUniforms,
+            vertexShader:   mapTextureVSrc,
+            fragmentShader: mapTextureFSrc,
+        }),
+        mapLighting: new THREE.ShaderMaterial({
+            uniforms: mapLightingUniforms,
+            vertexShader:   mapLightingVSrc,
+            fragmentShader: mapLightingFSrc,
+        }),
+        map: new THREE.ShaderMaterial({
+            uniforms: mapUniforms,
+            vertexShader:   mapVSrc,
+            fragmentShader: mapFSrc,
+        }),
+        object: new THREE.ShaderMaterial({
+            uniforms: animationDanceUniforms,
+            vertexShader:   animationDanceVSrc,
+            fragmentShader: animationDanceFSrc,
+            depthWrite: false,
+            transparent: true,
+        }),
+        animationDance: new THREE.ShaderMaterial({
+            uniforms: animationDanceUniforms,
+            vertexShader:   animationDanceVSrc,
+            fragmentShader: animationDanceFSrc,
+            depthWrite: false,
+            transparent: true,
+        }),
+        animationSparks: new THREE.ShaderMaterial({
+            uniforms: animationSparksUniforms,
+            vertexShader:   animationSparksVSrc,
+            fragmentShader: animationSparksFSrc,
+            depthWrite: false,
+            transparent: true,
+        })
+    };
 }
 
 export function getGamma() {

@@ -1,20 +1,46 @@
-import * as STAGE from "./stage.js";
-import * as SHADER from "./shader.js";
+import * as CONSTANTS from "./constants.js";
+import * as ITEM from "./item.js";
+import * as LIGHT from "./light.js";
+import * as MAPUTIL from "./mapUtil.js";
+import * as OBJECT from "./object.js";
 import * as PLAYER from "./player.js";
 import * as RANDOMMAP from "./randomMap.js";
-import * as CONSTANTS from "./constants.js";
-import * as LIGHT from "./light.js";
-import * as ITEM from "./item.js";
-import * as OBJECT from "./object.js";
-import * as SOUND from "./sound.js";
-import * as MAPUTIL from "./mapUtil.js";
 import * as SECRET from "./secret.js";
+import * as SHADER from "./shader.js";
+import * as SOUND from "./sound.js";
+import * as STAGE from "./stage.js";
 
-let map = undefined;
+let map = {
+    seed: 0,
+    tileMap: [],
+    numRows: 0,
+    numColumns: 0,
+    secrets: [],
+    mesh: undefined,
+    exitCoords: undefined
+};
 
-export function reset(seed, numRows, numColumns, gameSeed, level) {
+export function reset() {
+    map = {
+        seed: 0,
+        tileMap: [],
+        numRows: 0,
+        numColumns: 0,
+        secrets: [],
+        mesh: undefined,
+        exitCoords: undefined
+    };
+
     OBJECT.reset();
-    LIGHT.reset(numRows, numColumns, level);
+    ITEM.reset();
+    SECRET.reset();
+    PLAYER.reset();
+    RANDOMMAP.reset();
+}
+
+export function initialize(seed, numRows, numColumns, gameSeed, level) {
+    OBJECT.reset();
+    LIGHT.levelReset(level);
     ITEM.reset();
     SECRET.reset();
 
@@ -30,7 +56,7 @@ export function reset(seed, numRows, numColumns, gameSeed, level) {
         exitCoords: MAPUTIL.tileToCenter(exit.i, exit.j)
     };
 
-    PLAYER.reset(start.i, start.j);
+    PLAYER.initialize(start.i, start.j);
     OBJECT.createEnemies(enemies);
     ITEM.createItems(items);
     SECRET.createSecrets(secrets);
@@ -85,7 +111,7 @@ function createTexture(colors) {
     SHADER.mapTextureUniforms.u_dimensions.value = [numColumns, numRows];
 
     const mapMesh = new THREE.Mesh(geometry, SHADER.getMapTextureMaterial());
-    SHADER.mapLightingUniforms.u_texture.value = STAGE.renderToTexture([mapMesh], numColumns, numRows);
+    SHADER.mapLightingUniforms.u_texture.value = STAGE.renderToTexture([mapMesh], {x: numColumns, y: numRows});
     SHADER.objectUniforms.u_texture.value = SHADER.mapLightingUniforms.u_texture.value;
     SHADER.objectUniforms.u_dimensions.value = [CONSTANTS.LIGHT_MAP_PRECISION * numColumns, CONSTANTS.LIGHT_MAP_PRECISION * numRows];
     SHADER.objectUniforms.u_lightPrecision.value = CONSTANTS.LIGHT_MAP_PRECISION;
@@ -147,6 +173,10 @@ export function isTileGround(i, j) {
 
 export function isTileWall(i, j) {
     return MAPUTIL.isTileWall(i, j, getTile);
+}
+
+export function isTileNotWall(i, j) {
+    return !isTileWall(i, j);
 }
 
 export function isTileWater(i, j) {

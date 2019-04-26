@@ -1,6 +1,6 @@
+import * as CONSTANTS from "./constants.js";
 import * as SHADER from "./shader.js";
 import * as STAGE from "./stage.js";
-import * as CONSTANTS from "./constants.js";
 
 let animations = {};
 let runningAnimations = [];
@@ -13,7 +13,7 @@ export function reset() {
 }
 
 export function stopAllRunning() {
-    for (let animation of runningAnimations) {
+    for (const animation of runningAnimations) {
         animation.onEnd();
     }
 } 

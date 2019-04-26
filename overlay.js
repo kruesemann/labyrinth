@@ -1,11 +1,39 @@
-import * as HINT from "./hint.js";
 import * as DIALOG from "./dialog.js";
 import * as GAME from "./game.js";
+import * as HINT from "./hint.js";
 import * as INPUT from "./input.js";
 
-let display = undefined;
+let display = {
+    seed: undefined,
+    level: undefined,
+    score: undefined,
+    form: undefined,
+    light: undefined,
+};
 
-export function reset(seed, level, score) {
+export function reset() {
+    document.getElementById("screen-game").style.display = "none";
+
+    display = {
+        seed: undefined,
+        level: undefined,
+        score: undefined,
+        form: undefined,
+        light: undefined,
+    };
+
+    setDialogText("");
+    setDialogButtons([]);
+    setSeed(0);
+    setLevel(0);
+    setScore(0);
+    setForm("dot");
+    setLight([0, 0, 0, 0]);
+
+    DIALOG.reset();
+}
+
+export function initialize(seed, level, score) {
     document.getElementById("loading-box").style.display = "none";
     document.getElementById("screen-game").style.display = "block";
 
@@ -16,10 +44,6 @@ export function reset(seed, level, score) {
         form: document.getElementById("info-form"),
         light: document.getElementById("status-light"),
     };
-
-    DIALOG.reset();
-    setDialogText("");
-    setDialogButtons([]);
 
     setSeed(seed);
     setLevel(level);

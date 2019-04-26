@@ -1,8 +1,12 @@
-import * as CONSTANTS from "./constants.js";
-import * as SOUND from "./sound.js";
 import * as ANIMATION from "./animation.js";
+import * as CONSTANTS from "./constants.js";
 import * as HINT from "./hint.js";
+import * as INPUT from "./input.js";
 import * as INVENTORY from "./inventory.js";
+import * as LIGHT from "./light.js";
+import * as MAP from "./map.js";
+import * as SHADER from "./shader.js";
+import * as SOUND from "./sound.js";
 
 let stage = undefined;
 
@@ -19,7 +23,28 @@ export function reset() {
             }
         }
     }
+    
+    stage = {
+        width: 0,
+        height: 0,
+        renderer: undefined,
+        canvas: undefined,
+        camera: undefined,
+        scene: undefined,
+        bufferCamera: undefined,
+        bufferScene: undefined,
+    };
 
+    SOUND.fadeOutLevel();
+    MAP.reset();
+    LIGHT.reset();
+    ANIMATION.reset();
+    SHADER.reset();
+    INVENTORY.reset();
+    HINT.reset();
+}
+
+export function initialize() {
     stage = {
         width: window.innerWidth,
         height: window.innerHeight,
@@ -36,10 +61,8 @@ export function reset() {
 
     stage.camera.add(SOUND.getAudioListener());
     stage.camera.position.z = CONSTANTS.CAMERA_DIST;
-    ANIMATION.reset();
 
     stage.scene.add(stage.camera);
-    //stage.scene.background = new THREE.Color( 0xffffff );
 
     window.onresize = function resize() {
         stage.width = window.innerWidth;
@@ -48,18 +71,15 @@ export function reset() {
         stage.camera.aspect = stage.width / stage.height;
         stage.camera.updateProjectionMatrix();
 
-        if ((document.fullScreenElement && document.fullScreenElement !== null)
-        || (document.mozFullScreen || document.webkitIsFullScreen)) {
+        if (INPUT.isFullscreenOn()) {
             stage.canvas.style.cursor = "none";
         } else {
             stage.canvas.style.cursor = "auto";
         }
     }
-}
 
-export function moveCamera(x, y) {
-    stage.camera.position.x -= x * CONSTANTS.CAMERA_SCROLLSPEED * stage.camera.position.z;
-    stage.camera.position.y += y * CONSTANTS.CAMERA_SCROLLSPEED * stage.camera.position.z;
+    SHADER.initialize();
+    LIGHT.initialize({x: 200, y: 200});
 }
 
 export function lookAt(x, y) {
@@ -92,7 +112,7 @@ export function removeMesh(mesh) {
 export function resetScene() {
     SOUND.fadeOutLevel();
     ANIMATION.stopAllRunning();
-    INVENTORY.reset();
+    INVENTORY.levelReset();
     HINT.reset();
     while(stage.scene.children.length > 0){ 
         removeMesh(stage.scene.children[0]); 
@@ -100,8 +120,8 @@ export function resetScene() {
     stage.scene.add(stage.camera);
 }
 
-function createBuffer(meshes, width, height) {
-    stage.bufferCamera = new THREE.PerspectiveCamera(45, width / height, 1, 1000);
+function createBuffer(meshes, dimensions) {
+    stage.bufferCamera = new THREE.PerspectiveCamera(45, dimensions.x / dimensions.y, 1, 1000);
     stage.bufferScene = new THREE.Scene();
     stage.bufferScene.add(stage.bufferCamera);
 
@@ -118,15 +138,15 @@ function deleteBuffer() {
     stage.bufferScene = undefined;
 }
 
-function renderBufferToTexture(width, height) {
-    const target = new THREE.WebGLRenderTarget( width, height, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter});
+function renderBufferToTexture(dimensions) {
+    const target = new THREE.WebGLRenderTarget(dimensions.x, dimensions.y, {minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter});
     stage.renderer.render(stage.bufferScene, stage.bufferCamera, target, true);
     return target.texture;
 }
 
-export function renderToTexture(meshes, width, height) {
-    createBuffer(meshes, width, height);
-    const texture = renderBufferToTexture(width, height);
+export function renderToTexture(meshes, dimensions) {
+    createBuffer(meshes, dimensions);
+    const texture = renderBufferToTexture(dimensions);
     deleteBuffer();
     return texture;
 }

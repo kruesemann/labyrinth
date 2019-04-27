@@ -171,6 +171,9 @@ function keyDownGame(event) {
                 checkTransformationSequence();
             }
             break;
+        case KEY_DOT:
+            DIALOG.skipCurrent();
+            break;
         case 49://1
             PLAYER.transform("dot");
             break;
@@ -216,6 +219,9 @@ function keyDownGame(event) {
             break;
         case 80://p
             GAME.togglePause();
+            break;
+        case 88://x
+            DIALOG.stop();
             break;
     }
 }

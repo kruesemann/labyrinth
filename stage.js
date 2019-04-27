@@ -78,6 +78,7 @@ export function initialize() {
         } else {
             canvas.style.cursor = "auto";
         }
+        render();
     }
 
     LIGHT.initialize({x: 200, y: 200});

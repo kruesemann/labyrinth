@@ -25,7 +25,7 @@ export function stop() {
     OVERLAY.hideDialog();
     GAME.resumeGame();
     INPUT.gameControls();
-    setTimeout( _ => { list = []; }, 500);
+    setTimeout( _ => { dialog.list = []; }, 500);
 }
 
 function next(event) {
@@ -39,16 +39,16 @@ function next(event) {
 }
 
 function showWithIndex(index, number) {
-    if (!list.length || number !== dialog.number) return;
+    if (!dialog.list.length || number !== dialog.number) return;
 
-    if (index >= list.length) {
+    if (index >= dialog.list.length) {
         stop();
         return;
     }
-    OVERLAY.setDialogText(list[index].text);
+    OVERLAY.setDialogText(dialog.list[index].text);
 
-    if (list[index].buttons && list[index].buttons.length) {
-        OVERLAY.setDialogButtons(list[index].buttons, number);
+    if (dialog.list[index].buttons && dialog.list[index].buttons.length) {
+        OVERLAY.setDialogButtons(dialog.list[index].buttons, number);
     } else {
         OVERLAY.setDialogButtons([]);
         setTimeout(_ => {
@@ -56,8 +56,8 @@ function showWithIndex(index, number) {
         }, 3000);
     }
 
-    if (list[index].trigger) {
-        list[index].trigger();
+    if (dialog.list[index].trigger) {
+        dialog.list[index].trigger();
     }
 
     dialog.currentIndex = index;
@@ -65,8 +65,8 @@ function showWithIndex(index, number) {
 }
 
 export function show(newDialog, pause) {
-    if (list.length || !newDialog || !newDialog.length) return false;
-    list = newDialog;
+    if (dialog.list.length || !newDialog || !newDialog.length) return false;
+    dialog.list = newDialog;
     if (pause) {
         GAME.pauseGame();
         INPUT.dialogControls();
@@ -77,7 +77,7 @@ export function show(newDialog, pause) {
 }
 
 export function skipCurrent() {
-    if (dialog.currentIndex < 0 || dialog.currentIndex >= list.length || (list[dialog.currentIndex].buttons && list[dialog.currentIndex].buttons.length)) return;
+    if (dialog.currentIndex < 0 || dialog.currentIndex >= dialog.list.length || (dialog.list[dialog.currentIndex].buttons && dialog.list[dialog.currentIndex].buttons.length)) return;
     const number = dialog.number + 1;
     dialog.number = number;
     document.dispatchEvent(new CustomEvent("nextDialog", { detail: { index: dialog.currentIndex + 1, dialogNumber: number } }));

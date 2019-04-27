@@ -4,6 +4,8 @@ import * as INPUT from "./input.js";
 import * as SHADER from "./shader.js";
 import * as SOUND from "./sound.js";
 
+document.addEventListener("soundReady", GAME.assetsReady);
+
 SOUND.initialize();
 INPUT.initialize();
 
@@ -21,6 +23,7 @@ document.getElementById("menu-ingame-help").addEventListener("click", showHelp);
 document.getElementById("menu-ingame-exit").addEventListener("click", resetGame);
 
 function mainMenu() {
+    console.log("hello terhe");
     document.getElementById("screen-game").style.display = "none";
     document.getElementById("screen-start").style.display = "block";
     document.getElementById("menu-ingame").style.display = "none";

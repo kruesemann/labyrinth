@@ -1,4 +1,5 @@
 import * as CONSTANTS from "./constants.js";
+import * as PLAYER from "./player.js";
 import * as SECRET from "./secret.js";
 import * as SHADER from "./shader.js";
 import * as STAGE from "./stage.js";
@@ -217,7 +218,7 @@ export function levelReset(level) {
 }
 
 export function create(x, y, color) {
-    let uniformIndex = -1;
+    /*let uniformIndex = -1;
 
     for (let i = 0; i < CONSTANTS.LIGHT_MAXNUM; i++) {
         if (SHADER.mapLightingUniforms.u_lightPos.value[2 * i] === 0
@@ -234,10 +235,10 @@ export function create(x, y, color) {
     if (uniformIndex === -1) {
         console.log("too many lights");
         return null;
-    }
+    }*/
 
     const light = new Light({x, y}, [color[0], color[1], color[2]], color[3], true, false);
-    light.uniformIndex = uniformIndex;
+    //light.uniformIndex = uniformIndex;
 
     return light;
 }
@@ -279,7 +280,36 @@ export function flickerAll(counter) {
     }
 }
 
+function brighter(o1, o2) {
+    return o2.brightness - o1.brightness;
+}
+
+function assignUniformIndices(counter) {
+    if (counter % 4 === 0) {
+        SHADER.mapLightingUniforms.u_lightPos.value = new Float32Array(2 * CONSTANTS.LIGHT_MAXNUM);
+        SHADER.mapLightingUniforms.u_lightColor.value = new Float32Array(4 * CONSTANTS.LIGHT_MAXNUM);
+
+        const playerPos = PLAYER.getHead();
+        const list = [];
+
+        for (const uuid in lightingMap.lights) {
+            if (!lightingMap.lights.hasOwnProperty(uuid)) continue;
+            const light = lightingMap.lights[uuid];
+            const dist = Math.hypot(playerPos.x - light.position.x, playerPos.y - light.position.y);
+            if (dist < CONSTANTS.LIGHT_MAX_RENDER_DIST) list.push(light);
+        }
+
+        list.sort(brighter);
+
+        let uInd = 0;
+        for (let light of list) {
+            light.uniformIndex = uInd++;
+        }
+    }
+}
+
 export function renderLighting(counter) {
+    assignUniformIndices(counter);
     SECRET.gleamAllWisps(counter);
     flickerAll(counter);
     SHADER.mapUniforms.u_texture.value = STAGE.renderToTexture([lightingMap.mesh], lightingMap.dimensions);

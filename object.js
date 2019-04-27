@@ -34,8 +34,6 @@ function createDotForm(x, y, color) {
     const geometry = new THREE.BufferGeometry(); 
     geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
     geometry.addAttribute('a_color', new THREE.BufferAttribute(new Float32Array(colors), 3));
-    const t = SHADER.getObjectMaterial();
-    console.log(t);
 
     const form = {
         ID: "dot",

@@ -5,12 +5,31 @@ import * as INPUT from "./input.js";
 import * as INVENTORY from "./inventory.js";
 import * as LIGHT from "./light.js";
 import * as MAP from "./map.js";
-import * as SHADER from "./shader.js";
 import * as SOUND from "./sound.js";
 
-let stage = undefined;
+const renderer = new THREE.WebGLRenderer();
+const canvas = document.getElementById("canvas");
+
+renderer.setSize(window.innerWidth, window.innerHeight);
+canvas.appendChild(renderer.domElement);
+
+let stage = {
+    width: 0,
+    height: 0,
+    camera: undefined,
+    scene: undefined,
+    bufferCamera: undefined,
+    bufferScene: undefined,
+};
 
 export function reset() {
+    SOUND.fadeOutLevel();
+    ANIMATION.reset();
+    LIGHT.reset();
+    MAP.reset();
+    INVENTORY.reset();
+    HINT.reset();
+
     if (stage) {
         if (stage.camera) {
             while(stage.camera.children.length > 0){ 
@@ -27,58 +46,40 @@ export function reset() {
     stage = {
         width: 0,
         height: 0,
-        renderer: undefined,
-        canvas: undefined,
         camera: undefined,
         scene: undefined,
         bufferCamera: undefined,
         bufferScene: undefined,
     };
-
-    SOUND.fadeOutLevel();
-    MAP.reset();
-    LIGHT.reset();
-    ANIMATION.reset();
-    SHADER.reset();
-    INVENTORY.reset();
-    HINT.reset();
 }
 
 export function initialize() {
     stage = {
         width: window.innerWidth,
         height: window.innerHeight,
-        renderer: new THREE.WebGLRenderer(),
-        canvas: document.getElementById("canvas"),
         camera: new THREE.PerspectiveCamera(CONSTANTS.CAMERA_FOV, window.innerWidth / window.innerHeight, CONSTANTS.CAMERA_NEAR, CONSTANTS.CAMERA_FAR),
         scene: new THREE.Scene(),
         bufferCamera: undefined,
         bufferScene: undefined,
     };
 
-    stage.renderer.setSize(stage.width, stage.height);
-    stage.canvas.appendChild(stage.renderer.domElement);
-
     stage.camera.add(SOUND.getAudioListener());
     stage.camera.position.z = CONSTANTS.CAMERA_DIST;
-
-    stage.scene.add(stage.camera);
 
     window.onresize = function resize() {
         stage.width = window.innerWidth;
         stage.height = window.innerHeight;
-        stage.renderer.setSize(stage.width, stage.height);
+        renderer.setSize(stage.width, stage.height);
         stage.camera.aspect = stage.width / stage.height;
         stage.camera.updateProjectionMatrix();
 
         if (INPUT.isFullscreenOn()) {
-            stage.canvas.style.cursor = "none";
+            canvas.style.cursor = "none";
         } else {
-            stage.canvas.style.cursor = "auto";
+            canvas.style.cursor = "auto";
         }
     }
 
-    SHADER.initialize();
     LIGHT.initialize({x: 200, y: 200});
 }
 
@@ -98,7 +99,7 @@ export function zoom(delta) {
 }
 
 export function render() {
-	stage.renderer.render(stage.scene, stage.camera);
+	renderer.render(stage.scene, stage.camera);
 }
 
 export function addMesh(mesh) {
@@ -140,7 +141,7 @@ function deleteBuffer() {
 
 function renderBufferToTexture(dimensions) {
     const target = new THREE.WebGLRenderTarget(dimensions.x, dimensions.y, {minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter});
-    stage.renderer.render(stage.bufferScene, stage.bufferCamera, target, true);
+    renderer.render(stage.bufferScene, stage.bufferCamera, target, true);
     return target.texture;
 }
 

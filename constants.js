@@ -137,6 +137,7 @@ export const OBJECT_STRIDE  = 0.5;
 
 // LIGHTING
 export const LIGHT_MAP_PRECISION    = 2;
+export const LIGHT_MAX_RENDER_DIST  = 70;
 
 export const LIGHT_MAXNUM   = 16;
 export const LIGHT_MAXDIST  = 50 * LIGHT_MAP_PRECISION;

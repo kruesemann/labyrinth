@@ -14,14 +14,6 @@ let display = {
 export function reset() {
     document.getElementById("screen-game").style.display = "none";
 
-    display = {
-        seed: undefined,
-        level: undefined,
-        score: undefined,
-        form: undefined,
-        light: undefined,
-    };
-
     setDialogText("");
     setDialogButtons([]);
     setSeed(0);
@@ -31,6 +23,14 @@ export function reset() {
     setLight([0, 0, 0, 0]);
 
     DIALOG.reset();
+
+    display = {
+        seed: undefined,
+        level: undefined,
+        score: undefined,
+        form: undefined,
+        light: undefined,
+    };
 }
 
 export function initialize(seed, level, score) {

@@ -31,18 +31,18 @@ export function reset() {
         exitCoords: undefined
     };
 
-    OBJECT.reset();
-    ITEM.reset();
-    SECRET.reset();
     PLAYER.reset();
+    OBJECT.reset();
+    SECRET.reset();
+    ITEM.reset();
     RANDOMMAP.reset();
 }
 
 export function initialize(seed, numRows, numColumns, gameSeed, level) {
-    OBJECT.reset();
     LIGHT.levelReset(level);
-    ITEM.reset();
+    OBJECT.reset();
     SECRET.reset();
+    ITEM.reset();
 
     const  { tileMap, start, exit, enemies, items, secrets, colors } = RANDOMMAP.create(seed, numRows, numColumns, gameSeed, level);
 
@@ -58,8 +58,8 @@ export function initialize(seed, numRows, numColumns, gameSeed, level) {
 
     PLAYER.initialize(start.i, start.j);
     OBJECT.createEnemies(enemies);
-    ITEM.createItems(items);
     SECRET.createSecrets(secrets);
+    ITEM.createItems(items);
 
     createTexture(colors);
     createMesh();

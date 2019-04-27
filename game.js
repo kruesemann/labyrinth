@@ -18,9 +18,10 @@ let game = {
     mapSeed: 0,
     counter: 0,
     nextLevel: true,
-    paused: false,
-    assetsLoaded: false
+    paused: false
 };
+
+let assetsLoaded = false;
 
 export function reset() {
     game = {
@@ -30,8 +31,7 @@ export function reset() {
         mapSeed: 0,
         counter: 0,
         nextLevel: true,
-        paused: false,
-        assetsLoaded: false
+        paused: false
     };
 
     STAGE.reset();
@@ -47,25 +47,23 @@ export function initialize(seed) {
         mapSeed: 0,
         counter: 0,
         nextLevel: true,
-        paused: false,
+        paused: false
     };
 
     STAGE.initialize();
     NOISE.setGameSeed(game.seed);
 
-    if (game.assetsLoaded) setup();
+    if (assetsLoaded) setup();
     else waitForAssets();
 }
 
-document.addEventListener("soundReady", assetsReady);
-
-function assetsReady() {
-    game.assetsLoaded = true;
+export function assetsReady() {
+    assetsLoaded = true;
 }
 
 function waitForAssets() {
     document.addEventListener("soundReady", setup);
-    if (game.assetsLoaded) setup();
+    if (assetsLoaded) setup();
 }
 
 function setup() {

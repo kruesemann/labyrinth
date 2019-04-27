@@ -21,8 +21,6 @@ let game = {
     paused: false
 };
 
-let assetsLoaded = false;
-
 export function reset() {
     game = {
         seed: 0,
@@ -53,22 +51,17 @@ export function initialize(seed) {
     STAGE.initialize();
     NOISE.setGameSeed(game.seed);
 
-    if (assetsLoaded) setup();
-    else waitForAssets();
+    loadingLoop();
 }
 
-export function assetsReady() {
-    assetsLoaded = true;
-}
-
-function waitForAssets() {
-    document.addEventListener("soundReady", setup);
-    if (assetsLoaded) setup();
+function loadingLoop() {
+    const loadingProgressVolume = SOUND.loadingProgress();
+    OVERLAY.setLoadingProgressVolume(loadingProgressVolume);
+    if (loadingProgressVolume === 100) setTimeout(setup, 0); //sonst sieht man nie den Ladebalken voll
+    else requestAnimationFrame(loadingLoop);
 }
 
 function setup() {
-    document.removeEventListener("soundReady", setup);
-    document.removeEventListener("soundReady", assetsReady);
     OVERLAY.initialize(game.seed, game.level, game.score);
     gameloop();
 }
@@ -119,7 +112,7 @@ export function pauseGame() {
 export function resumeGame() {
     if (!game.paused) return;
     game.paused = false;
-    requestAnimationFrame(gameloop);
+    gameloop();
 }
 
 export function togglePause() {

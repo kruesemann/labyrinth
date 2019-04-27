@@ -218,29 +218,7 @@ export function levelReset(level) {
 }
 
 export function create(x, y, color) {
-    /*let uniformIndex = -1;
-
-    for (let i = 0; i < CONSTANTS.LIGHT_MAXNUM; i++) {
-        if (SHADER.mapLightingUniforms.u_lightPos.value[2 * i] === 0
-        && SHADER.mapLightingUniforms.u_lightPos.value[2 * i + 1] === 0
-        && SHADER.mapLightingUniforms.u_lightColor.value[4 * i] === 0
-        && SHADER.mapLightingUniforms.u_lightColor.value[4 * i + 1] === 0
-        && SHADER.mapLightingUniforms.u_lightColor.value[4 * i + 2] === 0
-        && SHADER.mapLightingUniforms.u_lightColor.value[4 * i + 3] === 0) {
-            uniformIndex = i;
-            break;
-        }
-    }
-
-    if (uniformIndex === -1) {
-        console.log("too many lights");
-        return null;
-    }*/
-
-    const light = new Light({x, y}, [color[0], color[1], color[2]], color[3], true, false);
-    //light.uniformIndex = uniformIndex;
-
-    return light;
+    return new Light({x, y}, [color[0], color[1], color[2]], color[3], true, false);
 }
 
 export function createLights(lightList) {
@@ -295,6 +273,7 @@ function assignUniformIndices(counter) {
         for (const uuid in lightingMap.lights) {
             if (!lightingMap.lights.hasOwnProperty(uuid)) continue;
             const light = lightingMap.lights[uuid];
+            light.uniformIndex = -1;
             const dist = Math.hypot(playerPos.x - light.position.x, playerPos.y - light.position.y);
             if (dist < CONSTANTS.LIGHT_MAX_RENDER_DIST) list.push(light);
         }

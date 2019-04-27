@@ -3,14 +3,6 @@ import * as GAME from "./game.js";
 import * as HINT from "./hint.js";
 import * as INPUT from "./input.js";
 
-let display = {
-    seed: undefined,
-    level: undefined,
-    score: undefined,
-    form: undefined,
-    light: undefined,
-};
-
 export function reset() {
     document.getElementById("screen-game").style.display = "none";
 
@@ -21,35 +13,24 @@ export function reset() {
     setScore(0);
     setForm("dot");
     setLight([0, 0, 0, 0]);
+    setLoadingProgressVolume(0);
 
     DIALOG.reset();
-
-    display = {
-        seed: undefined,
-        level: undefined,
-        score: undefined,
-        form: undefined,
-        light: undefined,
-    };
 }
 
 export function initialize(seed, level, score) {
-    document.getElementById("loading-box").style.display = "none";
+    document.getElementById("screen-loading").style.display = "none";
     document.getElementById("screen-game").style.display = "block";
-
-    display = {
-        seed: document.getElementById("info-seed"),
-        level: document.getElementById("info-level"),
-        score: document.getElementById("info-score"),
-        form: document.getElementById("info-form"),
-        light: document.getElementById("status-light"),
-    };
 
     setSeed(seed);
     setLevel(level);
     setScore(score);
     setForm("dot");
     setLight([0, 0, 0, 0]);
+}
+
+export function setLoadingProgressVolume(value) {
+    document.getElementById("loading-volume").value = value;
 }
 
 export function ingameMenu() {
@@ -59,23 +40,23 @@ export function ingameMenu() {
 } 
 
 export function setSeed(seed) {
-    display.seed.innerHTML = seed;
+    document.getElementById("info-seed").innerHTML = seed;
 }
 
 export function setLevel(level) {
-    display.level.innerHTML = level;
+    document.getElementById("info-level").innerHTML = level;
 }
 
 export function setScore(score) {
-    display.score.innerHTML = score;
+    document.getElementById("info-score").innerHTML = score;
 }
 
 export function setForm(formID) {
-    display.form.innerHTML = formID;
+    document.getElementById("info-form").innerHTML = formID;
 }
 
 export function setLight(color) {
-    display.light.style.boxShadow = `0px 0px ${color[3]}px ${color[3]}px rgb(${color[0] * 255},${color[1] * 255},${color[2] * 255})`;
+    document.getElementById("status-light").style.boxShadow = `0px 0px ${color[3]}px ${color[3]}px rgb(${color[0] * 255},${color[1] * 255},${color[2] * 255})`;
 }
 
 export function setDialogText(text) {

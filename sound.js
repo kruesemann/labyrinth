@@ -38,21 +38,32 @@ export function initialize() {
         { ID: "hintlight", url: "assets/hintlight.ogg", volume: 1, loop: false, play: false, levelStop: true },
     ];
     
-    loadSounds(soundsData, 0);
+    for (const soundData of soundsData) {
+        audio.soundIDs.push(soundData.ID);
+        loadSound(soundData);
+    }
+}
+
+export function loadingProgress() {
+    let numLoaded = 0;
+    for (const id of audio.soundIDs) {
+        if (audio.sounds[id]) ++numLoaded;
+    }
+    return Math.floor(100 * numLoaded / audio.soundIDs.length);
 }
 
 export function getAudioListener() {
     return audio.listener;
 }
 
-function loadSounds(soundsData, i) {
-    audio.loader.load(soundsData[i].url, function(buffer) {
+function loadSound(soundData) {
+    audio.loader.load(soundData.url, function(buffer) {
         const sound = new THREE.Audio(audio.listener);
         sound.setBuffer(buffer);
-        if (soundsData[i].play) {
+        if (soundData.play) {
             sound.play();
-            sound.volume = soundsData[i].volume;
-            sound.setVolume(soundsData[i].volume);
+            sound.volume = soundData.volume;
+            sound.setVolume(soundData.volume);
         } else {
             sound.volume = 0;
             sound.setVolume(0);
@@ -60,25 +71,12 @@ function loadSounds(soundsData, i) {
         sound.targetVolume = 0;
         sound.targetVolumePriority = 0;
         sound.targetVolumeStep = 0;
-        sound.setLoop(soundsData[i].loop);
-        sound.levelStop = soundsData[i].levelStop;
+        sound.setLoop(soundData.loop);
+        sound.levelStop = soundData.levelStop;
 
-        audio.sounds[soundsData[i].ID] = sound;
-        audio.soundIDs.push(soundsData[i].ID);
-
-        if (i < soundsData.length - 1) {
-            loadSounds(soundsData, i + 1);
-        } else {
-            document.dispatchEvent(new Event("soundReady"));
-        }
+        audio.sounds[soundData.ID] = sound;
     }, _ => {}, function(_) {
-        console.log(soundsData[i].url + " not found");
-
-        if (i < soundsData.length - 1) {
-            loadSounds(soundsData, i + 1);
-        } else {
-            document.dispatchEvent(new Event("soundReady"));
-        }
+        console.log(soundData.url + " not found");
     });
 }
 

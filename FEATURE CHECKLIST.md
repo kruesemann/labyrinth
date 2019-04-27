@@ -87,9 +87,10 @@
     - [x] In Dialog
 
 # Graphics
-- [ ] Lighting
+- [x] Lighting
     - [x] Dynamic light and shadows
-    - [ ] More lights per map by way of dynamic shader uniform adaption
+    - [x] More lights per map by way of dynamic shader uniform adaption
+    - [x] Render lights themselves
 - [ ] Textures
 - [ ] Level fade
 - [ ] Effects

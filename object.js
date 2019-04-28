@@ -295,6 +295,12 @@ function createSnakeForm(x, y, color) {
     return form;
 }
 
+function formPlan(self, counter, ai) {
+    setTimeout(_ => {
+        ai(self, counter);
+    }, 0);
+}
+
 function create(i, j, color, speed, formID, aiID) {
     const {x, y} = MAPUTIL.tileToCoords(i, j);
 
@@ -308,18 +314,19 @@ function create(i, j, color, speed, formID, aiID) {
         plan: function(counter) {
             if (!this.ai) return;
 
-            const position = this.getCenter();
             if (this.state.action === CONSTANTS.ACTION_CHARGING) {
-                SOUND.loop("charging", 100, position, 60);
+                SOUND.loop("charging", 100, this.getCenter(), 60);
             }
             
-            const {update, route} = this.ai(this, counter);
-            if (update) {
-                if (route.length) {
-                    this.route = route;
+            formPlan(this, counter, this.ai);
+        },
+        implementPlan: function(plan, counter) {
+            if (plan.update) {
+                if (plan.route.length) {
+                    this.route = plan.route;
                     if (this.state.action !== CONSTANTS.ACTION_CHARGING) {
                         this.state = {action: CONSTANTS.ACTION_CHARGING, start: counter};
-                        SOUND.play("charge", false, position, 50);
+                        SOUND.play("charge", false, this.getCenter(), 50);
                     }
                     return;
                 }
@@ -332,12 +339,12 @@ function create(i, j, color, speed, formID, aiID) {
                 SOUND.fadeOut("charging", 1000);
             }
 
-            const idlePlan = AI.idle(this, counter);
-            if (!idlePlan.update) return;
-
-            SOUND.play("idle", false, position, 40);
-
-            this.route = idlePlan.route;
+            formPlan(this, counter, AI.idle);
+        },
+        idle: function(plan) {
+            if (!plan.update) return;
+            SOUND.play("idle", false, this.getCenter(), 40);
+            this.route = plan.route;
         },
         move: function(counter) {
             if (counter % this.speed !== 0) return false;
@@ -447,12 +454,6 @@ function create(i, j, color, speed, formID, aiID) {
     object.transform(formID, x, y);
 
     switch(aiID) {
-        case "test":
-            object.ai = function(self, counter) {
-                return AI.test(self, counter);
-            };
-            object.route = [];
-            break;
         case "proxHunter":
             object.ai = function(self, counter) {
                 return AI.proxHunter(self, counter);

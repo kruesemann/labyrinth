@@ -175,21 +175,23 @@ function addSendlightMoveStepFunction(light) {
 }
 
 function useHintlight() {
-    const {x, y} = PLAYER.getCenter();
-    const light = LIGHT.create(x, y, [0.8, 0.5, 1, CONSTANTS.LIGHT_HINTLIGHT_BRIGHTNESS]);
-
-    if (light === null) return;
-
-    light.moving = {left: false, up: false, right: false, down: false};
-    light.activeItemIndex = inventory.activeItems.length;
-    light.route = MAPUTIL.aStar(MAP.getTileMapInfo(), {x, y}, MAP.getExitCoords(), MAP.isTileNotWall);
-
-    addHintlightMoveStepFunction(light);
-    addMovingLightProcessFunction(light);
-
-    inventory.activeItems.push(light);
-    changeItemNumber("hintlight", -1);
-    SOUND.play("hintlight");
+    setTimeout(_ => {
+        const {x, y} = PLAYER.getCenter();
+        const light = LIGHT.create(x, y, [0.8, 0.5, 1, CONSTANTS.LIGHT_HINTLIGHT_BRIGHTNESS]);
+    
+        if (light === null) return;
+    
+        light.moving = {left: false, up: false, right: false, down: false};
+        light.activeItemIndex = inventory.activeItems.length;
+        light.route = MAPUTIL.aStar(MAP.getTileMapInfo(), {x, y}, MAP.getExitCoords(), MAP.isTileNotWall);
+    
+        addHintlightMoveStepFunction(light);
+        addMovingLightProcessFunction(light);
+    
+        inventory.activeItems.push(light);
+        changeItemNumber("hintlight", -1);
+        SOUND.play("hintlight");
+    }, 0);
 }
 
 function useSendlight() {

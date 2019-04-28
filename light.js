@@ -1,4 +1,5 @@
 import * as CONSTANTS from "./constants.js";
+import * as MAP from "./map.js";
 import * as PLAYER from "./player.js";
 import * as SECRET from "./secret.js";
 import * as SHADER from "./shader.js";
@@ -178,25 +179,26 @@ export function reset() {
 }
 
 export function initialize(mapDimensions) {
-    const dimensions = {x: mapDimensions.x * CONSTANTS.LIGHT_MAP_PRECISION, y: mapDimensions.y * CONSTANTS.LIGHT_MAP_PRECISION};
-    SHADER.mapLightingUniforms.u_dimensions.value = new Float32Array([dimensions.x, dimensions.y]);
+    const screenDimensions = STAGE.getScreenWorldDimensions();
+    const dimensions = {x: screenDimensions.x * CONSTANTS.LIGHT_MAP_PRECISION, y: screenDimensions.y * CONSTANTS.LIGHT_MAP_PRECISION};
+    SHADER.mapLightingUniforms.u_dimensions.value = new Float32Array([mapDimensions.x * CONSTANTS.LIGHT_MAP_PRECISION, mapDimensions.y * CONSTANTS.LIGHT_MAP_PRECISION]);
 
     const lightGeometry = new THREE.BufferGeometry();
     lightGeometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array([
-                   0,            0, 0.01,
-        dimensions.x,            0, 0.01,
-                   0, dimensions.y, 0.01,
-        dimensions.x,            0, 0.01,
-        dimensions.x, dimensions.y, 0.01,
-                   0, dimensions.y, 0.01,
+        -1, -1, 0,
+         1, -1, 0,
+        -1,  1, 0,
+         1, -1, 0,
+         1,  1, 0,
+        -1,  1, 0,
     ]), 3));
     lightGeometry.addAttribute('a_texelCoords', new THREE.BufferAttribute(new Float32Array([
-        0, 0,
-        1, 0,
-        0, 1,
-        1, 0,
-        1, 1,
-        0, 1,
+                                           0,                                    0,
+        screenDimensions.x / mapDimensions.x,                                    0,
+                                           0, screenDimensions.y / mapDimensions.y,
+        screenDimensions.x / mapDimensions.x,                                    0,
+        screenDimensions.x / mapDimensions.x, screenDimensions.y / mapDimensions.y,
+                                           0, screenDimensions.y / mapDimensions.y,
     ]), 2));
 
     lightingMap = {
@@ -291,6 +293,11 @@ export function renderLighting(counter) {
     assignUniformIndices(counter);
     SECRET.gleamAllWisps(counter);
     flickerAll(counter);
+
+    const {x, y} = PLAYER.getCenter();
+    const mapDimensions = MAP.getTileMapInfo();
+    const screenDimensions = STAGE.getScreenWorldDimensions();
+    SHADER.mapLightingUniforms.u_texelTranslation.value = [(x - screenDimensions.x / 2) / mapDimensions.numColumns, (y - screenDimensions.y / 2) / mapDimensions.numRows];
     SHADER.mapUniforms.u_texture.value = STAGE.renderToTexture([lightingMap.mesh], lightingMap.dimensions);
 }
 

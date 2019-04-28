@@ -88,19 +88,30 @@ export function isTileNarrowWater(i, j, tileGetter) {
     return isTileWater(i, j, tileGetter) && !isTileWideWater(i, j, tileGetter);
 }
 
-export function aStar(mapInfo, position, target, isAllowed) {
+export function aStar(mapInfo, position, target, isAllowed, maxDist) {
     const {numColumns, numRows} = mapInfo;
+    const compMap = [];
+    let mapStart = coordsToTile(position.x - maxDist, position.y - maxDist);
+    let mapEnd = coordsToTile(position.x + maxDist, position.y + maxDist);
+    if (maxDist) {
+        mapStart.i = Math.max(1, mapStart.i);
+        mapStart.j = Math.max(1, mapStart.j);
+        mapEnd.i = Math.min(numRows - 1, mapEnd.i);
+        mapEnd.j = Math.min(numColumns - 1, mapEnd.j);
+    } else {
+        mapStart = {i: 0, j: 0};
+        mapEnd = {i: numRows, j: numColumns};
+    }
     const startTile = coordsToTile(position.x, position.y);
     const targetTile = coordsToTile(target.x, target.y);
-    const compMap = [];
   
     const weightFunction = function(i, j) {
         if (isAllowed(i, j)) return 1;
         return 2;
     };
   
-    for (let i = 0; i < numColumns; ++i) {
-        for (let j = 0; j < numRows; ++j) {
+    for (let i = mapStart.i; i < mapEnd.i; ++i) {
+        for (let j = mapStart.j; j < mapEnd.j; ++j) {
             compMap.push({
                 i: i,
                 j: j,
@@ -115,7 +126,7 @@ export function aStar(mapInfo, position, target, isAllowed) {
   
     const heap = new BinaryHeap(node => node.f);
   
-    const start = compMap[startTile.i * numColumns + startTile.j];
+    const start = compMap[(startTile.i - mapStart.i) * (mapEnd.j - mapStart.j) + startTile.j - mapStart.j];
     start.g = 0;
     start.f = manhattan(startTile.i, startTile.j, targetTile.i, targetTile.j);
   
@@ -130,7 +141,7 @@ export function aStar(mapInfo, position, target, isAllowed) {
                 path.push(tileToCenter(current.i, current.j));
                 current = current.pred;
             }
-
+            
             return path;
         }
 
@@ -140,7 +151,10 @@ export function aStar(mapInfo, position, target, isAllowed) {
             const ni = current.i + dir.i;
             const nj = current.j + dir.j;
 
-            const neighbor = compMap[ni * numColumns + nj];
+            const {x, y} = tileToCenter(ni, nj);
+            if (maxDist && Math.hypot(x - position.x, y - position.y) > maxDist) continue;
+
+            const neighbor = compMap[(ni - mapStart.i) * (mapEnd.j - mapStart.j) + nj - mapStart.j];
 
             if (neighbor.closed) continue;
             if (!isAllowed(ni, nj)) continue;

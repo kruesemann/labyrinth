@@ -126,13 +126,14 @@ const mapLightingVSrc = `
 attribute vec2 a_texelCoords;
 
 uniform vec2 u_dimensions;
+uniform vec2 u_texelTranslation;
 
 varying vec2 v_texelCoords;
 
 void main(void) {
-    gl_Position.xy = vec2(2.0 * position.xy / u_dimensions - vec2(1.0));
+    gl_Position.xyz = position;
     gl_Position.zw = vec2(0.0, 1.0);
-    v_texelCoords = a_texelCoords;
+    v_texelCoords = a_texelCoords + u_texelTranslation;
 }
 `;
 
@@ -187,18 +188,15 @@ void main(void) {
 const mapVSrc = `
 attribute vec2 a_texelCoords;
 
-varying vec3 v_pos;
 varying vec2 v_texelCoords;
 
 void main(void) {
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    v_pos = position;
     v_texelCoords = a_texelCoords;
 }
 `;
 
 const mapFSrc = `
-varying vec3 v_pos;
 varying vec2 v_texelCoords;
 
 uniform float u_gamma;
@@ -436,6 +434,7 @@ export const mapTextureUniforms = {
 export const mapLightingUniforms = {
     u_texture: {type: 'sampler2D', value: undefined},
     u_dimensions: {type: 'vec2', value: new Float32Array(2)},
+    u_texelTranslation: {type: 'vec2', value: new Float32Array(2)},
     u_ambientLight: {type: 'vec3', value: new Float32Array([1.0, 1.0, 1.0, 1.0])},
     u_lightPos: {type: 'vec2', value: new Float32Array(2 * CONSTANTS.LIGHT_MAXNUM)},
     u_lightColor: {type: 'vec4', value: new Float32Array(4 * CONSTANTS.LIGHT_MAXNUM)},

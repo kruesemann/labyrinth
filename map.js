@@ -119,6 +119,7 @@ function createTexture(colors) {
 
 function createMesh() {
     const geometry = new THREE.BufferGeometry();
+    /*
     geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array([
                      0,           0, 0,
         map.numColumns,           0, 0,
@@ -127,17 +128,35 @@ function createMesh() {
         map.numColumns, map.numRows, 0,
                      0, map.numRows, 0,
     ]), 3));
+    */
+    const dimensions = STAGE.getScreenWorldDimensions();
+    geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array([
+                   0,            0, 0,
+        dimensions.x,            0, 0,
+                   0, dimensions.y, 0,
+        dimensions.x,            0, 0,
+        dimensions.x, dimensions.y, 0,
+                   0, dimensions.y, 0,
+    ]), 3));
+
     geometry.addAttribute('a_texelCoords', new THREE.BufferAttribute(new Float32Array([
-        0,0,
-        1,0,
-        0,1,
-        1,0,
-        1,1,
-        0,1,
+        0, 0,
+        1, 0,
+        0, 1,
+        1, 0,
+        1, 1,
+        0, 1,
     ]), 2));
 
     map.mesh = new THREE.Mesh(geometry, SHADER.getMapMaterial());
     STAGE.addMesh(map.mesh);
+}
+
+export function center() {
+    const {x, y} = PLAYER.getCenter();
+    const dimensions = STAGE.getScreenWorldDimensions();
+    map.mesh.position.x = x - dimensions.x / 2;
+    map.mesh.position.y = y - dimensions.y / 2;
 }
 
 export function isNextTileOfType(x, y, dx, dy, tileTypes) {

@@ -4,20 +4,16 @@ import * as MAP from "./map.js";
 import * as MAPUTIL from "./mapUtil.js";
 import * as PLAYER from "./player.js";
 
-export function test(self, counter) {
-    if (counter % 100 === 0) {
-        return {update: true, route: MAPUTIL.aStar(MAP.getTileMapInfo(), self.getHead(), PLAYER.getHead(), self.form.isAllowed)};
-    }
-    return {update: false, route: undefined};
-}
-
 export function idle(self, counter) {
     if (counter % 400 === 0) {
         const {x, y} = self.getHead();
         const prox = [MAPUTIL.coordsToTile(x, y)];
 
         for (let i = 0; prox.length < 50; ++i) {
-            if (i >= prox.length) return {update: false, route: undefined};
+            if (i >= prox.length) {
+                self.idle({update: false, route: undefined});
+                return;
+            }
             
             const current = prox[i];
             for (let j = 0; j < 4; ++j) {
@@ -29,18 +25,26 @@ export function idle(self, counter) {
         }
 
         const targetTile = prox[Math.floor((prox.length - 1) * Math.random() + 1)];
-        const route = MAPUTIL.aStar(MAP.getTileMapInfo(), {x, y}, MAPUTIL.tileToCenter(targetTile.i, targetTile.j), self.form.isAllowed);
-        return {update: true, route};
+        const route = MAPUTIL.aStar(MAP.getTileMapInfo(), {x, y}, MAPUTIL.tileToCenter(targetTile.i, targetTile.j), self.form.isAllowed, 25);
+        self.idle({update: true, route});
+        return;
     }
-    return {update: false, route: undefined};
+    self.idle({update: false, route: undefined});
+    return;
 }
 
 export function proxHunter(self, counter) {
     if (counter % 100 === 0) {
-        const route = MAPUTIL.aStar(MAP.getTileMapInfo(), self.getHead(), PLAYER.getTail(), self.form.isAllowed);
-        return {update: true, route: route.length < 25 ? route : []};
+        const playerPos = PLAYER.getHead();
+        const selfPos = self.getHead();
+        if (Math.hypot(playerPos.x - selfPos.x, playerPos.y - selfPos.y) < 50) {
+            const route = MAPUTIL.aStar(MAP.getTileMapInfo(), selfPos, playerPos, self.form.isAllowed, 50);
+            self.implementPlan({update: true, route: route}, counter);
+            return;
+        }
     }
-    return {update: false, route: undefined};
+    self.implementPlan({update: false, route: undefined}, counter);
+    return;
 }
 
 function createIsVisiblePred(selfPosition, maxDist) {
@@ -53,11 +57,13 @@ export function lightAffine(self, counter) {
     if (counter % 100 === 0) {
         const target = LIGHT.getBrightestLight(createIsVisiblePred(self.getHead(), 50));
         if (target) {
-            const route = MAPUTIL.aStar(MAP.getTileMapInfo(), self.getHead(), target.position, self.form.isAllowed);
+            const route = MAPUTIL.aStar(MAP.getTileMapInfo(), self.getHead(), target.position, self.form.isAllowed, 50);
             if (route && route.length) {
-                return {update: true, route};
+                self.implementPlan({update: true, route}, counter);
+                return;
             }
         }
     }
-    return {update: false, route: undefined};
+    self.implementPlan({update: false, route: undefined}, counter);
+    return;
 }

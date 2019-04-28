@@ -91,7 +91,7 @@ export function increaseScore() {
 function loadNextMap() {
     STAGE.resetScene();
     game.mapSeed = NOISE.nextMapSeed();
-    MAP.initialize(game.mapSeed, 200, 200, game.seed, game.level);
+    MAP.initialize(game.mapSeed, 500, 500, game.seed, game.level);
 }
 
 function resolveCollisions() {
@@ -144,6 +144,7 @@ function gameloop() {
     OBJECT.planEnemies(game.counter);
     OBJECT.moveEnemies(game.counter);
     game.nextLevel = PLAYER.move(game.counter);
+    MAP.center();
     PLAYER.center();
     MAP.ambientSound(game.counter);
     ANIMATION.animate();

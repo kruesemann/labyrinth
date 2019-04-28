@@ -66,6 +66,12 @@ export function initialize() {
     stage.camera.add(SOUND.getAudioListener());
     stage.camera.position.z = CONSTANTS.CAMERA_DIST;
 
+    const height = CONSTANTS.CAMERA_DIST * Math.tan(CONSTANTS.CAMERA_FOV * Math.PI / 180);
+    stage.camera.screenWorldDimensions = {
+        x: Math.ceil(height * stage.camera.aspect),
+        y: Math.ceil(height)
+    };
+
     window.onresize = function resize() {
         stage.width = window.innerWidth;
         stage.height = window.innerHeight;
@@ -81,7 +87,7 @@ export function initialize() {
         render();
     }
 
-    LIGHT.initialize({x: 200, y: 200});
+    LIGHT.initialize({x: 500, y: 500});
 }
 
 export function lookAt(x, y) {
@@ -151,4 +157,8 @@ export function renderToTexture(meshes, dimensions) {
     const texture = renderBufferToTexture(dimensions);
     deleteBuffer();
     return texture;
+}
+
+export function getScreenWorldDimensions() {
+    return stage.camera.screenWorldDimensions;
 }

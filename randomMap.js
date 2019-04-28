@@ -63,6 +63,7 @@ export function create(seed, numRows, numColumns, gameSeed, level) {
         items: [],
         secrets: [],
         colors: [],
+        wayPoints: [],
     };
     
     // randomness
@@ -114,6 +115,7 @@ export function create(seed, numRows, numColumns, gameSeed, level) {
     placeStart();           // sets features.start
     placeExit();            // sets features.exit
     findPathToExit();       // fills generationData.pathToExit
+    placeWayPoints();       // fills features.wayPoints
     findFreeLocations();    // fills generationData.locationGrid (entries may be 0) and sets generationData.gridRows and generationData.gridColumns
     placeSecrets();         // fills features.secrets
     placeItems();           // fills features.items
@@ -130,7 +132,8 @@ export function create(seed, numRows, numColumns, gameSeed, level) {
         enemies: features.enemies,
         items: features.items,
         secrets: features.secrets,
-        colors: features.colors
+        colors: features.colors,
+        wayPoints: features.wayPoints,
     };
 }
 
@@ -891,6 +894,26 @@ function findPathToExit() {
 }
 
 /**
+ * places waypoints along a path to the exit
+ * 
+ * @modifies features.wayPoints
+ */
+function placeWayPoints() {
+    const start = MAPUTIL.tileToCenter(features.start.i, features.start.j);
+    const target = MAPUTIL.tileToCenter(features.exit.i, features.exit.j);
+    const path = MAPUTIL.aStar({numColumns: randomMap.numColumns, numRows: randomMap.numRows}, start, target, isTileNotWall);
+    let counter = 50;
+    for (const coords of path) {
+        if (counter === 50) {
+            features.wayPoints.push(coords);
+            counter = 0;
+        } else {
+            ++counter;
+        }
+    }
+}
+
+/**
  * finds locations with free space in the vicinity for the placement of features
  * 
  * @modifies generationData.locationGrid
@@ -1328,6 +1351,10 @@ function isTileGround(i, j) {
 
 function isTileWall(i, j) {
     return MAPUTIL.isTileWall(i, j, getTile);
+}
+
+function isTileNotWall(i, j) {
+    return !isTileWall(i, j);
 }
 
 function isTileWater(i, j) {

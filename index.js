@@ -21,7 +21,6 @@ document.getElementById("menu-ingame-help").addEventListener("click", showHelp);
 document.getElementById("menu-ingame-exit").addEventListener("click", resetGame);
 
 function mainMenu() {
-    console.log("hello terhe");
     document.getElementById("screen-game").style.display = "none";
     document.getElementById("screen-loading").style.display = "none";
     document.getElementById("screen-start").style.display = "block";

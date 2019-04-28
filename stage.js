@@ -87,7 +87,7 @@ export function initialize() {
         render();
     }
 
-    LIGHT.initialize({x: 500, y: 500});
+    LIGHT.initialize({x: 200, y: 200});
 }
 
 export function lookAt(x, y) {

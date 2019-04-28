@@ -148,8 +148,8 @@ class Light {
         }
     }
 
-    die() {
-        this.brightness -= CONSTANTS.LIGHT_PARTICLE_DECAY;
+    die(decay) {
+        this.brightness -= decay;
         return this.brightness <= CONSTANTS.LIGHT_PARTICLE_DEATH;
     }
 
@@ -253,7 +253,7 @@ export function flickerAll(counter) {
             if (!lightingMap.lights.hasOwnProperty(uuid)) continue;
             const light = lightingMap.lights[uuid];
 
-            if (light.fading && light.die()) {
+            if (light.fading && light.die(CONSTANTS.LIGHT_PARTICLE_DECAY)) {
                 light.remove();
             }
         }

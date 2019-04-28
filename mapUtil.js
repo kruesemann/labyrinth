@@ -94,10 +94,10 @@ export function aStar(mapInfo, position, target, isAllowed, maxDist) {
     let mapStart = coordsToTile(position.x - maxDist, position.y - maxDist);
     let mapEnd = coordsToTile(position.x + maxDist, position.y + maxDist);
     if (maxDist) {
-        mapStart.i = Math.max(1, mapStart.i);
-        mapStart.j = Math.max(1, mapStart.j);
-        mapEnd.i = Math.min(numRows - 1, mapEnd.i);
-        mapEnd.j = Math.min(numColumns - 1, mapEnd.j);
+        mapStart.i = Math.max(0, mapStart.i);
+        mapStart.j = Math.max(0, mapStart.j);
+        mapEnd.i = Math.min(numRows, mapEnd.i);
+        mapEnd.j = Math.min(numColumns, mapEnd.j);
     } else {
         mapStart = {i: 0, j: 0};
         mapEnd = {i: numRows, j: numColumns};

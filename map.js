@@ -28,7 +28,8 @@ export function reset() {
         numColumns: 0,
         secrets: [],
         mesh: undefined,
-        exitCoords: undefined
+        exitCoords: undefined,
+        wayPoints: []
     };
 
     PLAYER.reset();
@@ -44,7 +45,7 @@ export function initialize(seed, numRows, numColumns, gameSeed, level) {
     SECRET.reset();
     ITEM.reset();
 
-    const  {tileMap, start, exit, enemies, items, secrets, colors} = RANDOMMAP.create(seed, numRows, numColumns, gameSeed, level);
+    const  {tileMap, start, exit, enemies, items, secrets, colors, wayPoints} = RANDOMMAP.create(seed, numRows, numColumns, gameSeed, level);
 
     map = {
         seed,
@@ -53,7 +54,8 @@ export function initialize(seed, numRows, numColumns, gameSeed, level) {
         numColumns,
         secrets,
         mesh: undefined,
-        exitCoords: MAPUTIL.tileToCenter(exit.i, exit.j)
+        exitCoords: MAPUTIL.tileToCenter(exit.i, exit.j),
+        wayPoints
     };
 
     PLAYER.initialize(start.i, start.j);
@@ -75,6 +77,12 @@ export function getTile(i, j) {
 
 export function getExitCoords() {
     return map.exitCoords;
+}
+
+export function getFurthestWayPoint(position, maxDist) {
+    for (const wayPoint of map.wayPoints)
+        if (Math.hypot(wayPoint.x - position.x, wayPoint.y - position.y) <= maxDist) return wayPoint;
+    return undefined;
 }
 
 function createTexture(colors) {

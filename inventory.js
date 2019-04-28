@@ -62,7 +62,7 @@ export function browseRight() {
 function addMovingLightProcessFunction(light) {
     light.process = function(counter) {
         if (counter % 10 === 0) {
-            if (this.die()) {
+            if (this.die(CONSTANTS.LIGHT_HINTLIGHT_DECAY)) {
                 for (let i = this.activeItemIndex + 1; i < inventory.activeItems.length; ++i) {
                     --inventory.activeItems[i].activeItemIndex;
                 }
@@ -107,6 +107,9 @@ function addHintlightMoveStepFunction(light) {
                 x = 0;
             }
         }
+        if (MAP.isNextTileOfType(this.position.x, this.position.y, x, 0, CONSTANTS.WALL_TILES)) {
+            x = 0;
+        }
 
         if (this.moving.up) {
             y = CONSTANTS.OBJECT_STRIDE;
@@ -117,6 +120,14 @@ function addHintlightMoveStepFunction(light) {
             } else {
                 y = 0;
             }
+        }
+        if (MAP.isNextTileOfType(this.position.x, this.position.y, 0, y, CONSTANTS.WALL_TILES)) {
+            y = 0;
+        }
+
+        if (MAP.isNextTileOfType(this.position.x, this.position.y, x, y, CONSTANTS.WALL_TILES)) {
+            x = 0;
+            y = 0;
         }
 
         if (x !== 0 || y !== 0) {
@@ -183,7 +194,13 @@ function useHintlight() {
     
         light.moving = {left: false, up: false, right: false, down: false};
         light.activeItemIndex = inventory.activeItems.length;
-        light.route = MAPUTIL.aStar(MAP.getTileMapInfo(), {x, y}, MAP.getExitCoords(), MAP.isTileNotWall);
+        const wayPoint = MAP.getFurthestWayPoint({x, y}, 150);
+        if (wayPoint) light.route = MAPUTIL.aStar(MAP.getTileMapInfo(), {x, y}, wayPoint, MAP.isTileNotWall, 200);
+        if (!light.route || !light.route.length) light.route = MAPUTIL.aStar(MAP.getTileMapInfo(), {x, y}, MAP.getExitCoords(), MAP.isTileNotWall);
+
+        for (let i = 0; light.route.length && i < 5; i++) light.route.shift();
+        const target = wayPoint ? wayPoint : MAP.getExitCoords();
+        light.route.unshift({x: target.x + Math.floor(Math.random() * 10 - 5), y: target.y + Math.floor(Math.random() * 10 - 5)});
     
         addHintlightMoveStepFunction(light);
         addMovingLightProcessFunction(light);

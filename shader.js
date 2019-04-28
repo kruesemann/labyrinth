@@ -153,6 +153,11 @@ uniform vec4 u_lightColor[MAXNUM];
 ${RAYCAST}
 
 void main(void) {
+    if (v_texelCoords.x < 0.0 || v_texelCoords.x > 1.0 || v_texelCoords.y < 0.0 || v_texelCoords.y > 1.0) {
+        gl_FragColor = vec4(0.0);
+        return;
+    }
+
     vec4 color = texture2D(u_texture, v_texelCoords);
     vec3 RGB = vec3(0.0);
     vec3 light = vec3(0.0);

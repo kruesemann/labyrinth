@@ -25,7 +25,7 @@ function createDotForm(x, y, color) {
 
     const colors = [];
 
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 6; ++i) {
         colors.push(color[0]);
         colors.push(color[1]);
         colors.push(color[2]);
@@ -37,7 +37,7 @@ function createDotForm(x, y, color) {
 
     const form = {
         ID: "dot",
-        nodes: [{ x: 0, y: 0 }],
+        nodes: [{x: 0, y: 0}],
         mesh: new THREE.Mesh(geometry, SHADER.getObjectMaterial()),
         move: function (dx, dy) {
             function add(a, b) {
@@ -65,7 +65,7 @@ function createDotForm(x, y, color) {
             return this.nodes[0];
         },
         center: function() {
-            const { x, y } = this.getCenter();
+            const {x, y} = this.getCenter();
             STAGE.lookAt(x, y);
         }
     };
@@ -109,7 +109,7 @@ function createBoxForm(x, y, color) {
 
     const colors = [];
 
-    for (let i = 0; i < 6 * 4; i++) {
+    for (let i = 0; i < 6 * 4; ++i) {
         colors.push(color[0]);
         colors.push(color[1]);
         colors.push(color[2]);
@@ -122,10 +122,10 @@ function createBoxForm(x, y, color) {
     const form = {
         ID: "box",
         nodes: [
-            { x: 0, y: 0 },
-            { x: 0, y: 0 },
-            { x: 0, y: 0 },
-            { x: 0, y: 0 },
+            {x: 0, y: 0},
+            {x: 0, y: 0},
+            {x: 0, y: 0},
+            {x: 0, y: 0},
         ],
         mesh: new THREE.Mesh(geometry, SHADER.getObjectMaterial()),
         move: function (dx, dy) {
@@ -135,7 +135,7 @@ function createBoxForm(x, y, color) {
 
             this.mesh.position.x = add(this.mesh.position.x, dx);
             this.mesh.position.y = add(this.mesh.position.y, dy);
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < 4; ++i) {
                 this.nodes[i].x = add(this.nodes[i].x, dx);
                 this.nodes[i].y = add(this.nodes[i].y, dy);
             }
@@ -144,10 +144,10 @@ function createBoxForm(x, y, color) {
             this.mesh.position.x = x;
             this.mesh.position.y = y;
             this.nodes = [
-                { x: x + 0.5, y: y + 0.5 },
-                { x: x + 1.5, y: y + 0.5 },
-                { x: x + 1.5, y: y + 1.5 },
-                { x: x + 0.5, y: y + 1.5 },
+                {x: x + 0.5, y: y + 0.5},
+                {x: x + 1.5, y: y + 0.5},
+                {x: x + 1.5, y: y + 1.5},
+                {x: x + 0.5, y: y + 1.5},
             ];
         },
         isBlocked: function(dx, dy) {
@@ -160,10 +160,10 @@ function createBoxForm(x, y, color) {
             return !MAP.isTileWall(i, j);
         },
         getCenter: function() {
-            return { x: this.nodes[0].x + 0.5, y: this.nodes[0].y + 0.5 };
+            return {x: this.nodes[0].x + 0.5, y: this.nodes[0].y + 0.5};
         },
         center: function() {
-            const { x, y } = this.getCenter();
+            const {x, y} = this.getCenter();
             STAGE.lookAt(x, y);
         }
     };
@@ -179,7 +179,7 @@ function createSnakeForm(x, y, color) {
 
     const vertices = [];
     const nodes = [];
-    for (let i = 0; i < length; i++) {
+    for (let i = 0; i < length; ++i) {
         vertices.push(x);
         vertices.push(y);
         vertices.push(0.02);
@@ -199,12 +199,12 @@ function createSnakeForm(x, y, color) {
         vertices.push(y + 1);
         vertices.push(0.02);
 
-        nodes.push({ x: x + 0.5, y: y + 0.5 });
+        nodes.push({x: x + 0.5, y: y + 0.5});
     }
 
     const colors = [];
 
-    for (let i = 0; i < 6 * length; i++) {
+    for (let i = 0; i < 6 * length; ++i) {
         colors.push(color[0]);
         colors.push(color[1]);
         colors.push(color[2]);
@@ -225,19 +225,19 @@ function createSnakeForm(x, y, color) {
 
             this.mesh.geometry.attributes.position.needsUpdate = true;
             const vertices = [];
-            for (let i = 0; i < 6; i++) {
+            for (let i = 0; i < 6; ++i) {
                 vertices.push(add(this.mesh.geometry.attributes.position.array[i * 3], dx));
                 vertices.push(add(this.mesh.geometry.attributes.position.array[i * 3 + 1], dy));
                 vertices.push(0);
             }
-            for (let i = 1; i < length; i++) {
-                for (let j = 0; j < 18; j++) {
+            for (let i = 1; i < length; ++i) {
+                for (let j = 0; j < 18; ++j) {
                     vertices.push(this.mesh.geometry.attributes.position.array[(i - 1) * 18 + j]);
                 }
             }
             this.mesh.geometry.attributes.position.array = new Float32Array(vertices);
             this.mesh.geometry.computeBoundingSphere();
-            for (let i = length - 1; i > 0; i--) {
+            for (let i = length - 1; i > 0; --i) {
                 this.nodes[i].x = this.nodes[i - 1].x;
                 this.nodes[i].y = this.nodes[i - 1].y;
             }
@@ -247,7 +247,7 @@ function createSnakeForm(x, y, color) {
         set: function (x, y) {
             this.mesh.geometry.attributes.position.needsUpdate = true;
             const vertices = [];
-            for (let i = 0; i < length; i++) {
+            for (let i = 0; i < length; ++i) {
                 vertices.push(x);
                 vertices.push(y);
                 vertices.push(0.02);
@@ -270,7 +270,7 @@ function createSnakeForm(x, y, color) {
             this.mesh.geometry.attributes.position.array = new Float32Array(vertices);
             this.mesh.geometry.computeBoundingSphere();
 
-            for (let i = 0; i < length; i++) {
+            for (let i = 0; i < length; ++i) {
                 this.nodes[i].x = x + 0.5;
                 this.nodes[i].y = y + 0.5;
             }
@@ -285,7 +285,7 @@ function createSnakeForm(x, y, color) {
             return this.nodes[0];
         },
         center: function() {
-            const { x, y } = this.getCenter();
+            const {x, y} = this.getCenter();
             STAGE.lookAt(x, y);
         }
     };
@@ -296,15 +296,15 @@ function createSnakeForm(x, y, color) {
 }
 
 function create(i, j, color, speed, formID, aiID) {
-    const { x, y } = MAPUTIL.tileToCoords(i, j);
+    const {x, y} = MAPUTIL.tileToCoords(i, j);
 
     const object = {
         form: undefined,
         speed: speed,
-        moving: { left: false, up: false, right: false, down: false },
+        moving: {left: false, up: false, right: false, down: false},
         ai: undefined,
         route: undefined,
-        state: { action: CONSTANTS.ACTION_IDLE, start: 0 },
+        state: {action: CONSTANTS.ACTION_IDLE, start: 0},
         plan: function(counter) {
             if (!this.ai) return;
 
@@ -313,12 +313,12 @@ function create(i, j, color, speed, formID, aiID) {
                 SOUND.loop("charging", 100, position, 60);
             }
             
-            const { update, route } = this.ai(this, counter);
+            const {update, route} = this.ai(this, counter);
             if (update) {
                 if (route.length) {
                     this.route = route;
                     if (this.state.action !== CONSTANTS.ACTION_CHARGING) {
-                        this.state = { action: CONSTANTS.ACTION_CHARGING, start: counter };
+                        this.state = {action: CONSTANTS.ACTION_CHARGING, start: counter};
                         SOUND.play("charge", false, position, 50);
                     }
                     return;
@@ -328,7 +328,7 @@ function create(i, j, color, speed, formID, aiID) {
             if (this.route && this.route.length) return;
 
             if (this.state.action === CONSTANTS.ACTION_CHARGING) {
-                this.state = { action: CONSTANTS.ACTION_IDLE, start: counter };
+                this.state = {action: CONSTANTS.ACTION_IDLE, start: counter};
                 SOUND.fadeOut("charging", 1000);
             }
 
@@ -353,7 +353,7 @@ function create(i, j, color, speed, formID, aiID) {
                     this.moving.up = this.form.nodes[0].y < this.route[this.route.length - 1].y;
                     this.moving.down = this.form.nodes[0].y > this.route[this.route.length - 1].y;
                 } else {
-                    this.moving = { left: false, up: false, right: false, down: false };
+                    this.moving = {left: false, up: false, right: false, down: false};
                 }
             }
 
@@ -431,7 +431,7 @@ function create(i, j, color, speed, formID, aiID) {
                     pos.y += 0.5;
                 }
             } else {
-                pos = { x, y };
+                pos = {x, y};
             }
 
             switch (formID) {
@@ -476,7 +476,7 @@ export function createEnemy(i, j, color, speed, formID, aiID) {
 }
 
 export function createEnemies(enemyList) {
-    for (let enemy of enemyList) {
+    for (const enemy of enemyList) {
         createEnemy(enemy.i, enemy.j, enemy.color, enemy.speed, enemy.formID, enemy.aiID);
     }
 }
@@ -500,11 +500,11 @@ export function moveEnemies(counter) {
 export function collisionWithPlayer() {
     const pNodes = PLAYER.get().form.nodes;
 
-    for (let enemy of enemies) {
+    for (const enemy of enemies) {
         const oNodes = enemy.form.nodes;
 
-        for (let pNode of pNodes) {
-            for (let oNode of oNodes) {
+        for (const pNode of pNodes) {
+            for (const oNode of oNodes) {
                 if (pNode.x >= oNode.x && pNode.x < oNode.x + 1) {
                     if (pNode.y >= oNode.y && pNode.y < oNode.y + 1) {
                         return true;

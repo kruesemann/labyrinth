@@ -26,7 +26,7 @@ BinaryHeap.prototype = {
     remove: function(node) {
         let i = 0;
         while (i < this.size() && this.content[i] !== node) {
-            i++;
+            ++i;
         }
         if (i == this.size() - 1) return;
         const last = this.content.pop();

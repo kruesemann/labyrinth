@@ -26,7 +26,7 @@ class Item {
             ];
             
             const colors = [];
-            for (let k = 0; k < 6; k++) {
+            for (let k = 0; k < 6; ++k) {
                 colors.push(color[0]);
                 colors.push(color[1]);
                 colors.push(color[2]);
@@ -114,7 +114,7 @@ export function createWisp(i, j, uuid) {
 }
 
 export function createItems(itemList) {
-    for (let item of itemList) {
+    for (const item of itemList) {
         switch(item.type) {
             case "coin": createCoin(item.i, item.j); break;
             default: console.log("Unknown item"); break;
@@ -126,7 +126,7 @@ export function collectItemsUnderPlayer() {
     const itemSize = 1;
     const pNodes = PLAYER.get().form.nodes;
 
-    for (let pNode of pNodes) {
+    for (const pNode of pNodes) {
         for (const uuid in items) {
             if (!items.hasOwnProperty(uuid)) continue;
             const item = items[uuid];

@@ -93,7 +93,7 @@ export function create(seed, numRows, numColumns, gameSeed, level) {
         caverns: [],
         caves: [],
         tunnels: [],
-        biomeGraph: { biomes: [], adjMatrix: [] },
+        biomeGraph: {biomes: [], adjMatrix: []},
         biomeIDsOfType: [],
         pathToExit: undefined,
         locationGrid: undefined, // entries of locationGrid may be 0
@@ -141,9 +141,9 @@ export function create(seed, numRows, numColumns, gameSeed, level) {
  */
 function initializeRandomMap() {
     // tileMap
-    for (let i = 0; i < randomMap.numRows; i++) {
-        for (let j = 0; j < randomMap.numColumns; j++) {
-            randomMap.tileMap.push({ type: CONSTANTS.TILE_HIGHWALL, caveID: -1, tunnelID: -1, biomeID: -1 });
+    for (let i = 0; i < randomMap.numRows; ++i) {
+        for (let j = 0; j < randomMap.numColumns; ++j) {
+            randomMap.tileMap.push({type: CONSTANTS.TILE_HIGHWALL, caveID: -1, tunnelID: -1, biomeID: -1});
         }
     }
 }
@@ -255,7 +255,7 @@ function initializeMetaData(mapSeed, gameSeed) {
     if (metaData.type == CONSTANTS.MAP_TYPE_DEVELOPED) {
         metaData.distToDeveloped = 0;
     } else {
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 5; ++i) {
             const peekSeed = NOISE.peekMapSeed(gameSeed + metaData.level + i);
     
             if (getMapType(peekSeed, metaData.level + i + 1) === CONSTANTS.MAP_TYPE_DEVELOPED) {
@@ -270,40 +270,40 @@ function initializeMetaData(mapSeed, gameSeed) {
         case CONSTANTS.MAP_TYPE_GROUND:
             metaData.numberBiomeTypes = 2;
             metaData.biomeTypes = [
-                { type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGround },
-                { type: CONSTANTS.WIDE_GROUND_BIOME, isAllowed: isTileGround },
+                {type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGround},
+                {type: CONSTANTS.WIDE_GROUND_BIOME, isAllowed: isTileGround},
             ];
             break;
         case CONSTANTS.MAP_TYPE_FLOODEDGROUND:
             metaData.numberBiomeTypes = 4;
             metaData.biomeTypes = [
-                { type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGround },
-                { type: CONSTANTS.NARROW_WATER_BIOME, isAllowed: isTileNarrowWater },
-                { type: CONSTANTS.WIDE_GROUND_BIOME, isAllowed: isTileGround },
-                { type: CONSTANTS.WIDE_WATER_BIOME, isAllowed: isTileWater },
+                {type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGround},
+                {type: CONSTANTS.NARROW_WATER_BIOME, isAllowed: isTileNarrowWater},
+                {type: CONSTANTS.WIDE_GROUND_BIOME, isAllowed: isTileGround},
+                {type: CONSTANTS.WIDE_WATER_BIOME, isAllowed: isTileWater},
             ];
             break;
         case CONSTANTS.MAP_TYPE_DEVELOPED:
             metaData.numberBiomeTypes = 2;
             metaData.biomeTypes = [
-                { type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGround },
-                { type: CONSTANTS.WIDE_GROUND_BIOME, isAllowed: isTileGround },
+                {type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGround},
+                {type: CONSTANTS.WIDE_GROUND_BIOME, isAllowed: isTileGround},
             ];
             break;
         case CONSTANTS.MAP_TYPE_ROCK:
             metaData.numberBiomeTypes = 2;
             metaData.biomeTypes = [
-                { type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGround },
-                { type: CONSTANTS.WIDE_GROUND_BIOME, isAllowed: isTileGround },
+                {type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGround},
+                {type: CONSTANTS.WIDE_GROUND_BIOME, isAllowed: isTileGround},
             ];
             break;
         case CONSTANTS.MAP_TYPE_FLOODEDROCK:
             metaData.numberBiomeTypes = 4;
             metaData.biomeTypes = [
-                { type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGround },
-                { type: CONSTANTS.NARROW_WATER_BIOME, isAllowed: isTileNarrowWater },
-                { type: CONSTANTS.WIDE_GROUND_BIOME, isAllowed: isTileGround },
-                { type: CONSTANTS.WIDE_WATER_BIOME, isAllowed: isTileWater },
+                {type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGround},
+                {type: CONSTANTS.NARROW_WATER_BIOME, isAllowed: isTileNarrowWater},
+                {type: CONSTANTS.WIDE_GROUND_BIOME, isAllowed: isTileGround},
+                {type: CONSTANTS.WIDE_WATER_BIOME, isAllowed: isTileWater},
             ];
             break;
         default:
@@ -319,7 +319,7 @@ function initializeMetaData(mapSeed, gameSeed) {
  */
 function getMapType(seed, level) {
     let index;
-    for (index = 0; index < CONSTANTS.MAP_TYPE_LEVEL_THRESHHOLDS.length; index++) {
+    for (index = 0; index < CONSTANTS.MAP_TYPE_LEVEL_THRESHHOLDS.length; ++index) {
         if (level < CONSTANTS.MAP_TYPE_LEVEL_THRESHHOLDS[index]) break;
     }
     const groundBound = CONSTANTS.MAP_TYPE_FREQ_GROUND[index];
@@ -349,7 +349,7 @@ function getMapType(seed, level) {
  */
 function getBiomesOfType(biomeType) {
     const biomes = [];
-    for (let i = 0; i < generationData.biomeIDsOfType[biomeType].length; i++)
+    for (let i = 0; i < generationData.biomeIDsOfType[biomeType].length; ++i)
         biomes.push(generationData.biomeGraph.biomes[generationData.biomeIDsOfType[biomeType][i]]);
     return biomes;
 }
@@ -362,7 +362,7 @@ function getBiomesOfType(biomeType) {
  * @modifies generationData.caverns
  */
 function generateCaverns() {
-    const numZones = { i: 4, j: 4 };
+    const numZones = {i: 4, j: 4};
     const numCavernsPerZone = 1;
     generationData.caverns = [];
     const cavernDistMin = 5;
@@ -370,9 +370,9 @@ function generateCaverns() {
     const cavernSizeMaxMin = 10;
     const cavernSizeMaxMax = 40;
 
-    for (let i = 0; i < numZones.i; i++) {
-        for (let j = 0; j < numZones.j; j++) {
-            for (let k = 0; k < numCavernsPerZone; k++) {
+    for (let i = 0; i < numZones.i; ++i) {
+        for (let j = 0; j < numZones.j; ++j) {
+            for (let k = 0; k < numCavernsPerZone; ++k) {
                 const lowerOffset = (i === 0 ? cavernSizeMaxMax : cavernDistMin)                 + i * randomMap.numRows / numZones.i;
                 const upperOffset = (i === numZones.i - 1 ? cavernSizeMaxMax : cavernDistMin)    + (numZones.i - i - 1) * randomMap.numRows / numZones.i;
                 const leftOffset  = (j === 0 ? cavernSizeMaxMax : cavernDistMin)                 + j * randomMap.numColumns / numZones.j + 5;
@@ -389,10 +389,10 @@ function generateCaverns() {
         }
     }
 
-    for (let i = 1; i < randomMap.numRows - 1; i++) {
-        for (let j = 1; j < randomMap.numColumns - 1; j++) {
+    for (let i = 1; i < randomMap.numRows - 1; ++i) {
+        for (let j = 1; j < randomMap.numColumns - 1; ++j) {
             const tileCenter = MAPUTIL.tileToCenter(i, j);
-            for (let k = 0; k < generationData.caverns.length; k++) {
+            for (let k = 0; k < generationData.caverns.length; ++k) {
                 const distToCenter = dist(tileCenter.x, tileCenter.y, generationData.caverns[k].x, generationData.caverns[k].y);
 
                 if (distToCenter < cavernSizeMin) {
@@ -430,10 +430,10 @@ function labelCaves() {
     generationData.caves = [];
     let ID = 0;
 
-    for (let i = 0; i < generationData.caverns.length; i++) {
+    for (let i = 0; i < generationData.caverns.length; ++i) {
         const centerTile = MAPUTIL.coordsToTile(generationData.caverns[i].x, generationData.caverns[i].y);
         if (getTile(centerTile.i, centerTile.j).caveID === -1) {
-            generationData.caves.push({ i: centerTile.i, j: centerTile.j, ID, systemID: -1, size: 0 });
+            generationData.caves.push({i: centerTile.i, j: centerTile.j, ID, systemID: -1, size: 0});
             const queue = [centerTile];
 
             while (queue.length > 0) {
@@ -441,8 +441,8 @@ function labelCaves() {
                 getTile(current.i, current.j).caveID = ID;
                 generationData.caves[generationData.caves.length - 1].size++;
 
-                for (let j = 0; j < 4; j++) {
-                    const neighbor = { i: current.i + CONSTANTS.DIRECTIONS[j].i, j: current.j + CONSTANTS.DIRECTIONS[j].j };
+                for (let j = 0; j < 4; ++j) {
+                    const neighbor = {i: current.i + CONSTANTS.DIRECTIONS[j].i, j: current.j + CONSTANTS.DIRECTIONS[j].j};
 
                     if (getTile(neighbor.i, neighbor.j).caveID === -1
                     && !isTileWall(neighbor.i, neighbor.j)) {
@@ -450,7 +450,7 @@ function labelCaves() {
                     }
                 }
             }
-            ID++;
+            ++ID;
         }
     }
 }
@@ -462,7 +462,7 @@ function labelCaves() {
  */
 function connectCaves() {
     let caveSystems = [];
-    for (let i = 0; i < generationData.caves.length; i++) {
+    for (let i = 0; i < generationData.caves.length; ++i) {
         if (generationData.caves[i].systemID === -1) {
             caveSystems = buildTunnel(generationData.caves[i], caveSystems);
         }
@@ -549,8 +549,8 @@ function buildTunnel(cave, caveSystems, targetCave) {
     }
 
     const searchMap = [];
-    for (let i = 0; i < randomMap.numColumns; i++) {
-        for (let j = 0; j < randomMap.numRows; j++) {
+    for (let i = 0; i < randomMap.numColumns; ++i) {
+        for (let j = 0; j < randomMap.numRows; ++j) {
             searchMap.push({
                 i: i,
                 j: j,
@@ -582,23 +582,23 @@ function buildTunnel(cave, caveSystems, targetCave) {
             if ((!targetCave && cave.ID !== currentCaveID)
             || (targetCave && targetCave.systemID === currentCaveSystemID)) {
                 // target found, build tunnel
-                generationData.tunnels.push({ i: current.i, j: current.j, ID: generationData.tunnels.length });
+                generationData.tunnels.push({i: current.i, j: current.j, ID: generationData.tunnels.length});
                 const path = [];
                 while (current) {
-                    path.push({ i: current.i, j: current.j });
+                    path.push({i: current.i, j: current.j});
                     current = current.pred;
                 }
 
                 const width = NOISE.random() > 0.3 ? 2 : 1;
                 let wide = false;
                 let varianceLength = 3 + Math.floor(10 * NOISE.random());
-                for (let tileNr of path) {
+                for (const tileNr of path) {
                     if (varianceLength === 0) {
                         varianceLength = 3 + Math.floor(10 * NOISE.random());
                         wide = !wide;
                     }
                     dig(tileNr.i, tileNr.j, wide ? width + 1 : width);
-                    varianceLength--;
+                    --varianceLength;
                 }
 
                 if (currentCaveSystemID === -1) {
@@ -626,7 +626,7 @@ function buildTunnel(cave, caveSystems, targetCave) {
 
         current.closed = true;
 
-        for (let j = 0; j < 4; j++) {
+        for (let j = 0; j < 4; ++j) {
             const neighbor = searchMap[(current.i + CONSTANTS.DIRECTIONS[j].i) * randomMap.numColumns + current.j + CONSTANTS.DIRECTIONS[j].j];
 
             if (neighbor.closed) continue;
@@ -661,8 +661,8 @@ function buildTunnel(cave, caveSystems, targetCave) {
  * @modifies randomMap.tileMap[i].type
  */
 function placeOtherTiles() {
-    for (let i = 1; i < randomMap.numRows - 1; i++) {
-        for (let j = 1; j < randomMap.numColumns - 1; j++) {
+    for (let i = 1; i < randomMap.numRows - 1; ++i) {
+        for (let j = 1; j < randomMap.numColumns - 1; ++j) {
             if (getTile(i, j).type === metaData.primaryTile) {
                 if (noiseData.map[i * randomMap.numColumns + j][noiseData.waterChannel] > 1 - metaData.waterLevel) {
                     if (noiseData.map[i * randomMap.numColumns + j][noiseData.waterChannel] > 1 - metaData.waterLevel + 0.1) {
@@ -689,7 +689,7 @@ function placeOtherTiles() {
  * @modifies randomMap.tileMap[i].biomeID // by calling labelBiomes
  */
 function labelAllBiomes() {
-    for (let biomeType of metaData.biomeTypes) {
+    for (const biomeType of metaData.biomeTypes) {
         labelBiomes(biomeType.isAllowed, biomeType.type);
     }
 }
@@ -707,24 +707,24 @@ function labelAllBiomes() {
 function labelBiomes(isAllowed, biomeType) {
     generationData.biomeIDsOfType[biomeType] = [];
 
-    for (let i = 1; i < randomMap.numRows - 1; i++) {
-        for (let j = 1; j < randomMap.numColumns - 1; j++) {
+    for (let i = 1; i < randomMap.numRows - 1; ++i) {
+        for (let j = 1; j < randomMap.numColumns - 1; ++j) {
             if (isAllowed(i, j)
             && getTile(i, j).biomeID === -1
             && (getTile(i, j).caveID !== -1 || getTile(i, j).tunnelID !== -1)) {
                 const biomeID = generationData.biomeGraph.biomes.length;
-                generationData.biomeGraph.biomes.push({ i, j, ID: biomeID, type: biomeType, locations: [] });
+                generationData.biomeGraph.biomes.push({i, j, ID: biomeID, type: biomeType, locations: []});
                 generationData.biomeIDsOfType[biomeType].push(biomeID);
-                const queue = [{ i, j }];
+                const queue = [{i, j}];
                 let size = 0;
 
                 while (queue.length > 0) {
                     const current = queue.pop();
                     getTile(current.i, current.j).biomeID = biomeID;
-                    size++;
+                    ++size;
 
-                    for (let j = 0; j < 4; j++) {
-                        const neighbor = { i: current.i + CONSTANTS.DIRECTIONS[j].i, j: current.j + CONSTANTS.DIRECTIONS[j].j };
+                    for (let k = 0; k < 4; ++k) {
+                        const neighbor = {i: current.i + CONSTANTS.DIRECTIONS[k].i, j: current.j + CONSTANTS.DIRECTIONS[k].j};
 
                         if (getTile(neighbor.i, neighbor.j).biomeID === -1) {
                             if (isAllowed(neighbor.i, neighbor.j)) {
@@ -747,12 +747,12 @@ function labelBiomes(isAllowed, biomeType) {
  */
 function buildBiomeGraph() {
     const numberBiomes = generationData.biomeGraph.biomes.length;
-    for (let i = 0; i < numberBiomes * numberBiomes; i++) {
+    for (let i = 0; i < numberBiomes * numberBiomes; ++i) {
         generationData.biomeGraph.adjMatrix.push(0);
     }
     
-    for (let i = 1; i < randomMap.numRows - 2; i++) {
-        for (let j = 1; j < randomMap.numColumns - 2; j++) {
+    for (let i = 1; i < randomMap.numRows - 2; ++i) {
+        for (let j = 1; j < randomMap.numColumns - 2; ++j) {
             const currentBiome = getTile(i, j).biomeID;
             const upperNeighborBiome = getTile(i + 1, j).biomeID;
             if (currentBiome !== -1
@@ -781,7 +781,7 @@ function buildBiomeGraph() {
 function findBiomePath(startTile, targetTile) {
     const numberBiomes = generationData.biomeGraph.biomes.length;
     const searchMap = [];
-    for (let i = 0; i < numberBiomes; i++) {
+    for (let i = 0; i < numberBiomes; ++i) {
         searchMap.push({
             ID: i,
             visited: false,
@@ -813,7 +813,7 @@ function findBiomePath(startTile, targetTile) {
 
         current.closed = true;
 
-        for (let i = 0; i < numberBiomes; i++) {
+        for (let i = 0; i < numberBiomes; ++i) {
             if (generationData.biomeGraph.adjMatrix[i * numberBiomes + current.ID] === 0) continue;
 
             const neighbor = searchMap[i];
@@ -853,7 +853,7 @@ function placeStart() {
         }
     }
     const startBiome = wideGroundBiomes[index];
-    features.start = { i: startBiome.i, j: startBiome.j };
+    features.start = {i: startBiome.i, j: startBiome.j};
     getTile(startBiome.i, startBiome.j).type = CONSTANTS.TILE_ENTRANCE;
 }
 
@@ -867,7 +867,7 @@ function placeExit() {
     const wideGroundBiomes = getBiomesOfType(CONSTANTS.WIDE_GROUND_BIOME);
     let maxDist = 0;
     let maxIndex = 0;
-    for (let i = 0; i < wideGroundBiomes.length; i++) {
+    for (let i = 0; i < wideGroundBiomes.length; ++i) {
         if (wideGroundBiomes[i].size > Math.sqrt(randomMap.numRows * randomMap.numColumns)) {
             const dist = Math.hypot(wideGroundBiomes[i].i - features.start.i, wideGroundBiomes[i].j - features.start.j, 2);
             if (dist > maxDist) {
@@ -877,7 +877,7 @@ function placeExit() {
         }
     }
     const exitBiome = wideGroundBiomes[maxIndex];
-    features.exit = { i: exitBiome.i, j: exitBiome.j };
+    features.exit = {i: exitBiome.i, j: exitBiome.j};
     getTile(exitBiome.i, exitBiome.j).type = CONSTANTS.TILE_EXIT;
 }
 
@@ -905,7 +905,7 @@ function findFreeLocations() {
     const fineGrid = [];
     generationData.locationGrid = [];
 
-    for (let i = 0; i < fineRows * fineColumns; i++) {
+    for (let i = 0; i < fineRows * fineColumns; ++i) {
         fineGrid.push(0);
         if (i < generationData.gridRows * generationData.gridColumns) {
             generationData.locationGrid.push(0);
@@ -914,11 +914,11 @@ function findFreeLocations() {
 
     function round(x) {
         const result = Math.round(x);
-        return { result, dir: result === Math.floor(x) ? 1 : -1 };
+        return {result, dir: result === Math.floor(x) ? 1 : -1};
     }
 
-    for (let i = CONSTANTS.LOCATION_RADIUS + 1; i < randomMap.numRows - CONSTANTS.LOCATION_RADIUS - 1; i++) {
-        for (let j = CONSTANTS.LOCATION_RADIUS + 1; j < randomMap.numColumns - CONSTANTS.LOCATION_RADIUS - 1; j++) {
+    for (let i = CONSTANTS.LOCATION_RADIUS + 1; i < randomMap.numRows - CONSTANTS.LOCATION_RADIUS - 1; ++i) {
+        for (let j = CONSTANTS.LOCATION_RADIUS + 1; j < randomMap.numColumns - CONSTANTS.LOCATION_RADIUS - 1; ++j) {
             if (getTile(i, j).biomeID === -1) continue;
 
             const row = round(i / CONSTANTS.LOCATION_RADIUS);
@@ -951,22 +951,22 @@ function findFreeLocations() {
                 && isTileGround(i - CONSTANTS.LOCATION_RADIUS, j)
                 && isTileGround(i, j + CONSTANTS.LOCATION_RADIUS)
                 && isTileGround(i, j - CONSTANTS.LOCATION_RADIUS)) {
-                    fineGrid[validIndex] = { i, j, isAllowed: isTileGround };
+                    fineGrid[validIndex] = {i, j, isAllowed: isTileGround};
                 }
             } else if (isTileWater(i, j)) {
                 if (isTileWater(i + CONSTANTS.LOCATION_RADIUS, j)
                 && isTileWater(i - CONSTANTS.LOCATION_RADIUS, j)
                 && isTileWater(i, j + CONSTANTS.LOCATION_RADIUS)
                 && isTileWater(i, j - CONSTANTS.LOCATION_RADIUS)) {
-                    fineGrid[validIndex] = { i, j, isAllowed: isTileWater };
+                    fineGrid[validIndex] = {i, j, isAllowed: isTileWater};
                 }
             }
         }
     }
 
     function areNeighborsFree(i, j, isAllowed) {
-        for (let k = 0; k < CONSTANTS.LOCATION_RADIUS; k++) {
-            for (let l = 0; l < CONSTANTS.LOCATION_RADIUS - k; l++) {
+        for (let k = 0; k < CONSTANTS.LOCATION_RADIUS; ++k) {
+            for (let l = 0; l < CONSTANTS.LOCATION_RADIUS - k; ++l) {
                 if (!isAllowed(i + k, j + l)
                 || !isAllowed(i + k, j - l)
                 || !isAllowed(i - k, j + l)
@@ -978,8 +978,8 @@ function findFreeLocations() {
         return true;
     }
 
-    for (let k = 0; k < fineRows; k++) {
-        for (let l = 0; l < fineColumns; l++) {
+    for (let k = 0; k < fineRows; ++k) {
+        for (let l = 0; l < fineColumns; ++l) {
             const tile = fineGrid[k * fineColumns + l];
             if (tile !== 0) {
                 const row = round(tile.i / CONSTANTS.LOCATION_DIST);
@@ -1008,8 +1008,8 @@ function findFreeLocations() {
                 }
 
                 if (areNeighborsFree(tile.i, tile.j, tile.isAllowed)) {
-                    generationData.locationGrid[validIndex] = { i: tile.i, j: tile.j };
-                    generationData.biomeGraph.biomes[getTile(tile.i, tile.j).biomeID].locations.push({ i: tile.i, j: tile.j });
+                    generationData.locationGrid[validIndex] = {i: tile.i, j: tile.j};
+                    generationData.biomeGraph.biomes[getTile(tile.i, tile.j).biomeID].locations.push({i: tile.i, j: tile.j});
                 }
             }
         }
@@ -1041,7 +1041,7 @@ function placeSecrets() {
     let dot = false;
     let box = false;
     let snake = false;
-    for (let i = 0; i < generationData.pathToExit.length; i++) {
+    for (let i = 0; i < generationData.pathToExit.length; ++i) {
         const biome = generationData.pathToExit[i];
         let formIDs = [];
         if (snake || box && dot) {
@@ -1081,17 +1081,17 @@ function placeSecrets() {
 
         if (formIDs.length) {
             if (biome.locations.length > 0) {
-                features.secrets.push({ type: "shrine", i: biome.locations[0].i, j: biome.locations[0].j, formIDs });
+                features.secrets.push({type: "shrine", i: biome.locations[0].i, j: biome.locations[0].j, formIDs});
                 generationData.locationGrid[Math.round(biome.locations[0].i / CONSTANTS.LOCATION_DIST) * generationData.gridColumns + Math.round(biome.locations[0].j / CONSTANTS.LOCATION_DIST)] = 0;
                 dot = box = snake = false;
                 placeShrineTiles(biome.locations[0].i, biome.locations[0].j);
             } else if (i === generationData.pathToExit.length - 1 || i === 0) {
-                features.secrets.push({ type: "shrine", i: biome.i, j: biome.j + 2, formIDs });
+                features.secrets.push({type: "shrine", i: biome.i, j: biome.j + 2, formIDs});
                 generationData.locationGrid[Math.round(biome.i / CONSTANTS.LOCATION_DIST) * generationData.gridColumns + Math.round(biome.j / CONSTANTS.LOCATION_DIST)] = 0;
                 dot = box = snake = false;
                 placeShrineTiles(biome.i, biome.j + 2);
             } else if (biome.size > 50) {
-                features.secrets.push({ type: "shrine", i: biome.i, j: biome.j, formIDs });
+                features.secrets.push({type: "shrine", i: biome.i, j: biome.j, formIDs});
                 generationData.locationGrid[Math.round(biome.i / CONSTANTS.LOCATION_DIST) * generationData.gridColumns + Math.round(biome.j / CONSTANTS.LOCATION_DIST)] = 0;
                 dot = box = snake = false;
                 placeShrineTiles(biome.i, biome.j);
@@ -1106,13 +1106,13 @@ function placeSecrets() {
     // wisps
     const numWisps = Math.floor(NOISE.random() * 5);
 
-    for (let i = 0; i < numWisps; i++) {
+    for (let i = 0; i < numWisps; ++i) {
         let index = Math.floor(NOISE.random() * (generationData.gridRows * generationData.gridColumns - 1));
-        for (let j = 0; j < generationData.gridRows * generationData.gridColumns; j++) {
+        for (let j = 0; j < generationData.gridRows * generationData.gridColumns; ++j) {
             if (generationData.locationGrid[index] !== 0) {
                 const color = [NOISE.random(), NOISE.random(), NOISE.random(), 0];
                 const change = (Math.floor(NOISE.random() * (CONSTANTS.LIGHT_WISP_CHANGE_MAX - CONSTANTS.LIGHT_WISP_CHANGE_MIN)) + CONSTANTS.LIGHT_WISP_CHANGE_MIN) / 10;
-                features.secrets.push({ type: "wisp", i: generationData.locationGrid[index].i, j: generationData.locationGrid[index].j, color, change });
+                features.secrets.push({type: "wisp", i: generationData.locationGrid[index].i, j: generationData.locationGrid[index].j, color, change});
                 generationData.locationGrid[index] = 0;
                 break;
             }
@@ -1131,11 +1131,11 @@ function placeSecrets() {
 
     const numBeacons = Math.floor(NOISE.random() * 2) + 1;
 
-    for (let i = 0; i < numBeacons; i++) {
+    for (let i = 0; i < numBeacons; ++i) {
         let index = Math.floor(NOISE.random() * (generationData.gridRows * generationData.gridColumns - 1));
-        for (let j = 0; j < generationData.gridRows * generationData.gridColumns; j++) {
+        for (let j = 0; j < generationData.gridRows * generationData.gridColumns; ++j) {
             if (generationData.locationGrid[index] !== 0) {
-                features.secrets.push({ type: "beacon", i: generationData.locationGrid[index].i, j: generationData.locationGrid[index].j });
+                features.secrets.push({type: "beacon", i: generationData.locationGrid[index].i, j: generationData.locationGrid[index].j});
                 placeBeaconTiles(generationData.locationGrid[index].i, generationData.locationGrid[index].j);
                 generationData.locationGrid[index] = 0;
                 break;
@@ -1154,11 +1154,11 @@ function placeSecrets() {
 function placeItems() {
     const numItems = Math.floor(NOISE.random() * 10) + 5;
 
-    for (let i = 0; i < numItems; i++) {
+    for (let i = 0; i < numItems; ++i) {
         let index = Math.floor(NOISE.random() * (generationData.gridRows * generationData.gridColumns - 1));
-        for (let j = 0; j < generationData.gridRows * generationData.gridColumns; j++) {
+        for (let j = 0; j < generationData.gridRows * generationData.gridColumns; ++j) {
             if (generationData.locationGrid[index] !== 0) {
-                features.items.push({ type: "coin", i: generationData.locationGrid[index].i, j: generationData.locationGrid[index].j });
+                features.items.push({type: "coin", i: generationData.locationGrid[index].i, j: generationData.locationGrid[index].j});
                 generationData.locationGrid[index] = 0;
                 break;
             }
@@ -1176,7 +1176,7 @@ function placeEnemies() {
     const possibleEnemyBiomes = [];
 
     const wideGroundBiomes = getBiomesOfType(CONSTANTS.WIDE_GROUND_BIOME);
-    for (let i = 0; i < wideGroundBiomes.length; i++) {
+    for (let i = 0; i < wideGroundBiomes.length; ++i) {
         if (wideGroundBiomes[i].size > Math.sqrt(randomMap.numRows * randomMap.numColumns)) {
             const dist = Math.hypot(wideGroundBiomes[i].i - features.start.i, wideGroundBiomes[i].j - features.start.j, 2);
             if (dist > 50) {
@@ -1186,9 +1186,9 @@ function placeEnemies() {
     }
 
     if (possibleEnemyBiomes.length < 1) return;
-    features.enemies.push({ i: possibleEnemyBiomes[0].i, j: possibleEnemyBiomes[0].j, color: [0.5, 0, 0], speed: 5, formID: "snake", aiID: "lightAffine" });
+    features.enemies.push({i: possibleEnemyBiomes[0].i, j: possibleEnemyBiomes[0].j, color: [0.5, 0, 0], speed: 5, formID: "snake", aiID: "lightAffine"});
     if (possibleEnemyBiomes.length < 2) return;
-    features.enemies.push({ i: possibleEnemyBiomes[1].i, j: possibleEnemyBiomes[1].j, color: [0.5, 0, 0], speed: 3, formID: "dot", aiID: "proxHunter" });    
+    features.enemies.push({i: possibleEnemyBiomes[1].i, j: possibleEnemyBiomes[1].j, color: [0.5, 0, 0], speed: 3, formID: "dot", aiID: "proxHunter"});    
 }
 
 /**
@@ -1197,85 +1197,85 @@ function placeEnemies() {
  * @modifies features.colors
  */
 function chooseColors() {
-    for (let i = 0; i < randomMap.numRows; i++) {
-        for (let j = 0; j < randomMap.numColumns; j++) {
+    for (let i = 0; i < randomMap.numRows; ++i) {
+        for (let j = 0; j < randomMap.numColumns; ++j) {
             const tile = getTile(i, j);
             
             if (tile.type === CONSTANTS.TILE_WALL) {
-                for (let k = 0; k < 6; k++) {
+                for (let k = 0; k < 6; ++k) {
                     features.colors.push(Math.min(0.03, noiseData.map[i * randomMap.numColumns + j][0] / 10));//features.colors.push(0.05);
                     features.colors.push(Math.min(0.03, noiseData.map[i * randomMap.numColumns + j][0] / 10));//features.colors.push(0.05);
                     features.colors.push(Math.min(0.03, noiseData.map[i * randomMap.numColumns + j][0] / 10));//features.colors.push(0.05);
                 }
             } else if (tile.type === CONSTANTS.TILE_DIRT) {
-                for (let k = 0; k < 6; k++) {
+                for (let k = 0; k < 6; ++k) {
                     features.colors.push(noiseData.map[i * randomMap.numColumns + j][1] / 4);//features.colors.push(0.24);
                     features.colors.push(noiseData.map[i * randomMap.numColumns + j][1] / 8);//features.colors.push(0.15);
                     features.colors.push(0.0);
                 }
             } else if (tile.type === CONSTANTS.TILE_ROCK) {
-                for (let k = 0; k < 6; k++) {
+                for (let k = 0; k < 6; ++k) {
                     features.colors.push(noiseData.map[i * randomMap.numColumns + j][1] / 4);//features.colors.push(0.5);
                     features.colors.push(noiseData.map[i * randomMap.numColumns + j][1] / 4);//features.colors.push(0.5);
                     features.colors.push(noiseData.map[i * randomMap.numColumns + j][1] / 4);//features.colors.push(0.5);
                 }
             } else if (tile.type === CONSTANTS.TILE_WATER) {
-                for (let k = 0; k < 6; k++) {
+                for (let k = 0; k < 6; ++k) {
                     features.colors.push(noiseData.map[i * randomMap.numColumns + j][0] / 3);//noiseData.map[i * randomMap.numColumns + j][0] / 10 //features.colors.push(0.0);
                     features.colors.push(Math.max(0.005, noiseData.map[i * randomMap.numColumns + j][0] / 2));//noiseData.map[i * randomMap.numColumns + j][1] / 8 //features.colors.push(0.2);
                     features.colors.push(Math.max(0.05, noiseData.map[i * randomMap.numColumns + j][1] / 2));//noiseData.map[i * randomMap.numColumns + j][1] / 5 //features.colors.push(0.6);
                 }
             } else if (tile.type === CONSTANTS.TILE_DEEPWATER) {
-                for (let k = 0; k < 6; k++) {
+                for (let k = 0; k < 6; ++k) {
                     features.colors.push(0.0);
                     features.colors.push(Math.max(0.005, noiseData.map[i * randomMap.numColumns + j][0] / 4));//noiseData.map[i * randomMap.numColumns + j][0] / 4 //features.colors.push(0.1);
                     features.colors.push(Math.max(0.05, noiseData.map[i * randomMap.numColumns + j][0] / 1.5));//noiseData.map[i * randomMap.numColumns + j][0] / 3 //features.colors.push(0.3);
                 }
             } else if (tile.type === CONSTANTS.TILE_GRASS) {
-                for (let k = 0; k < 6; k++) {
+                for (let k = 0; k < 6; ++k) {
                     features.colors.push(Math.max(0.005, noiseData.map[i * randomMap.numColumns + j][4] / 12));//features.colors.push(0.1);
                     features.colors.push(Math.max(0.05, noiseData.map[i * randomMap.numColumns + j][1] / 8));//features.colors.push(0.3);
                     features.colors.push(0.0);
                 }
             } else if (tile.type === CONSTANTS.TILE_HIGHWALL) {
-                for (let k = 0; k < 6; k++) {
+                for (let k = 0; k < 6; ++k) {
                     features.colors.push(0.0);
                     features.colors.push(0.0);
                     features.colors.push(0.0);
                 }
             } else if (tile.type === CONSTANTS.TILE_PAVED) {
-                for (let k = 0; k < 6; k++) {
+                for (let k = 0; k < 6; ++k) {
                     features.colors.push(0.05);
                     features.colors.push(0.015);
                     features.colors.push(0.0);
                 }
             } else if (tile.type === CONSTANTS.TILE_EXIT) {
-                for (let k = 0; k < 6; k++) {
+                for (let k = 0; k < 6; ++k) {
                     features.colors.push(1.0);
                     features.colors.push(0.0);
                     features.colors.push(1.0);
                 }
             } else if (tile.type === CONSTANTS.TILE_ENTRANCE) {
-                for (let k = 0; k < 6; k++) {
+                for (let k = 0; k < 6; ++k) {
                     features.colors.push(0.1);
                     features.colors.push(0.1);
                     features.colors.push(0.0);
                 }
             } else if (tile.type === CONSTANTS.TILE_SHRINE) {
-                for (let k = 0; k < 6; k++) {
+                for (let k = 0; k < 6; ++k) {
                     features.colors.push(0.0);
                     features.colors.push(0.05);
                     features.colors.push(0.1);
                 }
             } else if (tile.type === CONSTANTS.TILE_BEACON) {
-                for (let k = 0; k < 6; k++) {
+                for (let k = 0; k < 6; ++k) {
                     features.colors.push(0.2);
                     features.colors.push(0.1);
                     features.colors.push(0);
                 }
             }
 
-            /*for (let k = 0; k < 6; k++) {
+            /*for (let k = 0; k < 6; ++k) {
                 if (tile.biomeID === -1) {
                     features.colors.push(0);
                     features.colors.push(0);
@@ -1342,7 +1342,7 @@ function isTileNarrow(i, j, isAllowed) {
     if (!isAllowed(i - 1, j) && !isAllowed(i + 1, j)) return true;
     
     // diagonal tiles
-    for (let k = 4; k < 8; k++) {
+    for (let k = 4; k < 8; ++k) {
         const dir = CONSTANTS.DIRECTIONS[k];
         if (isAllowed(i + dir.i, j + dir.j)) continue;
         if (!isAllowed(i - dir.i, j)) {

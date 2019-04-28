@@ -20,22 +20,22 @@ export function initialize() {
     audio.listener.setMasterVolume(audio.masterVolume);
 
     const soundsData = [
-        { ID: "music1", url: "assets/music1.ogg", volume: 0.25, loop: true, play: true, levelStop: false },
-        { ID: "transforming", url: "assets/transforming.ogg", volume: 1, loop: true, play: false, levelStop: true },
-        { ID: "transform", url: "assets/transform.ogg", volume: 1, loop: false, play: false, levelStop: true },
-        { ID: "charging", url: "assets/charging.ogg", volume: 1, loop: true, play: false, levelStop: true },
-        { ID: "particle", url: "assets/particle.ogg", volume: 1, loop: false, play: false, levelStop: true },
-        { ID: "coin", url: "assets/coin.ogg", volume: 1, loop: false, play: false, levelStop: true },
-        { ID: "charge", url: "assets/charge.ogg", volume: 1, loop: false, play: false, levelStop: true },
-        { ID: "idle", url: "assets/idle.ogg", volume: 1, loop: false, play: false, levelStop: true },
-        { ID: "shrine", url: "assets/shrine.ogg", volume: 1, loop: true, play: false, levelStop: true },
-        { ID: "hurt", url: "assets/hurt.ogg", volume: 1, loop: false, play: false, levelStop: true },
-        { ID: "wisp1", url: "assets/wisp1.ogg", volume: 1, loop: false, play: false, levelStop: true },
-        { ID: "wisp2", url: "assets/wisp2.ogg", volume: 1, loop: false, play: false, levelStop: true },
-        { ID: "beacon1", url: "assets/beacon1.ogg", volume: 1, loop: false, play: false, levelStop: true },
-        { ID: "beacon2", url: "assets/beacon2.ogg", volume: 1, loop: true, play: false, levelStop: true },
-        { ID: "flare", url: "assets/flare.ogg", volume: 1, loop: false, play: false, levelStop: true },
-        { ID: "hintlight", url: "assets/hintlight.ogg", volume: 1, loop: false, play: false, levelStop: true },
+        {ID: "music1", url: "assets/music1.ogg", volume: 0.25, loop: true, play: true, levelStop: false},
+        {ID: "transforming", url: "assets/transforming.ogg", volume: 1, loop: true, play: false, levelStop: true},
+        {ID: "transform", url: "assets/transform.ogg", volume: 1, loop: false, play: false, levelStop: true},
+        {ID: "charging", url: "assets/charging.ogg", volume: 1, loop: true, play: false, levelStop: true},
+        {ID: "particle", url: "assets/particle.ogg", volume: 1, loop: false, play: false, levelStop: true},
+        {ID: "coin", url: "assets/coin.ogg", volume: 1, loop: false, play: false, levelStop: true},
+        {ID: "charge", url: "assets/charge.ogg", volume: 1, loop: false, play: false, levelStop: true},
+        {ID: "idle", url: "assets/idle.ogg", volume: 1, loop: false, play: false, levelStop: true},
+        {ID: "shrine", url: "assets/shrine.ogg", volume: 1, loop: true, play: false, levelStop: true},
+        {ID: "hurt", url: "assets/hurt.ogg", volume: 1, loop: false, play: false, levelStop: true},
+        {ID: "wisp1", url: "assets/wisp1.ogg", volume: 1, loop: false, play: false, levelStop: true},
+        {ID: "wisp2", url: "assets/wisp2.ogg", volume: 1, loop: false, play: false, levelStop: true},
+        {ID: "beacon1", url: "assets/beacon1.ogg", volume: 1, loop: false, play: false, levelStop: true},
+        {ID: "beacon2", url: "assets/beacon2.ogg", volume: 1, loop: true, play: false, levelStop: true},
+        {ID: "flare", url: "assets/flare.ogg", volume: 1, loop: false, play: false, levelStop: true},
+        {ID: "hintlight", url: "assets/hintlight.ogg", volume: 1, loop: false, play: false, levelStop: true},
     ];
     
     for (const soundData of soundsData) {
@@ -84,7 +84,7 @@ function getVolume(position, maxDist) {
     if (!position) {
         return 1;
     }
-    const { x, y } = PLAYER.getCenter();
+    const {x, y} = PLAYER.getCenter();
     return Math.max(0, (maxDist - Math.hypot(position.x - x, position.y - y)) / maxDist);
 }
 
@@ -145,7 +145,7 @@ export function fadeOut(soundID, time) {
         audio.sounds[soundID].targetVolumePriority = 1;
         audio.sounds[soundID].targetVolumeStep = 10 / time;
     } else {
-        setTimeout(function(){
+        setTimeout(function() {
             if (audio.sounds[soundID].targetVolumePriority < 1) {
                 audio.sounds[soundID].targetVolume = 0;
                 audio.sounds[soundID].targetVolumePriority = 1;
@@ -156,7 +156,7 @@ export function fadeOut(soundID, time) {
 }
 
 export function fadeOutLevel() {
-    for (let soundID of audio.soundIDs) {
+    for (const soundID of audio.soundIDs) {
         if (!audio.sounds[soundID]
         || !audio.sounds[soundID].levelStop
         || !audio.sounds[soundID].getLoop()) continue;
@@ -170,7 +170,7 @@ export function fadeOutLevel() {
 export function controlVolume(counter) {
     if (counter % 10 !== 0) return;
 
-    for (let soundID of audio.soundIDs) {
+    for (const soundID of audio.soundIDs) {
         if (audio.sounds[soundID].targetVolumePriority === 0) continue;
 
         const targetVolume = audio.sounds[soundID].targetVolume;

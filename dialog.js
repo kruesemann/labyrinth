@@ -25,7 +25,9 @@ export function stop() {
     OVERLAY.hideDialog();
     GAME.resumeGame();
     INPUT.gameControls();
-    setTimeout( _ => { dialog.list = []; }, 500);
+    setTimeout(_ => {
+        dialog.list = [];
+    }, 500);
 }
 
 function next(event) {
@@ -52,7 +54,7 @@ function showWithIndex(index, number) {
     } else {
         OVERLAY.setDialogButtons([]);
         setTimeout(_ => {
-            document.dispatchEvent(new CustomEvent("nextDialog", { detail: { index: index + 1, dialogNumber: number } }));
+            document.dispatchEvent(new CustomEvent("nextDialog", {detail: {index: index + 1, dialogNumber: number}}));
         }, 3000);
     }
 
@@ -80,21 +82,21 @@ export function skipCurrent() {
     if (dialog.currentIndex < 0 || dialog.currentIndex >= dialog.list.length || (dialog.list[dialog.currentIndex].buttons && dialog.list[dialog.currentIndex].buttons.length)) return;
     const number = dialog.number + 1;
     dialog.number = number;
-    document.dispatchEvent(new CustomEvent("nextDialog", { detail: { index: dialog.currentIndex + 1, dialogNumber: number } }));
+    document.dispatchEvent(new CustomEvent("nextDialog", {detail: {index: dialog.currentIndex + 1, dialogNumber: number}}));
 }
 
 export function showHelp() {
     show([
-        { text: "Move with the arrow keys.", buttons: [{ text: "Continue", index: 1 }, { text: "Skip 1", index: 2 }] },
-        { text: "When your Glow stops increasing, press <b>E</b> to drop a light particle." },
-        { text: "Find the magenta exit to proceed to the next level. It will get darker further down.", buttons: [{ text: "Continue", index: 3 }, { text: "Skip 3", index: 7 }, { text: "Back", index: 1 }, { text: "Reset", index: 0 }] },
-        { text: "Avoid the red enemies. They will hurt you." },
-        { text: "Yellow coins increase your score." },
-        { text: "Purple items replenish your health. You will die when your health is depleted." },
-        { text: "Near shrines you can change into different forms." },
-        { text: "In Dot form you are small and cannot swim." },
-        { text: "In Box form you can swim but will not fit everywhere." },
-        { text: "In Snake form you can go anywhere but cannot easily dodge enemies." },
-        { text: "When you see a big glowing <b>Q</b> in the down-left corner, press <b>Q</b> to see a hint.", buttons: [{ text: "Done", index: Infinity }] }
+        {text: "Move with the arrow keys.", buttons: [{text: "Continue", index: 1}, {text: "Skip 1", index: 2}]},
+        {text: "When your Glow stops increasing, press <b>E</b> to drop a light particle."},
+        {text: "Find the magenta exit to proceed to the next level. It will get darker further down.", buttons: [{text: "Continue", index: 3}, {text: "Skip 3", index: 7}, {text: "Back", index: 1}, {text: "Reset", index: 0}]},
+        {text: "Avoid the red enemies. They will hurt you."},
+        {text: "Yellow coins increase your score."},
+        {text: "Purple items replenish your health. You will die when your health is depleted."},
+        {text: "Near shrines you can change into different forms."},
+        {text: "In Dot form you are small and cannot swim."},
+        {text: "In Box form you can swim but will not fit everywhere."},
+        {text: "In Snake form you can go anywhere but cannot easily dodge enemies."},
+        {text: "When you see a big glowing <b>Q</b> in the down-left corner, press <b>Q</b> to see a hint.", buttons: [{text: "Done", index: Infinity}]}
     ], true);
 }

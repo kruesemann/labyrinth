@@ -43,20 +43,20 @@ export function doubleNoise2D(seed, numChannels, height, width, noiseColors, noi
     const gens = [];
     const centers = [];
 
-    for (let i = 0; i < numChannels; i++) {
+    for (let i = 0; i < numChannels; ++i) {
         const rngSeed = Math.abs(seed - 1000 * random());
         const rng = PM_PRNG.create(rngSeed);
         gens.push(new SimplexNoise(rng.nextDouble.bind(rng)));
-        centers.push({ x: random(), y: random() });
+        centers.push({x: random(), y: random()});
     }
 
     const map = [];
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
+    for (let y = 0; y < height; ++y) {
+        for (let x = 0; x < width; ++x) {
             const nx = x / width, ny = y / height;
             const channels = [];
 
-            for (let i = 0; i < numChannels; i++) {
+            for (let i = 0; i < numChannels; ++i) {
                 const cnx = nx - centers[i].x;
                 const cny = ny - centers[i].y;
 

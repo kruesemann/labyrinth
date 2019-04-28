@@ -157,7 +157,7 @@ void main(void) {
     vec3 light = vec3(0.0);
     vec2 mapCoords = v_texelCoords * u_dimensions;
 
-    for (int i = 0; i < MAXNUM; i++) {
+    for (int i = 0; i < MAXNUM; ++i) {
         if (u_lightColor[i].a > 0.0) {
 
             float dist = distance(mapCoords, u_lightPos[i]);
@@ -252,7 +252,7 @@ ${RAYCAST}
 void main() {
     vec3 RGB = vec3(0.0);
 
-    for (int i = 0; i < MAXNUM; i++) {
+    for (int i = 0; i < MAXNUM; ++i) {
         if (u_lightColor[i].a > 0.0) {
             float dist = distance(floor(v_pos.xy + vec2(0.5)), u_lightPrecision * u_lightPos[i]);
 
@@ -303,7 +303,7 @@ uniform float u_gamma;
 uniform float u_counter;
 uniform vec2 u_moves[5];
 
-float box(vec2 pos, vec2 size){
+float box(vec2 pos, vec2 size) {
     size = vec2(0.5) - size * 0.5;
     vec2 uv = smoothstep(size, size + vec2(0.001), pos);
     uv *= smoothstep(size, size + vec2(0.001), vec2(1.0) - pos);
@@ -397,7 +397,7 @@ void main(void) {
 
     vec4 color = vec4(0.0);
     vec2 translate = vec2(0.0);
-    for (int i = 0; i < 12; i++) {
+    for (int i = 0; i < 12; ++i) {
         translate = u_directions[i] * u_counter / float(TOTAL_TIME);
         float brightness = spark(pos - translate, u_directions[i], u_colors[i].a);
         if (brightness > 0.0)

@@ -32,12 +32,12 @@ export function reset() {
 
     if (stage) {
         if (stage.camera) {
-            while(stage.camera.children.length > 0){ 
+            while(stage.camera.children.length > 0) {
                 stage.camera.remove(stage.camera.children[0]); 
             }
         }
         if (stage.scene) {
-            while(stage.scene.children.length > 0){ 
+            while(stage.scene.children.length > 0) {
                 removeMesh(stage.scene.children[0]); 
             }
         }
@@ -116,7 +116,7 @@ export function resetScene() {
     ANIMATION.stopAllRunning();
     INVENTORY.levelReset();
     HINT.reset();
-    while(stage.scene.children.length > 0){ 
+    while(stage.scene.children.length > 0) {
         removeMesh(stage.scene.children[0]); 
     }
     stage.scene.add(stage.camera);
@@ -127,13 +127,13 @@ function createBuffer(meshes, dimensions) {
     stage.bufferScene = new THREE.Scene();
     stage.bufferScene.add(stage.bufferCamera);
 
-    for (let mesh of meshes) {
+    for (const mesh of meshes) {
         stage.bufferScene.add(mesh);
     }
 }
 
 function deleteBuffer() {
-    while(stage.bufferScene.children.length > 0){ 
+    while(stage.bufferScene.children.length > 0) {
         stage.bufferScene.remove(stage.bufferScene.children[0]); 
     }
     stage.bufferCamera = undefined;

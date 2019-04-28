@@ -136,7 +136,7 @@ function gameloop() {
     if (game.counter === CONSTANTS.MAX_COUNTER) {
         game.counter = 0;
     } else {
-        game.counter++;
+        ++game.counter;
     }
     
     INVENTORY.processActiveItems(game.counter);

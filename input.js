@@ -18,7 +18,7 @@ const KEY_DOWN  = 40;
 const KEY_F11   = 122;
 const KEY_DOT   = 190;
 
-let transformBuffer = { sequence: [-1, -1, -1, -1], startIndex: 0, ongoing: false, shrine: undefined };
+let transformBuffer = {sequence: [-1, -1, -1, -1], startIndex: 0, ongoing: false, shrine: undefined};
 let state = CONSTANTS.STATE_MENU;
 
 export function menuControls() {
@@ -83,34 +83,34 @@ function wheelHandler(event) {
 function keyDownGame(event) {
     function checkTransformationSequence() {
         let transformationCode = 0;
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < 4; ++i) {
             transformationCode *= 10;
             transformationCode += transformBuffer.sequence[(transformBuffer.startIndex + i) % 4];
         }
 
         switch (transformationCode) {
             case 4321:
-                for (let formID of transformBuffer.shrine.formIDs) {
+                for (const formID of transformBuffer.shrine.formIDs) {
                     if (formID === "snake" && PLAYER.transform("snake")) {
-                        transformBuffer.sequence = [ -1, -1, -1, -1 ];
+                        transformBuffer.sequence = [-1, -1, -1, -1];
                         SOUND.play("transform");
                         break;
                     }
                 }
                 break;
             case 3131:
-            for (let formID of transformBuffer.shrine.formIDs) {
+            for (const formID of transformBuffer.shrine.formIDs) {
                 if (formID === "box" && PLAYER.transform("box")) {
-                    transformBuffer.sequence = [ -1, -1, -1, -1 ];
+                    transformBuffer.sequence = [-1, -1, -1, -1];
                     SOUND.play("transform");
                     break;
                 }
             }
             break;
             case 3142:
-            for (let formID of transformBuffer.shrine.formIDs) {
+            for (const formID of transformBuffer.shrine.formIDs) {
                 if (formID === "dot" && PLAYER.transform("dot")) {
-                    transformBuffer.sequence = [ -1, -1, -1, -1 ];
+                    transformBuffer.sequence = [-1, -1, -1, -1];
                     SOUND.play("transform");
                     break;
                 }
@@ -229,7 +229,7 @@ function keyDownGame(event) {
 function keyUpGame(event) {
     switch (event.keyCode) {
         case KEY_SPACE:
-            transformBuffer = { sequence: [-1, -1, -1, -1], startIndex: 0, ongoing: false, shrine: undefined };
+            transformBuffer = {sequence: [-1, -1, -1, -1], startIndex: 0, ongoing: false, shrine: undefined};
             SOUND.forceFadeOut("transforming", 50);
             break;
         case KEY_LEFT:
@@ -309,7 +309,7 @@ function keyUpHandler(event) {
 }
 
 export function initialize() {
-    transformBuffer = { sequence: [-1, -1, -1, -1], startIndex: 0, ongoing: false, shrine: undefined };
+    transformBuffer = {sequence: [-1, -1, -1, -1], startIndex: 0, ongoing: false, shrine: undefined};
 
     document.removeEventListener("mousewheel", wheelHandler);
     document.removeEventListener("DOMMouseScroll", wheelHandler);

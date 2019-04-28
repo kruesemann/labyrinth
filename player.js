@@ -45,7 +45,7 @@ export function transform(formID) {
 export function dropParticle() {
     if (getBrightness() < getMaxBrightness() / 2
     || player.light.isFlaring) return;
-    const { x, y } = getLightPosition();
+    const {x, y} = getLightPosition();
     
     if (MAP.isOnBeacon(player.form.nodes)
     && SECRET.lightUpBeacon(x, y, [player.light.color[0], player.light.color[1], player.light.color[2], CONSTANTS.LIGHT_PARTICLE_BRIGHTNESS])) {
@@ -70,7 +70,9 @@ export function flare() {
 
 export function move(counter) {
     if (counter % 10 === 0) {
-        const nearestBeacon = getNearestSecret("beacon", (beacon) => { return beacon.light !== null; } );
+        const nearestBeacon = getNearestSecret("beacon", beacon => {
+            return beacon.light !== null;
+        });
         if (nearestBeacon
         && nearestBeacon.positionDist < 5
         && player.lightReserves < player.lightReservesMax) {
@@ -184,7 +186,7 @@ function getLightReservesMax() {
 }
 
 export function hurt() {
-    const { x, y } = getCenter();
+    const {x, y} = getCenter();
     const baseColor = player.light.color;
     ANIMATION.playSparks(x, y, baseColor);
     SOUND.play("hurt", true);

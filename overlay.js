@@ -68,12 +68,14 @@ export function setDialogButtons(options, dialogNumber) {
     while (dialog_buttons.firstChild) {
         dialog_buttons.removeChild(dialog_buttons.firstChild);
     }
-    for (let option of options) {
+    for (const option of options) {
         const button = document.createElement("BUTTON");
         button.classList.add("button");
         button.classList.add("input-h");
         button.innerHTML = option.text;
-        button.addEventListener("click", _ => { document.dispatchEvent(new CustomEvent("nextDialog", { detail: { index: option.index, dialogNumber } })); });
+        button.addEventListener("click", _ => {
+            document.dispatchEvent(new CustomEvent("nextDialog", {detail: {index: option.index, dialogNumber}}));
+        });
         dialog_buttons.appendChild(button);
     }
 }

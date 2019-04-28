@@ -13,7 +13,7 @@ export function test(self, counter) {
 
 export function idle(self, counter) {
     if (counter % 400 === 0) {
-        const { x, y } = self.getHead();
+        const {x, y} = self.getHead();
         const prox = [MAPUTIL.coordsToTile(x, y)];
 
         for (let i = 0; prox.length < 50; ++i) {
@@ -29,7 +29,7 @@ export function idle(self, counter) {
         }
 
         const targetTile = prox[Math.floor((prox.length - 1) * Math.random() + 1)];
-        const route = MAPUTIL.aStar(MAP.getTileMapInfo(), { x, y }, MAPUTIL.tileToCenter(targetTile.i, targetTile.j), self.form.isAllowed);
+        const route = MAPUTIL.aStar(MAP.getTileMapInfo(), {x, y}, MAPUTIL.tileToCenter(targetTile.i, targetTile.j), self.form.isAllowed);
         return {update: true, route};
     }
     return {update: false, route: undefined};

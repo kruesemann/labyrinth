@@ -63,7 +63,7 @@ class Light {
     set color(newColor) {
         this._color = newColor;
         if (this.uniformIndex !== -1) {
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 3; ++i) {
                 SHADER.mapLightingUniforms.u_lightColor.value[4 * this.uniformIndex + i] = newColor[i];
                 SHADER.objectUniforms.u_lightColor.value[4 * this.uniformIndex + i] = newColor[i];
             }
@@ -154,7 +154,7 @@ class Light {
 
     remove() {
         if (this.uniformIndex !== -1) {
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < 4; ++i) {
                 SHADER.mapLightingUniforms.u_lightColor.value[4 * this.uniformIndex + i] = 0;
                 SHADER.objectUniforms.u_lightColor.value[4 * this.uniformIndex + i] = 0;
             }
@@ -222,7 +222,7 @@ export function create(x, y, color) {
 }
 
 export function createLights(lightList) {
-    for (let light of lightList) {
+    for (const light of lightList) {
         create(light.x, light.y, light.color);
     }
 }
@@ -282,7 +282,7 @@ function assignUniformIndices(counter) {
 
         let uInd = 0;
         for (let light of list) {
-            light.uniformIndex = uInd++;
+            light.uniformIndex = ++uInd;
         }
     }
 }

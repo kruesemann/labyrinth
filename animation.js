@@ -122,7 +122,7 @@ export function playSparks(x, y, baseColor) {
 }
 
 export function animate() {
-    for (let i = 0; i < runningAnimations.length; i++) {
+    for (let i = 0; i < runningAnimations.length; ++i) {
         const animation = runningAnimations[i];
         if (SHADER[animation.uniformsID].u_counter.value >= animation.time) {
             runningAnimations.splice(i--, 1);

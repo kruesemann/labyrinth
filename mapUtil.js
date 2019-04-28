@@ -6,21 +6,21 @@ export function manhattan(x1, y1, x2, y2) {
 }
 
 export function coordsToTile(x, y) {
-    return { i: Math.floor(y), j: Math.floor(x) };
+    return {i: Math.floor(y), j: Math.floor(x)};
 }
 
 export function tileToCoords(i, j) {
-    return { x: j, y: i };
+    return {x: j, y: i};
 }
 
 export function tileToCenter(i, j) {
-    return { x: j + 0.5, y: i + 0.5 };
+    return {x: j + 0.5, y: i + 0.5};
 }
 
 export function isTileOfType(i, j, tileTypes, tileGetter) {
     if (!tileGetter) console.log(i, j, tileTypes);
     const tileType = tileGetter(i, j).type;
-    for (let i = 0; i < tileTypes.length; i++) {
+    for (let i = 0; i < tileTypes.length; ++i) {
         if (tileType === tileTypes[i]) {
             return true;
         }
@@ -89,7 +89,7 @@ export function isTileNarrowWater(i, j, tileGetter) {
 }
 
 export function aStar(mapInfo, position, target, isAllowed) {
-    const { numColumns, numRows } = mapInfo;
+    const {numColumns, numRows} = mapInfo;
     const startTile = coordsToTile(position.x, position.y);
     const targetTile = coordsToTile(target.x, target.y);
     const compMap = [];
@@ -99,8 +99,8 @@ export function aStar(mapInfo, position, target, isAllowed) {
         return 2;
     };
   
-    for (let i = 0; i < numColumns; i++) {
-        for (let j = 0; j < numRows; j++) {
+    for (let i = 0; i < numColumns; ++i) {
+        for (let j = 0; j < numRows; ++j) {
             compMap.push({
                 i: i,
                 j: j,
@@ -136,7 +136,7 @@ export function aStar(mapInfo, position, target, isAllowed) {
 
         current.closed = true;
 
-        for (let dir of CONSTANTS.DIRECTIONS) {
+        for (const dir of CONSTANTS.DIRECTIONS) {
             const ni = current.i + dir.i;
             const nj = current.j + dir.j;
 

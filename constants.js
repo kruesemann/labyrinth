@@ -183,14 +183,14 @@ export const ANIMATION_SPARKS_TIME      = 250;
 
 // PATH FINDING
 export const DIRECTIONS = [
-    { i: 1, j: 0 },
-    { i: 0, j: -1 },
-    { i: -1, j: 0 },
-    { i: 0, j: 1 },
-    { i: 1, j: -1 },
-    { i: -1, j: -1 },
-    { i: -1, j: 1 },
-    { i: 1, j: 1 }
+    {i:  1, j:  0},
+    {i:  0, j: -1},
+    {i: -1, j:  0},
+    {i:  0, j:  1},
+    {i:  1, j: -1},
+    {i: -1, j: -1},
+    {i: -1, j:  1},
+    {i:  1, j:  1}
 ];
 
 // GAME TICK

@@ -22,11 +22,11 @@ export function create(i, j, dialog) {
 }
 
 export function getNearestHint() {
-    const { x, y } = PLAYER.getCenter();
+    const {x, y} = PLAYER.getCenter();
     let nearestHint = undefined;
     let minDist = Infinity;
 
-    for (let hint of hints) {
+    for (const hint of hints) {
         const position = MAPUTIL.tileToCoords(hint.i, hint.j);
         const dist = Math.hypot(position.x - x, position.y - y);
         if (dist < minDist) {

@@ -37,7 +37,7 @@ function changeItemNumber(id, amount) {
         return;
     }
 
-    for (let i = item.index + 1; i < inventory.items.length; i++) {
+    for (let i = item.index + 1; i < inventory.items.length; ++i) {
         --inventory.items[i].index;
         --inventory.indices[inventory.items[i].id];
     }
@@ -63,7 +63,7 @@ function addMovingLightProcessFunction(light) {
     light.process = function(counter) {
         if (counter % 10 === 0) {
             if (this.die()) {
-                for (let i = this.activeItemIndex + 1; i < inventory.activeItems.length; i++) {
+                for (let i = this.activeItemIndex + 1; i < inventory.activeItems.length; ++i) {
                     --inventory.activeItems[i].activeItemIndex;
                 }
                 inventory.activeItems.splice(this.activeItemIndex, 1);
@@ -90,7 +90,7 @@ function addHintlightMoveStepFunction(light) {
                 this.moving.up = this.position.y < this.route[this.route.length - 1].y;
                 this.moving.down = this.position.y > this.route[this.route.length - 1].y;
             } else {
-                this.moving = { left: false, up: false, right: false, down: false };
+                this.moving = {left: false, up: false, right: false, down: false};
             }
         }
 
@@ -175,14 +175,14 @@ function addSendlightMoveStepFunction(light) {
 }
 
 function useHintlight() {
-    const { x, y } = PLAYER.getCenter();
+    const {x, y} = PLAYER.getCenter();
     const light = LIGHT.create(x, y, [0.8, 0.5, 1, CONSTANTS.LIGHT_HINTLIGHT_BRIGHTNESS]);
 
     if (light === null) return;
 
-    light.moving = { left: false, up: false, right: false, down: false };
+    light.moving = {left: false, up: false, right: false, down: false};
     light.activeItemIndex = inventory.activeItems.length;
-    light.route = MAPUTIL.aStar(MAP.getTileMapInfo(), { x, y }, MAP.getExitCoords(), MAP.isTileNotWall);
+    light.route = MAPUTIL.aStar(MAP.getTileMapInfo(), {x, y}, MAP.getExitCoords(), MAP.isTileNotWall);
 
     addHintlightMoveStepFunction(light);
     addMovingLightProcessFunction(light);
@@ -196,12 +196,12 @@ function useSendlight() {
     const moving = PLAYER.get().moving;
     if (!moving.left && !moving.up && !moving.right && !moving.down) return;
 
-    const { x, y } = PLAYER.getCenter();
+    const {x, y} = PLAYER.getCenter();
     const light = LIGHT.create(x, y, [1, 0.8, 0.5, CONSTANTS.LIGHT_SENDLIGHT_BRIGHTNESS]);
 
     if (light === null) return;
 
-    light.moving = { left: moving.left, up: moving.up, right: moving.right, down: moving.down };
+    light.moving = {left: moving.left, up: moving.up, right: moving.right, down: moving.down};
     light.activeItemIndex = inventory.activeItems.length;
 
     addSendlightMoveStepFunction(light);

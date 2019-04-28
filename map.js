@@ -44,7 +44,7 @@ export function initialize(seed, numRows, numColumns, gameSeed, level) {
     SECRET.reset();
     ITEM.reset();
 
-    const  { tileMap, start, exit, enemies, items, secrets, colors } = RANDOMMAP.create(seed, numRows, numColumns, gameSeed, level);
+    const  {tileMap, start, exit, enemies, items, secrets, colors} = RANDOMMAP.create(seed, numRows, numColumns, gameSeed, level);
 
     map = {
         seed,
@@ -66,7 +66,7 @@ export function initialize(seed, numRows, numColumns, gameSeed, level) {
 }
 
 export function getTileMapInfo() {
-    return { numColumns: map.numColumns, numRows: map.numRows };
+    return {numColumns: map.numColumns, numRows: map.numRows};
 }
 
 export function getTile(i, j) {
@@ -78,11 +78,11 @@ export function getExitCoords() {
 }
 
 function createTexture(colors) {
-    const { numRows, numColumns } = map;
+    const {numRows, numColumns} = map;
     const vertices = [];
 
-    for (let i = 0; i < numRows; i++) {
-        for (let j = 0; j < numColumns; j++) {
+    for (let i = 0; i < numRows; ++i) {
+        for (let j = 0; j < numColumns; ++j) {
             vertices.push(j);
             vertices.push(i);
             vertices.push(0);
@@ -143,8 +143,8 @@ function createMesh() {
 export function isNextTileOfType(x, y, dx, dy, tileTypes) {
     const currentTile = MAPUTIL.coordsToTile(x, y);
     
-    for (let dir of CONSTANTS.DIRECTIONS) {
-        const nextTile = { i: currentTile.i + dir.i, j: currentTile.j + dir.j };
+    for (const dir of CONSTANTS.DIRECTIONS) {
+        const nextTile = {i: currentTile.i + dir.i, j: currentTile.j + dir.j};
         
         if (MAPUTIL.isTileOfType(nextTile.i, nextTile.j, tileTypes, getTile)) {
             const nextTileCoords = MAPUTIL.tileToCenter(nextTile.i, nextTile.j);
@@ -201,20 +201,20 @@ export function isTileNarrowWater(i, j) {
 
 function isOnTileType(nodes, tileType) {
     const vertexOffsets = [
-        { x: -0.5, y: -0.5 },
-        { x: -0.5, y: 0 },
-        { x: -0.5, y: 0.499 },
-        { x: 0, y: -0.5 },
-        { x: 0, y: 0 },
-        { x: 0, y: 0.499 },
-        { x: 0.499, y: -0.5 },
-        { x: 0.499, y: 0 },
-        { x: 0.499, y: 0.499 },
+        {x: -0.500, y: -0.500},
+        {x: -0.500, y:  0.000},
+        {x: -0.500, y:  0.499},
+        {x:  0.000, y: -0.500},
+        {x:  0.000, y:  0.000},
+        {x:  0.000, y:  0.499},
+        {x:  0.499, y: -0.500},
+        {x:  0.499, y:  0.000},
+        {x:  0.499, y:  0.499},
     ];
 
-    for (let node of nodes) {
-        for (let offset of vertexOffsets) {
-            const { i, j } = MAPUTIL.coordsToTile(node.x + offset.x, node.y + offset.y);
+    for (const node of nodes) {
+        for (const offset of vertexOffsets) {
+            const {i, j} = MAPUTIL.coordsToTile(node.x + offset.x, node.y + offset.y);
             if (getTile(i, j).type === tileType)
             {
                 return true;
@@ -275,12 +275,14 @@ export function ambientSound(counter) {
     if (counter % 10 !== 0) return;
 
     const nearestShrine = PLAYER.getNearestSecret("shrine");
-    const nearestBeacon = PLAYER.getNearestSecret("beacon", (beacon) => { return beacon.light !== null; });
+    const nearestBeacon = PLAYER.getNearestSecret("beacon", (beacon) => {
+        return beacon.light !== null;
+    });
 
     if (nearestShrine) {
-        SOUND.loop("shrine", 100, { x: nearestShrine.x, y: nearestShrine.y }, 25);
+        SOUND.loop("shrine", 100, {x: nearestShrine.x, y: nearestShrine.y}, 25);
     }
     if (nearestBeacon) {
-        SOUND.loop("beacon2", 100, { x: nearestBeacon.x, y: nearestBeacon.y }, 50);
+        SOUND.loop("beacon2", 100, {x: nearestBeacon.x, y: nearestBeacon.y}, 50);
     }
 }

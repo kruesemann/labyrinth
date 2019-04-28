@@ -22,7 +22,7 @@ export function reset() {
 }
 
 function createShrine(i, j, formIDs) {
-    const { x, y } = MAPUTIL.tileToCenter(i, j);
+    const {x, y} = MAPUTIL.tileToCenter(i, j);
     const uuid = `shrine${x}${y}${Date.now()}`;
 
     const shrine = {
@@ -32,9 +32,11 @@ function createShrine(i, j, formIDs) {
         formIDs,
         item: ITEM.createShrine(i, j, uuid),
         hint: HINT.create(i, j, [
-            { text: "This is a shrine. You can change form here." },
-            { text: "Hold down <b>SPACE</b> and do a little dance." },
-            { text: "The snake form requires this dance: <b>DOWN RIGHT UP LEFT</b>", trigger: function() { ANIMATION.playSnakeDance(x, y); } }
+            {text: "This is a shrine. You can change form here."},
+            {text: "Hold down <b>SPACE</b> and do a little dance."},
+            {text: "The snake form requires this dance: <b>DOWN RIGHT UP LEFT</b>", trigger: function() {
+                ANIMATION.playSnakeDance(x, y);
+            }}
         ])
     };
 
@@ -90,7 +92,7 @@ function addWispMemberFunctions(wisp) {
 }
 
 function createWisp(i, j, color, change) {
-    const { x, y } = MAPUTIL.tileToCenter(i, j);
+    const {x, y} = MAPUTIL.tileToCenter(i, j);
     const uuid = `wisp${x}${y}${Date.now()}`;
 
     const wisp = {
@@ -130,7 +132,7 @@ function addBeaconMemberFunctions(beacon, x, y) {
 }
 
 function createBeacon(i, j) {
-    const { x, y } = MAPUTIL.tileToCenter(i, j);
+    const {x, y} = MAPUTIL.tileToCenter(i, j);
     const uuid = `beacon${x}${y}${Date.now()}`;
 
     const beacon = {
@@ -146,7 +148,7 @@ function createBeacon(i, j) {
 }
 
 export function createSecrets(secretList) {
-    for (let secret of secretList) {
+    for (const secret of secretList) {
         switch(secret.type) {
             case "shrine": createShrine(secret.i, secret.j, secret.formIDs); break;
             case "wisp": createWisp(secret.i, secret.j, secret.color, secret.change); break;

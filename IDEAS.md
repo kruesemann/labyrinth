@@ -86,3 +86,6 @@
 * bear Thorke's light and light the beacons in her name
     * Thorke whispers to you occasionally
     * try to kill Maw whenever you have the chance
+
+* the wisp king may be able to help you
+    * but he is difficult to find

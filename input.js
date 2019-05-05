@@ -3,20 +3,14 @@ import * as DIALOG from "./dialog.js";
 import * as GAME from "./game.js";
 import * as HINT from "./hint.js";
 import * as INVENTORY from "./inventory.js";
+import * as OPTIONS from "./options.js";
 import * as OVERLAY from "./overlay.js";
 import * as PLAYER from "./player.js";
 import * as SOUND from "./sound.js";
 import * as STAGE from "./stage.js";
 
 const KEY_TAB   = 9;
-const KEY_ESC   = 27;
-const KEY_SPACE = 32;
-const KEY_LEFT  = 37;
-const KEY_UP    = 38;
-const KEY_RIGHT = 39;
-const KEY_DOWN  = 40;
 const KEY_F11   = 122;
-const KEY_DOT   = 190;
 
 let transformBuffer = {sequence: [-1, -1, -1, -1], startIndex: 0, ongoing: false, shrine: undefined};
 let state = CONSTANTS.STATE_MENU;
@@ -122,14 +116,13 @@ function keyDownGame(event) {
     }
 
     switch (event.keyCode) {
-        case KEY_TAB:
-            event.preventDefault();
+        case OPTIONS.gameControls.browse:
             INVENTORY.browseRight();
             break;
-        case KEY_ESC:
+        case OPTIONS.gameControls.menu:
             OVERLAY.ingameMenu();
             break;
-        case KEY_SPACE:
+        case OPTIONS.gameControls.transform:
             if (!transformBuffer.ongoing) {
                 transformBuffer.shrine = PLAYER.getNearestSecret("shrine");
                 if (transformBuffer.shrine
@@ -139,41 +132,66 @@ function keyDownGame(event) {
                 }
             }
             break;
-        case KEY_LEFT:
+        case OPTIONS.gameControls.gLeft:
             PLAYER.moveLeft();
             if (transformBuffer.ongoing) {
-                transformBuffer.sequence[transformBuffer.startIndex] = KEY_LEFT - 36;
+                transformBuffer.sequence[transformBuffer.startIndex] = 1;
                 transformBuffer.startIndex = (transformBuffer.startIndex + 1) % 4;
                 checkTransformationSequence();
             }
             break;
-        case KEY_UP:
+        case OPTIONS.gameControls.gUp:
             PLAYER.moveUp();
             if (transformBuffer.ongoing) {
-                transformBuffer.sequence[transformBuffer.startIndex] = KEY_UP - 36;
+                transformBuffer.sequence[transformBuffer.startIndex] = 2;
                 transformBuffer.startIndex = (transformBuffer.startIndex + 1) % 4;
                 checkTransformationSequence();
             }
             break;
-        case KEY_RIGHT:
+        case OPTIONS.gameControls.gRight:
             PLAYER.moveRight();
             if (transformBuffer.ongoing) {
-                transformBuffer.sequence[transformBuffer.startIndex] = KEY_RIGHT - 36;
+                transformBuffer.sequence[transformBuffer.startIndex] = 3;
                 transformBuffer.startIndex = (transformBuffer.startIndex + 1) % 4;
                 checkTransformationSequence();
             }
             break;
-        case KEY_DOWN:
+        case OPTIONS.gameControls.gDown:
             PLAYER.moveDown();
             if (transformBuffer.ongoing) {
-                transformBuffer.sequence[transformBuffer.startIndex] = KEY_DOWN - 36;
+                transformBuffer.sequence[transformBuffer.startIndex] = 4;
                 transformBuffer.startIndex = (transformBuffer.startIndex + 1) % 4;
                 checkTransformationSequence();
             }
             break;
-        case KEY_DOT:
+        case OPTIONS.gameControls.gSkip:
             DIALOG.skipCurrent();
             break;
+        case OPTIONS.gameControls.particle:
+            PLAYER.dropParticle();
+            break;
+        case OPTIONS.gameControls.flare:
+            PLAYER.flare();
+            break;
+        case OPTIONS.gameControls.hint:
+            const nearestHint = HINT.getNearestHint();
+            if (nearestHint.playerDist < 5) {
+                nearestHint.show();
+            }
+            break;
+        case OPTIONS.gameControls.useItem:
+            INVENTORY.useItem();
+            break;
+        case OPTIONS.gameControls.pause:
+            GAME.togglePause();
+            break;
+        case OPTIONS.gameControls.gStop:
+            DIALOG.stop();
+            break;
+    }
+
+    // DEBUG
+    switch (event.keyCode) {
         case 49://1
             PLAYER.transform("dot");
             break;
@@ -183,90 +201,45 @@ function keyDownGame(event) {
         case 51://3
             PLAYER.transform("snake");
             break;
-        case 65://a
-            PLAYER.moveLeft();
-            break;
         case 67://c
             GAME.nextLevel();
-            break;
-        case 68://d
-            PLAYER.moveRight();
-            break;
-        case 69://e
-            PLAYER.dropParticle();
-            break;
-        case 70://f
-            PLAYER.flare();
-            break;
-        case 81://q
-            const nearestHint = HINT.getNearestHint();
-            if (nearestHint.playerDist < 5) {
-                nearestHint.show();
-            }
-            break;
-        case 83://s
-            PLAYER.moveDown();
-            break;
-        case 87://w
-            PLAYER.moveUp();
-            break;
-        case 86://v
-            INVENTORY.useItem();
             break;
         case 66://b
             INVENTORY.addHintlight(5);
             INVENTORY.addSendlight(5);
-            break;
-        case 80://p
-            GAME.togglePause();
-            break;
-        case 88://x
-            DIALOG.stop();
             break;
     }
 }
 
 function keyUpGame(event) {
     switch (event.keyCode) {
-        case KEY_SPACE:
+        case OPTIONS.gameControls.transform:
             transformBuffer = {sequence: [-1, -1, -1, -1], startIndex: 0, ongoing: false, shrine: undefined};
             SOUND.forceFadeOut("transforming", 50);
             break;
-        case KEY_LEFT:
+        case OPTIONS.gameControls.gLeft:
             PLAYER.stopLeft();
             break;
-        case KEY_UP:
+        case OPTIONS.gameControls.gUp:
             PLAYER.stopUp();
             break;
-        case KEY_RIGHT:
+        case OPTIONS.gameControls.gRight:
             PLAYER.stopRight();
             break;
-        case KEY_DOWN:
+        case OPTIONS.gameControls.gDown:
             PLAYER.stopDown();
-            break;
-        case 65://a
-            PLAYER.stopLeft();
-            break;
-        case 68://d
-            PLAYER.stopRight();
-            break;
-        case 83://s
-            PLAYER.stopDown();
-            break;
-        case 87://w
-            PLAYER.stopUp();
             break;
     }
 }
 
 function keyDownMenu(event) {
     if (document.getElementById("menu-ingame").style.display === "block"
-    && event.keyCode === KEY_ESC) {
+    && event.keyCode === OPTIONS.menuControls.mBack) {
         document.getElementById("menu-ingame-back").dispatchEvent(new MouseEvent("click"));
         return;
     }
     if (document.getElementById("menu-options").style.display === "block"
-    && event.keyCode === KEY_ESC) {
+    && event.keyCode === OPTIONS.menuControls.mBack) {
         document.getElementById("menu-options-back").dispatchEvent(new MouseEvent("click"));
         return;
     }
@@ -276,10 +249,10 @@ function keyUpMenu(event) {}
 
 function keyDownDialog(event) {
     switch (event.keyCode) {
-        case KEY_DOT:
+        case OPTIONS.dialogControls.dSkip:
             DIALOG.skipCurrent();
             break;
-        case 88://x
+        case OPTIONS.dialogControls.dStop:
             DIALOG.stop();
             break;
     }
@@ -292,6 +265,9 @@ function keyDownHandler(event) {
         toggleFullscreen(event);
         return;
     }
+
+    if (event.keyCode === KEY_TAB)
+        event.preventDefault();
 
     switch (state) {
         case CONSTANTS.STATE_GAME: keyDownGame(event); break;

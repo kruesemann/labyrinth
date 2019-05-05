@@ -8,6 +8,7 @@ export function reset() {
 
     setDialogText("");
     setDialogButtons([]);
+    setActiveItem();
     setSeed(0);
     setLevel(0);
     setScore(0);

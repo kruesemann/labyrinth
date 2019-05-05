@@ -9,14 +9,15 @@
     <body>
         <div id="background"></div>
 
-        <div id="screen-start">
-            <div id="title">Labyrinth</div>
+        <div id="screen-start" class="screen">
+            <div class="title">Labyrinth</div>
         </div>
 
-        <div id="screen-menu">
+        <div id="screen-menu" class="screen">
             <div id="menu-main" class="menu">
                 <button id="menu-main-start" class="button input-v">Start new game</button>
                 <button id="menu-main-options" class="button input-v">Options</button>
+                <button id="menu-main-controls" class="button input-v">Controls</button>
             </div>
 
             <div id="menu-game" class="menu">
@@ -47,24 +48,218 @@
             <div id="menu-ingame" class="menu">
                 <button id="menu-ingame-back" class="button input-v">Resume game</button>
                 <button id="menu-ingame-options" class="button input-v">Options</button>
+                <button id="menu-ingame-controls" class="button input-v">Controls</button>
                 <button id="menu-ingame-help" class="button input-v">Help</button>
                 <button id="menu-ingame-exit" class="button input-v">Exit to Main Menu</button>
             </div>
+
+            <div id="menu-controls" class="menu">
+                <fieldset class="fieldset">
+                    <legend>Game controls</legend>
+                    <table>
+                        <tr>
+                            <th class="label">Move left:</th>
+                            <th class="value">
+                                <button id="gLeft" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Move up:</th>
+                            <th class="value">
+                                <button id="gUp" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Move right:</th>
+                            <th class="value">
+                                <button id="gRight" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Move down:</th>
+                            <th class="value">
+                                <button id="gDown" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Browse inventory:</th>
+                            <th class="value">
+                                <button id="browse" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Menu:</th>
+                            <th class="value">
+                                <button id="menu" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Transform:</th>
+                            <th class="value">
+                                <button id="transform" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Skip text:</th>
+                            <th class="value">
+                                <button id="gSkip" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Exit dialog:</th>
+                            <th class="value">
+                                <button id="gStop" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Drop particle:</th>
+                            <th class="value">
+                                <button id="particle" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Flare:</th>
+                            <th class="value">
+                                <button id="flare" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Show hint:</th>
+                            <th class="value">
+                                <button id="hint" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Use item:</th>
+                            <th class="value">
+                                <button id="useItem" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Pause:</th>
+                            <th class="value">
+                                <button id="pause" class="input-t button"></button>
+                            </th>
+                        </tr>
+                    </table>
+                </fieldset>
+
+                <fieldset class="fieldset">
+                    <legend>Menu controls</legend>
+                    <table style="text-align: left;">
+                        <tr>
+                            <th class="label">Go left:</th>
+                            <th class="value">
+                                <button id="mLeft" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Go up:</th>
+                            <th class="value">
+                                <button id="mUp" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Go right:</th>
+                            <th class="value">
+                                <button id="mRight" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Go down:</th>
+                            <th class="value">
+                                <button id="mDown" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Enter:</th>
+                            <th class="value">
+                                <button id="mEnter" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Back:</th>
+                            <th class="value">
+                                <button id="mBack" class="input-t button"></button>
+                            </th>
+                        </tr>
+                    </table>
+                </fieldset>
+
+                <fieldset class="fieldset">
+                    <legend>Dialog controls</legend>
+                    <table>
+                        <tr>
+                            <th class="label">Go left:</th>
+                            <th class="value">
+                                <button id="dLeft" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Go up:</th>
+                            <th class="value">
+                                <button id="dUp" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Go right:</th>
+                            <th class="value">
+                                <button id="dRight" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Go down:</th>
+                            <th class="value">
+                                <button id="dDown" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Enter:</th>
+                            <th class="value">
+                                <button id="dEnter" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Skip text:</th>
+                            <th class="value">
+                                <button id="dSkip" class="input-t button"></button>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="label">Exit dialog:</th>
+                            <th class="value">
+                                <button id="dStop" class="input-t button"></button>
+                            </th>
+                        </tr>
+                    </table>
+                </fieldset>
+
+                <button id="menu-controls-reset" class="button input-v">Reset</button>
+                <button id="menu-controls-back" class="button input-v">Back</button>
+            </div>
         </div>
 
-        <div id="screen-loading">
+        <div id="screen-window" class="screen">
+            <div id="window">
+                <div id="window-text"></div>
+                <div id="window-buttons"></div>
+            </div>
+        </div>
+
+        <div id="screen-loading" class="screen">
             <div id="loading-box">
                 loading<!--
                 --><span class="dot">.</span><!--
                 --><span class="dot" style="animation-delay: 0.2s; -webkit-animation-delay: 0.2s;">.</span><!--
                 --><span class="dot" style="animation-delay: 0.4s; -webkit-animation-delay: 0.4s;">.</span>
             </div>
+            
             <div id="loading-progress">
                 <progress id="loading-volume" value="0" max="100"></progress>
             </div>
         </div>
 
-        <div id="screen-game">
+        <div id="screen-game" class="screen">
             <div id="info" class="box">
                 <label for="info-seed">Seed:</label>
                 <div id="info-seed" class="info-block"></div>
@@ -90,6 +285,14 @@
                 </div>
                 <div id="status-item"></div>
                 <div id="status-help">Q</div>
+            </div>
+        </div>
+
+        <div id="screen-death" class="screen">
+            <div class="title">Death</div>
+
+            <div id="menu-death" class="menu">
+                <button id="death-back" class="button input-v">Back to main menu</button>
             </div>
         </div>
 

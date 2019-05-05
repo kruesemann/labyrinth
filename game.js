@@ -1,5 +1,6 @@
 import * as ANIMATION from "./animation.js";
 import * as CONSTANTS from "./constants.js";
+import * as INPUT from "./input.js";
 import * as INVENTORY from "./inventory.js";
 import * as ITEM from "./item.js";
 import * as LIGHT from "./light.js";
@@ -21,7 +22,7 @@ let game = {
     paused: false
 };
 
-export function reset() {
+function reset() {
     game = {
         seed: 0,
         level: 0,
@@ -35,6 +36,20 @@ export function reset() {
     STAGE.reset();
     OVERLAY.reset();
     NOISE.reset();
+}
+
+export function cleanUp() {
+    reset();
+    let counter = 0;
+
+    function fadeOutSound() {
+        if (SOUND.allGone()) return;
+        requestAnimationFrame(fadeOutSound);
+        SOUND.controlVolume(counter);
+        ++counter;
+    }
+
+    fadeOutSound();
 }
 
 export function initialize(seed) {
@@ -99,9 +114,12 @@ function resolveCollisions() {
 
     if (!PLAYER.hurt()) return;
 
-    alert("DEAD!! AHHHHHH!!!");
-    setScore(0);
-    loadSpecificLevel(game.seed, 1);
+    pauseGame();
+    INPUT.menuControls();
+    document.getElementById("menu-death").style.display = "block";
+    document.getElementById("screen-death").style.visibility = "visible";
+    document.getElementById("screen-death").style.opacity = 1;
+    setTimeout(cleanUp, 2000);
 }
 
 export function pauseGame() {

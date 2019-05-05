@@ -67,6 +67,7 @@
     - [x] Seed selection
     - [ ] Saving
     - [x] Options
+    - [x] Controls
 - [ ] Info
     - [x] Score
     - [x] Seed
@@ -80,7 +81,7 @@
 - [ ] Screens
     - [x] Game
     - [ ] Start
-    - [ ] Death
+    - [x] Death
     - [ ] Victory
 - [x] Pausing
     - [x] In Menu
@@ -109,6 +110,9 @@
 - [ ] Maw
     - [ ] Appearances
     - [ ] Fight
+- [ ] Wisp King
+    - [ ] Made out of many lights
+    - [ ] Hiding place
 - [ ] Dialog
     - [ ] Text
     - [ ] Sound

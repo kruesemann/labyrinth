@@ -127,16 +127,6 @@ function createTexture(colors) {
 
 function createMesh() {
     const geometry = new THREE.BufferGeometry();
-    /*
-    geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array([
-                     0,           0, 0,
-        map.numColumns,           0, 0,
-                     0, map.numRows, 0,
-        map.numColumns,           0, 0,
-        map.numColumns, map.numRows, 0,
-                     0, map.numRows, 0,
-    ]), 3));
-    */
     const dimensions = STAGE.getScreenWorldDimensions();
     geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array([
                    0,            0, 0,
@@ -312,4 +302,31 @@ export function ambientSound(counter) {
     if (nearestBeacon) {
         SOUND.loop("beacon2", 100, {x: nearestBeacon.x, y: nearestBeacon.y}, 50);
     }
+}
+
+//DEBUG
+export function reinitializeMesh() {
+    const geometry = new THREE.BufferGeometry();
+    const dimensions = STAGE.getScreenWorldDimensions();
+    geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array([
+                   0,            0, 0,
+        dimensions.x,            0, 0,
+                   0, dimensions.y, 0,
+        dimensions.x,            0, 0,
+        dimensions.x, dimensions.y, 0,
+                   0, dimensions.y, 0,
+    ]), 3));
+
+    geometry.addAttribute('a_texelCoords', new THREE.BufferAttribute(new Float32Array([
+        0, 0,
+        1, 0,
+        0, 1,
+        1, 0,
+        1, 1,
+        0, 1,
+    ]), 2));
+
+    STAGE.removeMesh(map.mesh);
+    map.mesh = new THREE.Mesh(geometry, SHADER.getMapMaterial());
+    STAGE.addMesh(map.mesh);
 }

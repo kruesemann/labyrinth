@@ -73,6 +73,8 @@ export function initialize() {
     };
 
     window.onresize = function resize() {
+        if (!stage.camera) return;
+        
         stage.width = window.innerWidth;
         stage.height = window.innerHeight;
         renderer.setSize(stage.width, stage.height);
@@ -103,6 +105,15 @@ export function zoom(delta) {
     } else if (stage.camera.position.z > 1000) {
         stage.camera.position.z = 1000;
     }
+
+    const height = stage.camera.position.z * Math.tan(CONSTANTS.CAMERA_FOV * Math.PI / 180);
+    stage.camera.screenWorldDimensions = {
+        x: Math.ceil(height * stage.camera.aspect),
+        y: Math.ceil(height)
+    };
+
+    MAP.reinitializeMesh();
+    LIGHT.initialize({x: 200, y: 200});
 }
 
 export function render() {

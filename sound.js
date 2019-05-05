@@ -167,6 +167,14 @@ export function fadeOutLevel() {
     }
 }
 
+export function allGone() {
+    let allGone = true;
+    for (const soundID of audio.soundIDs) {
+        if (audio.sounds[soundID].levelStop && audio.sounds[soundID].volume !== 0) allGone = false;
+    }
+    return allGone;
+}
+
 export function controlVolume(counter) {
     if (counter % 10 !== 0) return;
 

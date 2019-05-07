@@ -6,6 +6,7 @@ import * as PLAYER from "./player.js";
 import * as SHADER from "./shader.js";
 import * as SOUND from "./sound.js";
 import * as STAGE from "./stage.js";
+import * as UTILITY from "./utility.js";
 
 let enemies = [];
 
@@ -40,14 +41,10 @@ function createDotForm(x, y, color) {
         nodes: [{x: 0, y: 0}],
         mesh: new THREE.Mesh(geometry, SHADER.getObjectMaterial()),
         move: function (dx, dy) {
-            function add(a, b) {
-                return Math.round((a + b) * 10) / 10;
-            }
-
-            this.mesh.position.x = add(this.mesh.position.x, dx);
-            this.mesh.position.y = add(this.mesh.position.y, dy);
-            this.nodes[0].x = add(this.nodes[0].x, dx);
-            this.nodes[0].y = add(this.nodes[0].y, dy);
+            this.mesh.position.x = UTILITY.add(this.mesh.position.x, dx);
+            this.mesh.position.y = UTILITY.add(this.mesh.position.y, dy);
+            this.nodes[0].x = UTILITY.add(this.nodes[0].x, dx);
+            this.nodes[0].y = UTILITY.add(this.nodes[0].y, dy);
         },
         set: function (x, y) {
             this.mesh.position.x = x;

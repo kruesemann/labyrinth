@@ -2,15 +2,19 @@
 - [x] Basic Movement
 - [x] Particle dropping
     - [x] Lighting beacons
+    - [x] Particle brightness depends on player brightness
 - [x] Flaring
     - [x] light.flare()
     - [x] player.flare() restrictions
 - [x] Light recharging
-    - [x] Light reserves
-    - [x] Beacons
-- [x] Light as health
+    - [x] ~~Light reserves~~
+    - [x] ~~Beacons~~
+    - [x] Light recharges to luminosity
+    - [x] Beacons recharge luminosity instead
+- [x] ~~Light as health~~
     - [x] Death when brightness reaches zero
     - [x] Light drain when touching enemies
+    - [x] Luminosity as health instead
 - [ ] Usable items
     - [x] Throwable lights
     - [x] Hint lights
@@ -86,6 +90,13 @@
 - [x] Pausing
     - [x] In Menu
     - [x] In Dialog
+
+# Sound
+- [ ] Beacon lighting sound without particle sound
+- [ ] Death sound
+- [ ] Ambient sounds
+    - [ ] Separate volume control
+- [ ] No Music
 
 # Graphics
 - [x] Lighting

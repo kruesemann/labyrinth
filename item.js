@@ -80,7 +80,7 @@ function addCoinCollectFunction(coin) {
     coin.collect = function() {
         this.position = {x: 0, y: 0};
         GAME.increaseScore();
-        PLAYER.increaseBrightness();
+        PLAYER.heal();
         this.remove();
         SOUND.play("coin");
     };

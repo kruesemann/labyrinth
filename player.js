@@ -5,6 +5,7 @@ import * as MAP from "./map.js";
 import * as OVERLAY from "./overlay.js";
 import * as SECRET from "./secret.js";
 import * as SOUND from "./sound.js";
+import * as UTILITY from "./utility.js";
 import { createPlayer } from "./object.js";
 
 let player = undefined;
@@ -14,22 +15,26 @@ export function reset() {
 }
 
 export function initialize(i, j) {
-    let brightness;
-    if (!player || getBrightness() === 0) {
-        brightness = 1;
-        player = createPlayer(i, j, [0.1, 0.1, 0], 2, "dot");
-        player.lightReserves = 5;
-        player.lightReservesMax = CONSTANTS.PLAYER_LIGHT_RESERVES_MAX_DOT;
-    } else {
-        brightness = getBrightness();
-        const oldReserves = player.lightReserves;
-        player = createPlayer(i, j, [0.1, 0.1, 0], 2, player.form.ID);
-        player.lightReserves = oldReserves;
-        player.lightReservesMax = getLightReservesMax();
-    }
-    OVERLAY.setForm(player.form.ID);
+    const parameters = player ? {
+        brightness: getBrightness(),
+        color: player.light.color,
+        luminosity: getLuminosity(),
+        luminosityMax: getLuminosityMax(),
+        formID: player.form.ID
+    } : {
+        brightness: 1,
+        color: CONSTANTS.DOT_LIGHT_COLOR,
+        luminosity: CONSTANTS.PLAYER_LUMINOSITY_START,
+        luminosityMax: CONSTANTS.PLAYER_LUMINOSITY_MAX_START,
+        formID: "dot"
+    };
+
+    player = createPlayer(i, j, [0.1, 0.1, 0.1], 2, parameters.formID);
+    OVERLAY.setForm(parameters.formID);
+    player.luminosity = parameters.luminosity;
+    player.luminosityMax = parameters.luminosityMax;
     const center = getCenter();
-    player.light = LIGHT.create(center.x, center.y, [1, 1, 1, brightness]);
+    player.light = LIGHT.create(center.x, center.y, [parameters.color[0], parameters.color[1], parameters.color[2], parameters.brightness]);
     updateStatusLight();
 }
 
@@ -43,58 +48,69 @@ export function transform(formID) {
 }
 
 export function dropParticle() {
-    if (getBrightness() < getMaxBrightness() / 2
+    if (getLuminosity() < CONSTANTS.PLAYER_LUMINOSITY_MIN
+    || getBrightness() < getLuminosity()
     || player.light.isFlaring) return;
     const {x, y} = getLightPosition();
     
     if (MAP.isOnBeacon(player.form.nodes)
-    && SECRET.lightUpBeacon(x, y, [player.light.color[0], player.light.color[1], player.light.color[2], CONSTANTS.LIGHT_PARTICLE_BRIGHTNESS])) {
+    && SECRET.lightUpBeacon(x, y, [player.light.color[0], player.light.color[1], player.light.color[2], getBrightness()])) {
         player.light.brightness = 1;
-        updateStatusLight();
         SOUND.play("beacon1");
+        SOUND.play("particle");
         return;
     }
-    if (LIGHT.createParticle(x, y, [1.0, 1.0, 0.8, CONSTANTS.LIGHT_PARTICLE_BRIGHTNESS]) !== null) {
+    if (LIGHT.createParticle(x, y, [1.0, 1.0, 0.8, getBrightness()]) !== null) {
         player.light.brightness = 1;
-        updateStatusLight();
         SOUND.play("particle");
     };
 }
 
 export function flare() {
-    if (getBrightness() < 1) return;
+    if (getLuminosity() < CONSTANTS.PLAYER_LUMINOSITY_MIN
+    || player.light.isFlaring) return;
     player.light.flare(getBrightness() / 2, getBrightness() * 2);
+    player.luminosity = UTILITY.add(player.luminosity, - CONSTANTS.PLAYER_LUMINOSITY_HURT_FLARE);
     updateStatusLight();
     SOUND.play("flare");
 }
 
 export function move(counter) {
     if (counter % 10 === 0) {
-        const nearestBeacon = getNearestSecret("beacon", beacon => {
-            return beacon.light !== null;
-        });
-        if (nearestBeacon
-        && nearestBeacon.positionDist < 5
-        && player.lightReserves < player.lightReservesMax) {
-            player.lightReserves += CONSTANTS.PLAYER_LIGHT_BEACON_GROWTH;
-            updateStatusLight();
+        if (getLuminosity() < getLuminosityMax()) {
+            const nearestBeacon = getNearestSecret("beacon", beacon => {
+                return beacon.light !== null;
+            });
+
+            if (nearestBeacon
+            && nearestBeacon.positionDist < 5) {
+                if (getLuminosity() + CONSTANTS.PLAYER_LUMINOSITY_GROWTH < getLuminosityMax()) {
+                    player.luminosity = UTILITY.add(player.luminosity, CONSTANTS.PLAYER_LUMINOSITY_GROWTH);
+                } else {
+                    player.luminosity = getLuminosityMax();
+                }
+
+                updateStatusLight();
+            }
         }
-        if (getBrightness() < getMaxBrightness()) {
+
+        if (getBrightness() < getLuminosity()) {
             const gain = getBrightness() * CONSTANTS.PLAYER_LIGHT_GROWTH_FACTOR;
-            if (gain < player.lightReserves) {
+
+            if (getBrightness() + gain < getLuminosity()) {
                 player.light.changeBrightness(gain);
-                player.lightReserves -= gain;
             } else {
-                player.light.changeBrightness(player.lightReserves);
-                player.lightReserves = 0;
+                player.light.brightness = getLuminosity();
             }
         }
     }
+
     if (player.move(counter)) {
         const center = getCenter();
         player.light.position = {x: center.x, y: center.y};
         return MAP.isOnExit(player.form.nodes);
     }
+
     return false;
 }
 
@@ -154,35 +170,25 @@ export function getLightPosition() {
     return player.light.position;
 }
 
-function getMaxBrightness() {
-    switch (player.form.ID) {
-        case "dot": return CONSTANTS.PLAYER_LIGHT_MAX_BRIGHTNESS_DOT;
-        case "box": return CONSTANTS.PLAYER_LIGHT_MAX_BRIGHTNESS_BOX;
-        case "snake": return CONSTANTS.PLAYER_LIGHT_MAX_BRIGHTNESS_SNAKE;
-        default: console.log("Unknown player form."); return;
-    }
+function getLuminosity() {
+    return player.luminosity;
+}
+
+function getLuminosityMax() {
+    return player.luminosityMax;
 }
 
 export function getBrightness() {
     return player.light.brightness;
 }
 
-export function increaseBrightness() {
-    player.lightReserves += CONSTANTS.PLAYER_LIGHT_HEAL;
+export function heal() {
+    player.luminosity = UTILITY.add(player.luminosity, CONSTANTS.PLAYER_LUMINOSITY_HEAL);
     updateStatusLight();
 }
 
 function updateStatusLight() {
-    OVERLAY.setLight([player.light.color[0], player.light.color[1], player.light.color[2], getBrightness() + player.lightReserves]);
-}
-
-function getLightReservesMax() {
-    switch (player.form.ID) {
-        case "dot": return CONSTANTS.PLAYER_LIGHT_RESERVES_MAX_DOT;
-        case "box": return CONSTANTS.PLAYER_LIGHT_RESERVES_MAX_BOX;
-        case "snake": return CONSTANTS.PLAYER_LIGHT_RESERVES_MAX_SNAKE;
-        default: console.log("Unknown player form."); return;
-    }
+    OVERLAY.setLight([player.light.color[0], player.light.color[1], player.light.color[2], getLuminosity()]);
 }
 
 export function hurt() {
@@ -191,9 +197,13 @@ export function hurt() {
     ANIMATION.playSparks(x, y, baseColor);
     SOUND.play("hurt", true);
 
-    player.light.changeBrightness(-CONSTANTS.PLAYER_LIGHT_HURT);
+    player.luminosity = UTILITY.add(player.luminosity, - CONSTANTS.PLAYER_LUMINOSITY_HURT_HIT);
+    if (getBrightness() > getLuminosity()) {
+        player.light.brightness = getLuminosity();
+    }
+
     updateStatusLight();
-    return getBrightness() === 0;
+    return getLuminosity() <= 0;
 }
 
 export function getNearestSecret(secretID, pred) {

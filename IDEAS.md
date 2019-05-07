@@ -2,13 +2,25 @@
 
 ## Player
 
-* dropping a particle is dangerous since it lowers the player's light
+* the player has a certain luminosity
+    * enemies take luminosity from the player
+    * if the luminosity reaches zero the player dies
+    * star fragments and beacons replenish luminosity to a maximum value
+    * special items can increase maximum luminosity
+    * what happens when maximum luminosity is reached? can the player still collect star fragments?
+    * it has to be very clear to the player when maximum luminosity is reached
 
 ## Items
 
 * star fragments instead of coins and health items
 
 * star fragments replenish the player's light
+
+* sendlights are common and useful for misleading enemies
+
+* special particles that are brighter and longer lasting
+
+* rare weaponized lights for killing enemies and Maw
 
 ## Secrets
 
@@ -17,6 +29,8 @@
     * the colors represent the forms you can change into
 
 * wisps can be collected for light and items
+
+* flaring can show secrets
 
 ## Obstacles
 
@@ -63,6 +77,18 @@
 * special maps on random levels
     * preceding levels tease this with sound and objects
 
+* grove with star fragments
+
+* invisible items revealed by flare
+
+* crystal-encased items obtainable with the help of flare
+
+## Objects
+
+* plants that block the view from above
+    * lit from "below"
+    * hiding place from enemies
+
 # GUI
 
 * game options
@@ -73,6 +99,8 @@
 # Graphics
 
 * different terrain colors for different level types
+
+* flare animation: spreading sparkling ring
 
 # Story
 

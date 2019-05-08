@@ -269,6 +269,34 @@ export function addSendlight(number) {
     changeItemNumber("sendlight", 1);
 }
 
+function useColoredLightFunction(color) {
+    const id = `${color}light`;
+    return function useColoredLight() {
+        PLAYER.setLightColor(color);
+        changeItemNumber(id, -1);
+    };
+}
+
+export function addColoredLight(color, number) {
+    const id = `${color}light`;
+    if (inventory.indices[id] !== undefined) {
+        changeItemNumber(id, number === undefined ? 1 : number);
+        return;
+    }
+
+    const coloredLight = {
+        index: inventory.items.length,
+        id,
+        name: `${color} light`,
+        number: number === undefined ? 0 : number - 1,
+        use: useColoredLightFunction(color)
+    };
+
+    inventory.indices[id] = coloredLight.index;
+    inventory.items.push(coloredLight);
+    changeItemNumber(id, 1);
+}
+
 export function useItem() {
     if (inventory.activeIndex === -1) return;
     inventory.items[inventory.activeIndex].use();

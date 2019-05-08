@@ -207,6 +207,7 @@ function keyDownGame(event) {
         case 66://b
             INVENTORY.addHintlight(5);
             INVENTORY.addSendlight(5);
+            INVENTORY.addColoredLight([Math.random(), Math.random(), Math.random()]);
             break;
     }
 }

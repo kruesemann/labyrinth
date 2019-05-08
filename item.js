@@ -1,6 +1,7 @@
 import * as GAME from "./game.js";
 import * as INVENTORY from "./inventory.js";
 import * as MAPUTIL from "./mapUtil.js";
+import * as NOISE from "./noise.js";
 import * as PLAYER from "./player.js";
 import * as SECRET from "./secret.js";
 import * as SHADER from "./shader.js";
@@ -11,7 +12,7 @@ let items = {};
 
 class Item {
     constructor(position, color) {
-        this._uuid = `item${position.x}${position.y}${Date.now()}`;
+        this._uuid = NOISE.createUuid();
         if (items[this.uuid]) return;
         if (color) {
             this._color = color;
@@ -44,6 +45,37 @@ class Item {
 
     get uuid() {
         return this._uuid;
+    }
+
+    get color() {
+        return this._color;
+    }
+
+    set color(newColor) {
+        this._color = newColor;
+        if (this._mesh) STAGE.removeMesh(this._mesh);
+
+        const vertices = [
+            0.25, 0.25, 0.01,
+            0.75, 0.25, 0.01,
+            0.25, 0.75, 0.01,
+            0.75, 0.25, 0.01,
+            0.75, 0.75, 0.01,
+            0.25, 0.75, 0.01,
+        ];
+        
+        const colors = [];
+        for (let k = 0; k < 6; ++k) {
+            colors.push(newColor[0]);
+            colors.push(newColor[1]);
+            colors.push(newColor[2]);
+        }
+        const geometry = new THREE.BufferGeometry();
+        geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+        geometry.addAttribute('a_color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+
+        this._mesh = new THREE.Mesh(geometry, SHADER.getObjectMaterial());
+        STAGE.addMesh(this._mesh);
     }
 
     set position(newPosition) {
@@ -86,6 +118,14 @@ function addCoinCollectFunction(coin) {
     };
 }
 
+function addColoredLightCollectFunction(coloredLight) {
+    coloredLight.collect = function() {
+        this.position = {x: 0, y: 0};
+        INVENTORY.addColoredLight(this.color);
+        this.remove();
+    };
+}
+
 function addWispCollectFunction(wisp, uuid) {
     wisp.collect = function() {
         this.position = {x: 0, y: 0};
@@ -100,6 +140,12 @@ export function createCoin(i, j) {
     const coin = create(i, j, [0.75, 0.75, 0]);
     addCoinCollectFunction(coin);
     return coin;
+}
+
+export function createColoredLight(i, j, color) {
+    const coloredLight = create(i, j, color);
+    addColoredLightCollectFunction(coloredLight);
+    return coloredLight;
 }
 
 export function createShrine(i, j) {
@@ -126,10 +172,11 @@ export function collectItemsUnderPlayer() {
     const itemSize = 1;
     const pNodes = PLAYER.get().form.nodes;
 
-    for (const pNode of pNodes) {
-        for (const uuid in items) {
-            if (!items.hasOwnProperty(uuid)) continue;
-            const item = items[uuid];
+    for (const uuid in items) {
+        if (!items.hasOwnProperty(uuid)) continue;
+        const item = items[uuid];
+
+        for (const pNode of pNodes) {
 
             if (pNode.x >= item.position.x && pNode.x < item.position.x + itemSize) {
                 if (pNode.y >= item.position.y && pNode.y < item.position.y + itemSize) {

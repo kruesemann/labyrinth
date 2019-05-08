@@ -1166,6 +1166,22 @@ function placeSecrets() {
             index = (index + 1) % (generationData.gridRows * generationData.gridColumns);
         }
     }
+
+    // invisibles
+    const numInvisibles = Math.floor(NOISE.random() * 5);
+
+    for (let i = 0; i < numInvisibles; ++i) {
+        let index = Math.floor(NOISE.random() * (generationData.gridRows * generationData.gridColumns - 1));
+        for (let j = 0; j < generationData.gridRows * generationData.gridColumns; ++j) {
+            if (generationData.locationGrid[index] !== 0) {
+                const color = [NOISE.random(), NOISE.random(), NOISE.random()];
+                features.secrets.push({type: "coloredLight", i: generationData.locationGrid[index].i, j: generationData.locationGrid[index].j, color, invisible: true});
+                generationData.locationGrid[index] = 0;
+                break;
+            }
+            index = (index + 1) % (generationData.gridRows * generationData.gridColumns);
+        }
+    }
 }
 
 /**

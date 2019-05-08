@@ -1,4 +1,3 @@
-import * as ANIMATION from "./animation.js";
 import * as CONSTANTS from "./constants.js";
 import * as LIGHT from "./light.js";
 import * as MAP from "./map.js";
@@ -60,7 +59,7 @@ export function dropParticle() {
         SOUND.play("particle");
         return;
     }
-    if (LIGHT.createParticle(x, y, [1.0, 1.0, 0.8, getBrightness()]) !== null) {
+    if (LIGHT.createParticle(x, y, [player.light.color[0], player.light.color[1], player.light.color[2], getBrightness()]) !== null) {
         player.light.brightness = 1;
         SOUND.play("particle");
     };
@@ -73,6 +72,8 @@ export function flare() {
     player.luminosity = UTILITY.add(player.luminosity, - CONSTANTS.PLAYER_LUMINOSITY_HURT_FLARE);
     updateStatusLight();
     SOUND.play("flare");
+
+    SECRET.showInvisibles(getHead(), 25);
 }
 
 export function move(counter) {
@@ -170,6 +171,15 @@ export function getLightPosition() {
     return player.light.position;
 }
 
+export function getLightColor() {
+    return player.light.color;
+}
+
+export function setLightColor(color) {
+    player.light.color = color;
+    updateStatusLight();
+}
+
 function getLuminosity() {
     return player.luminosity;
 }
@@ -192,9 +202,6 @@ function updateStatusLight() {
 }
 
 export function hurt() {
-    const {x, y} = getCenter();
-    const baseColor = player.light.color;
-    ANIMATION.playSparks(x, y, baseColor);
     SOUND.play("hurt", true);
 
     player.luminosity = UTILITY.add(player.luminosity, - CONSTANTS.PLAYER_LUMINOSITY_HURT_HIT);

@@ -1,5 +1,6 @@
 import * as CONSTANTS from "./constants.js";
 import * as MAP from "./map.js";
+import * as NOISE from "./noise.js";
 import * as PLAYER from "./player.js";
 import * as SECRET from "./secret.js";
 import * as SHADER from "./shader.js";
@@ -13,7 +14,7 @@ let lightingMap = {
 
 class Light {
     constructor(position, color, brightness, flickering, fading) {
-        this._uuid = `light${position.x}${position.y}${Date.now()}`;
+        this._uuid = NOISE.createUuid();
         this._uniformIndex = -1;
         this._position = position;
         this._color = color;
@@ -292,6 +293,7 @@ function assignUniformIndices(counter) {
 export function renderLighting(counter) {
     assignUniformIndices(counter);
     SECRET.gleamAllWisps(counter);
+    SECRET.gleamAllInvisibles(counter);
     flickerAll(counter);
 
     const {x, y} = PLAYER.getCenter();

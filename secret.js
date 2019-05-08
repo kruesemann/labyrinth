@@ -5,25 +5,28 @@ import * as ITEM from "./item.js";
 import * as LIGHT from "./light.js";
 import * as MAPUTIL from "./mapUtil.js";
 import * as NOISE from "./noise.js";
+import * as PLAYER from "./player.js";
 import * as SOUND from "./sound.js";
 
 let secrets = {
     shrines: {},
     wisps: {},
-    beacons: {}
+    beacons: {},
+    invisibles: {}
 };
 
 export function reset() {
     secrets = {
         shrines: {},
         wisps: {},
-        beacons: {}
+        beacons: {},
+        invisibles: {}
     };
 }
 
 function createShrine(i, j, formIDs) {
     const {x, y} = MAPUTIL.tileToCenter(i, j);
-    const uuid = `shrine${x}${y}${Date.now()}`;
+    const uuid = NOISE.createUuid();
 
     const shrine = {
         uuid,
@@ -35,7 +38,7 @@ function createShrine(i, j, formIDs) {
             {text: "This is a shrine. You can change form here."},
             {text: "Hold down <b>SPACE</b> and do a little dance."},
             {text: "The snake form requires this dance: <b>DOWN RIGHT UP LEFT</b>", trigger: function() {
-                ANIMATION.playSnakeDance(x, y);
+                ANIMATION.playSnakeDance({x, y});
             }}
         ])
     };
@@ -54,8 +57,8 @@ function addWispMemberFunctions(wisp) {
         const x = this.x + CONSTANTS.LIGHT_WISP_JUMP * (Math.random() - 0.5);
         const y = this.y + CONSTANTS.LIGHT_WISP_JUMP * (Math.random() - 0.5);
         this.set(x, y);
-        this.color[3] = Math.floor(NOISE.random() * (CONSTANTS.LIGHT_WISP_BRIGHTNESS_MAX - CONSTANTS.LIGHT_WISP_BRIGHTNESS_MIN)) + CONSTANTS.LIGHT_WISP_BRIGHTNESS_MIN;
-        this.interval = Math.floor(NOISE.random() * (CONSTANTS.LIGHT_WISP_INTERVAL_MAX - CONSTANTS.LIGHT_WISP_INTERVAL_MIN)) + CONSTANTS.LIGHT_WISP_INTERVAL_MIN;
+        this.color[3] = Math.floor(Math.random() * (CONSTANTS.LIGHT_WISP_BRIGHTNESS_MAX - CONSTANTS.LIGHT_WISP_BRIGHTNESS_MIN)) + CONSTANTS.LIGHT_WISP_BRIGHTNESS_MIN;
+        this.interval = Math.floor(Math.random() * (CONSTANTS.LIGHT_WISP_INTERVAL_MAX - CONSTANTS.LIGHT_WISP_INTERVAL_MIN)) + CONSTANTS.LIGHT_WISP_INTERVAL_MIN;
         this.gleaming = true;
         SOUND.loop("wisp1", 10, {x, y}, 40);
     };
@@ -93,7 +96,7 @@ function addWispMemberFunctions(wisp) {
 
 function createWisp(i, j, color, change) {
     const {x, y} = MAPUTIL.tileToCenter(i, j);
-    const uuid = `wisp${x}${y}${Date.now()}`;
+    const uuid = NOISE.createUuid();
 
     const wisp = {
         uuid,
@@ -102,7 +105,7 @@ function createWisp(i, j, color, change) {
         light: LIGHT.create(x, y, [color[0], color[1], color[2], 0]),
         item: ITEM.createWisp(i, j, uuid),
         color,
-        interval: Math.floor(NOISE.random() * (CONSTANTS.LIGHT_WISP_INTERVAL_MAX - CONSTANTS.LIGHT_WISP_INTERVAL_MIN)) + CONSTANTS.LIGHT_WISP_INTERVAL_MIN,
+        interval: Math.floor(Math.random() * (CONSTANTS.LIGHT_WISP_INTERVAL_MAX - CONSTANTS.LIGHT_WISP_INTERVAL_MIN)) + CONSTANTS.LIGHT_WISP_INTERVAL_MIN,
         change,
         gleaming: false
     };
@@ -133,7 +136,7 @@ function addBeaconMemberFunctions(beacon, x, y) {
 
 function createBeacon(i, j) {
     const {x, y} = MAPUTIL.tileToCenter(i, j);
-    const uuid = `beacon${x}${y}${Date.now()}`;
+    const uuid = NOISE.createUuid();
 
     const beacon = {
         uuid,
@@ -147,12 +150,30 @@ function createBeacon(i, j) {
     secrets.beacons[uuid] = beacon;
 }
 
+function createColoredLight(i, j, color, invisible) {
+    const position = MAPUTIL.tileToCenter(i, j);
+    const uuid = NOISE.createUuid();
+
+    const coloredLight = {
+        uuid,
+        position,
+        color,
+        item: invisible ? ITEM.createColoredLight(0, 0) : ITEM.createColoredLight(i, j, color),
+    };
+    
+    if (invisible) {
+        coloredLight.interval = Math.floor(Math.random() * (CONSTANTS.INVISIBLE_GLEAM_INTERVAL_MAX - CONSTANTS.INVISIBLE_GLEAM_INTERVAL_MIN)) + CONSTANTS.INVISIBLE_GLEAM_INTERVAL_MIN;
+        secrets.invisibles[uuid] = coloredLight;
+    }
+}
+
 export function createSecrets(secretList) {
     for (const secret of secretList) {
         switch(secret.type) {
             case "shrine": createShrine(secret.i, secret.j, secret.formIDs); break;
             case "wisp": createWisp(secret.i, secret.j, secret.color, secret.change); break;
             case "beacon": createBeacon(secret.i, secret.j); break;
+            case "coloredLight": createColoredLight(secret.i, secret.j, secret.color, secret.invisible); break;
             default: console.log("Unknown secret"); break;
         }
     }
@@ -178,12 +199,43 @@ export function lightUpBeacon(x, y, baseColor) {
 
 export function gleamAllWisps(counter) {
     for (const uuid in secrets.wisps) {
+        if (!secrets.wisps.hasOwnProperty(uuid)) continue;
         const wisp = secrets.wisps[uuid];
         if (counter % wisp.interval === 0) {
             wisp.startGleam();
         }
         if (counter % CONSTANTS.LIGHT_WISP_INTERVAL === 0) {
             wisp.gleam();
+        }
+    }
+}
+
+export function showInvisibles(position, radius) {
+    for (const uuid in secrets.invisibles) {
+        if (!secrets.invisibles.hasOwnProperty(uuid)) continue;
+        const invisible = secrets.invisibles[uuid];
+
+        const dist = Math.hypot(invisible.position.x - position.x, invisible.position.y - position.y);
+        if (dist <= radius) {
+            invisible.item.color = invisible.color;
+            invisible.item.position = invisible.position;
+            delete secrets.invisibles[uuid];
+        }
+    }
+}
+
+export function gleamAllInvisibles(counter) {
+    for (const uuid in secrets.invisibles) {
+        if (!secrets.invisibles.hasOwnProperty(uuid)) continue;
+        const invisible = secrets.invisibles[uuid];
+        const playerPos = PLAYER.getHead();
+
+        if (counter % invisible.interval !== 0) continue;
+        invisible.interval = Math.floor(Math.random() * (CONSTANTS.INVISIBLE_GLEAM_INTERVAL_MAX - CONSTANTS.INVISIBLE_GLEAM_INTERVAL_MIN)) + CONSTANTS.INVISIBLE_GLEAM_INTERVAL_MIN;
+        
+        const dist = Math.hypot(invisible.position.x - playerPos.x, invisible.position.y - playerPos.y);
+        if (dist <= 25) {
+            ANIMATION.playGleam(invisible.position, [1, 1, 1, 10]);
         }
     }
 }
@@ -197,6 +249,7 @@ export function getNearestSecret(position, secretID, pred) {
         case "shrine": list = secrets.shrines; break;
         case "wisp": list = secrets.wisps; break;
         case "beacon": list = secrets.beacons; break;
+        case "invisible": list = secrets.invisibles; break;
         default: console.log("Unknown secret."); return;
     }
 

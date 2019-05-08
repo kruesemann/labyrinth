@@ -1,94 +1,84 @@
 import * as CONSTANTS from "./constants.js";
+import * as NOISE from "./noise.js";
 import * as SHADER from "./shader.js";
 import * as STAGE from "./stage.js";
 
 let animations = {};
-let runningAnimations = [];
 
 export function reset() {
     stopAllRunning();
-
     animations = {};
-    runningAnimations = [];
 }
 
 export function stopAllRunning() {
-    for (const animation of runningAnimations) {
+    for (const uuid in animations) {
+        if (!animations.hasOwnProperty(uuid)) continue;
+        const animation = animations[uuid];
         animation.onEnd();
     }
-} 
-
-function playDance(x, y, width, height, animationID, danceMoves) {
-    const vertices = [
-            0,      0, 0.03,
-        width,      0, 0.03,
-            0, height, 0.03,
-        width,      0, 0.03,
-        width, height, 0.03,
-            0, height, 0.03,
-    ];
-
-    const geometry = new THREE.BufferGeometry();
-    geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
-
-    const animation = new THREE.Mesh(geometry, SHADER.getAnimationDanceMaterial());
-    animation.position.x = x - width / 2;
-    animation.position.y = y - height / 2;
-
-    SHADER.animationDanceUniforms.u_moves.value = new Float32Array(danceMoves);
-
-    if (animations[animationID]) STAGE.removeMesh(animations[animationID]);
-    STAGE.addMesh(animation);
-    animations[animationID] = animation;
 }
 
-function endSnakeDance() {
-    STAGE.removeMesh(animations["snakeDance"]);
-    animations["snakeDance"] = undefined;
+function onEndFunction(uuid) {
+    return function() {
+        STAGE.removeMesh(animations[uuid].mesh);
+        delete animations[uuid];
+    };
 }
 
-export function playSnakeDance(x, y) {
-    SHADER.animationDanceUniforms.u_counter.value = 0;
+class DanceAnimation {
+    constructor(position, danceMoves) {
+        this._uuid = NOISE.createUuid();
+        this._startTime = Date.now();
+        this._time = 2 * CONSTANTS.ANIMATION_DANCE_FADE_TIME + CONSTANTS.ANIMATION_DANCE_TIME;
+        this._uniforms = {
+            u_counter: {type: 'float', value: 0},
+            u_moves: {type: 'vec2', value: new Float32Array(danceMoves)},
+        };
+        this.onEnd = onEndFunction(this._uuid);
 
-    playDance(x, y, 5, 5, "snakeDance", [
+        const geometry = new THREE.BufferGeometry();
+        geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array([
+                                         0,                              0, 0.03,
+            CONSTANTS.ANIMATION_DANCE_SIZE,                              0, 0.03,
+                                         0, CONSTANTS.ANIMATION_DANCE_SIZE, 0.03,
+            CONSTANTS.ANIMATION_DANCE_SIZE,                              0, 0.03,
+            CONSTANTS.ANIMATION_DANCE_SIZE, CONSTANTS.ANIMATION_DANCE_SIZE, 0.03,
+                                         0, CONSTANTS.ANIMATION_DANCE_SIZE, 0.03,
+        ]), 3));
+
+        this._mesh = new THREE.Mesh(geometry, SHADER.getAnimationDanceMaterial(this.uniforms));
+        this._mesh.position.x = position.x - CONSTANTS.ANIMATION_DANCE_SIZE / 2;
+        this._mesh.position.y = position.y - CONSTANTS.ANIMATION_DANCE_SIZE / 2;
+
+        STAGE.addMesh(this.mesh);
+        animations[this._uuid] = this;
+    }
+
+    get startTime() {
+        return this._startTime;
+    }
+
+    get uniforms() {
+        return this._uniforms;
+    }
+
+    get mesh() {
+        return this._mesh;
+    }
+}
+
+export function playSnakeDance(position) {
+    new DanceAnimation(position, [
         -0.4,  0.4,
         -0.4, -0.4,
          0.4, -0.4,
          0.4,  0.4,
         -0.4,  0.4,
     ]);
-
-    runningAnimations.push({
-        uniformsID: "animationDanceUniforms",
-        startTime: Date.now(),
-        time: 2 * CONSTANTS.ANIMATION_DANCE_FADE_TIME + CONSTANTS.ANIMATION_DANCE_TIME,
-        onEnd: endSnakeDance,
-    });
 }
 
-function endSparks() {
-    STAGE.removeMesh(animations["sparks"]);
-    animations["sparks"] = undefined;
-}
-
-export function playSparks(x, y, baseColor) {
-    if (animations["sparks"]) return;
-
-    const vertices = [
-                                      0,                               0, 0.03,
-        CONSTANTS.ANIMATION_SPARKS_SIZE,                               0, 0.03,
-                                      0, CONSTANTS.ANIMATION_SPARKS_SIZE, 0.03,
-        CONSTANTS.ANIMATION_SPARKS_SIZE,                               0, 0.03,
-        CONSTANTS.ANIMATION_SPARKS_SIZE, CONSTANTS.ANIMATION_SPARKS_SIZE, 0.03,
-                                      0, CONSTANTS.ANIMATION_SPARKS_SIZE, 0.03,
-    ];
-
-    const geometry = new THREE.BufferGeometry();
-    geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
-
-    const animation = new THREE.Mesh(geometry, SHADER.getAnimationSparksMaterial());
-    animation.position.x = x - CONSTANTS.ANIMATION_SPARKS_SIZE / 2;
-    animation.position.y = y - CONSTANTS.ANIMATION_SPARKS_SIZE / 2;
+export function playSparks(position, baseColor) {
+    const uuid = NOISE.createUuid();
 
     const directions = [];
     const colors = [];
@@ -106,29 +96,76 @@ export function playSparks(x, y, baseColor) {
         colors.push(Math.random() * 0.004 + 0.006);
     }
 
-    SHADER.animationSparksUniforms.u_counter.value = 0;
-    SHADER.animationSparksUniforms.u_directions.value = new Float32Array(directions);
-    SHADER.animationSparksUniforms.u_colors.value = new Float32Array(colors);
-
-    STAGE.addMesh(animation);
-    animations["sparks"] = animation;
-
-    runningAnimations.push({
-        uniformsID: "animationSparksUniforms",
+    const animation = {
+        uuid,
         startTime: Date.now(),
         time: CONSTANTS.ANIMATION_SPARKS_TIME,
-        onEnd: endSparks,
-    });
+        onEnd: onEndFunction(uuid),
+        uniforms: {
+            u_counter: {type: 'float', value: 0},
+            u_directions: {type: 'vec2', value: new Float32Array(directions)},
+            u_colors: {type: 'vec4', value: new Float32Array(colors)},
+        }
+    };
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array([
+                                      0,                               0, 0.03,
+        CONSTANTS.ANIMATION_SPARKS_SIZE,                               0, 0.03,
+                                      0, CONSTANTS.ANIMATION_SPARKS_SIZE, 0.03,
+        CONSTANTS.ANIMATION_SPARKS_SIZE,                               0, 0.03,
+        CONSTANTS.ANIMATION_SPARKS_SIZE, CONSTANTS.ANIMATION_SPARKS_SIZE, 0.03,
+                                      0, CONSTANTS.ANIMATION_SPARKS_SIZE, 0.03,
+    ]), 3));
+
+    animation.mesh = new THREE.Mesh(geometry, SHADER.getAnimationSparksMaterial(animation.uniforms));
+    animation.mesh.position.x = position.x - CONSTANTS.ANIMATION_SPARKS_SIZE / 2;
+    animation.mesh.position.y = position.y - CONSTANTS.ANIMATION_SPARKS_SIZE / 2;
+
+    STAGE.addMesh(animation.mesh);
+    animations[uuid] = animation;
+}
+
+export function playGleam(position, color) {
+    const uuid = NOISE.createUuid();
+
+    const animation = {
+        uuid,
+        startTime: Date.now(),
+        time: CONSTANTS.ANIMATION_GLEAM_TIME,
+        onEnd: onEndFunction(uuid),
+        uniforms: {
+            u_counter: {type: 'float', value: 0},
+            u_color: {type: 'vec4', value: new Float32Array(color)},
+        }
+    };
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array([
+                                     0,                              0, 0.03,
+        CONSTANTS.ANIMATION_GLEAM_SIZE,                              0, 0.03,
+                                     0, CONSTANTS.ANIMATION_GLEAM_SIZE, 0.03,
+        CONSTANTS.ANIMATION_GLEAM_SIZE,                              0, 0.03,
+        CONSTANTS.ANIMATION_GLEAM_SIZE, CONSTANTS.ANIMATION_GLEAM_SIZE, 0.03,
+                                     0, CONSTANTS.ANIMATION_GLEAM_SIZE, 0.03,
+    ]), 3));
+
+    animation.mesh = new THREE.Mesh(geometry, SHADER.getAnimationGleamMaterial(animation.uniforms));
+    animation.mesh.position.x = position.x - CONSTANTS.ANIMATION_GLEAM_SIZE / 2;
+    animation.mesh.position.y = position.y - CONSTANTS.ANIMATION_GLEAM_SIZE / 2;
+
+    STAGE.addMesh(animation.mesh);
+    animations[uuid] = animation;
 }
 
 export function animate() {
-    for (let i = 0; i < runningAnimations.length; ++i) {
-        const animation = runningAnimations[i];
-        if (SHADER[animation.uniformsID].u_counter.value >= animation.time) {
-            runningAnimations.splice(i--, 1);
+    for (const uuid in animations) {
+        if (!animations.hasOwnProperty(uuid)) continue;
+        const animation = animations[uuid];
+        if (animation.uniforms.u_counter.value >= animation.time) {
             animation.onEnd();
         } else {
-            SHADER[animation.uniformsID].u_counter.value = Date.now() - animation.startTime;
+            animation.uniforms.u_counter.value = Date.now() - animation.startTime;
         }
     }
 }

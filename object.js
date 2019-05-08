@@ -1,4 +1,5 @@
 import * as AI from "./ai.js";
+import * as ANIMATION from "./animation.js";
 import * as CONSTANTS from "./constants.js";
 import * as MAP from "./map.js";
 import * as MAPUTIL from "./mapUtil.js";
@@ -505,14 +506,18 @@ export function collisionWithPlayer() {
             for (const oNode of oNodes) {
                 if (pNode.x >= oNode.x && pNode.x < oNode.x + 1) {
                     if (pNode.y >= oNode.y && pNode.y < oNode.y + 1) {
+                        ANIMATION.playSparks(pNode, PLAYER.getLightColor());
                         return true;
                     } else if (pNode.y <= oNode.y && pNode.y + 1 > oNode.y) {
+                        ANIMATION.playSparks(pNode, PLAYER.getLightColor());
                         return true;
                     }
                 } else if (pNode.x <= oNode.x && pNode.x + 1 > oNode.x) {
                     if (pNode.y >= oNode.y && pNode.y < oNode.y + 1) {
+                        ANIMATION.playSparks(pNode, PLAYER.getLightColor());
                         return true;
                     } else if (pNode.y <= oNode.y && pNode.y + 1 > oNode.y) {
+                        ANIMATION.playSparks(pNode, PLAYER.getLightColor());
                         return true;
                     }
                 }

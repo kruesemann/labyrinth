@@ -421,8 +421,55 @@ void main(void) {
 }
 `;
 
+/**
+ * Animation gleam
+ */
+
+const animationGleamVSrc = `
+varying vec2 v_pos;
+
+void main(void) {
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    v_pos = position.xy;
+}
+`;
+
+const animationGleamFSrc = `
+#define TOTAL_TIME ${CONSTANTS.ANIMATION_GLEAM_TIME}
+#define HALF_TIME  ${CONSTANTS.ANIMATION_GLEAM_TIME / 2}
+#define SIZE       ${CONSTANTS.ANIMATION_GLEAM_SIZE}
+
+varying vec2 v_pos;
+
+uniform float u_gamma;
+uniform float u_counter;
+uniform vec4 u_color;
+
+void main(void) {
+    vec2 pos = v_pos.xy / vec2(float(SIZE)) - vec2(0.5);
+    pos *= 30.0;
+
+    gl_FragColor.rgb = u_color.rgb;
+    gl_FragColor.a = u_color.a / pow(sqrt(abs(pos.x)) + sqrt(abs(pos.y)), 4.0);
+
+    if (u_counter < float(HALF_TIME)) {
+        gl_FragColor.a *= pow(max(0.0, u_counter / float(TOTAL_TIME)), 4.0);
+    } else {
+        gl_FragColor.a *= pow(max(0.0, (float(TOTAL_TIME) - u_counter) / float(TOTAL_TIME)), 4.0);
+    }
+
+    if (gl_FragColor.a < 0.01) gl_FragColor.a = 0.0;
+
+    gl_FragColor.r = pow(gl_FragColor.r, u_gamma);
+    gl_FragColor.g = pow(gl_FragColor.g, u_gamma);
+    gl_FragColor.b = pow(gl_FragColor.b, u_gamma);
+}
+`;
+
 // -------------------------------
 // UNIFORMS
+
+let u_gamma = {type: 'float', value: 1};
 
 /**
  * Map texture
@@ -450,7 +497,7 @@ export const mapLightingUniforms = {
  */
 
 export const mapUniforms = {
-    u_gamma: {type: 'float', value: 1},
+    u_gamma,
     u_texture: {type: 'sampler2D', value: undefined},
 };
 
@@ -459,7 +506,7 @@ export const mapUniforms = {
  */
 
 export const objectUniforms = {
-    u_gamma: {type: 'float', value: 1},
+    u_gamma,
     u_texture: {type: 'sampler2D', value: undefined},
     u_dimensions: {type: 'vec2', value: new Float32Array(2)},
     u_ambientLight: {type: 'vec3', value: new Float32Array([1.0, 1.0, 1.0, 1.0])},
@@ -468,64 +515,29 @@ export const objectUniforms = {
     u_lightPrecision: {type: 'float', value: 1},
 };
 
-/**
- * Animation dance
- */
-
-export const animationDanceUniforms = {
-    u_gamma: {type: 'float', value: 1},
-    u_counter: {type: 'float', value: 0},
-    u_moves: {type: 'vec2', value: new Float32Array(10)},
-};
-
-/** 
- * Animations sparks
- */
-
-export const animationSparksUniforms = {
-    u_gamma: {type: 'float', value: 1},
-    u_counter: {type: 'float', value: 0},
-    u_directions: {type: 'vec2', value: new Float32Array(24)},
-    u_colors: {type: 'vec4', value: new Float32Array(48)},
-};
-
 // -------------------------------
 // MATERIALS
 
 const materials = {
     mapTexture: new THREE.ShaderMaterial({
-        uniforms: mapTextureUniforms,
+        uniforms:       mapTextureUniforms,
         vertexShader:   mapTextureVSrc,
         fragmentShader: mapTextureFSrc,
     }),
     mapLighting: new THREE.ShaderMaterial({
-        uniforms: mapLightingUniforms,
+        uniforms:       mapLightingUniforms,
         vertexShader:   mapLightingVSrc,
         fragmentShader: mapLightingFSrc,
     }),
     map: new THREE.ShaderMaterial({
-        uniforms: mapUniforms,
+        uniforms:       mapUniforms,
         vertexShader:   mapVSrc,
         fragmentShader: mapFSrc,
     }),
     object: new THREE.ShaderMaterial({
-        uniforms: objectUniforms,
+        uniforms:       objectUniforms,
         vertexShader:   objectVSrc,
         fragmentShader: objectFSrc,
-    }),
-    animationDance: new THREE.ShaderMaterial({
-        uniforms: animationDanceUniforms,
-        vertexShader:   animationDanceVSrc,
-        fragmentShader: animationDanceFSrc,
-        depthWrite: false,
-        transparent: true,
-    }),
-    animationSparks: new THREE.ShaderMaterial({
-        uniforms: animationSparksUniforms,
-        vertexShader:   animationSparksVSrc,
-        fragmentShader: animationSparksFSrc,
-        depthWrite: false,
-        transparent: true,
     })
 };
 
@@ -545,23 +557,46 @@ export function getObjectMaterial() {
     return materials.object;
 }
 
-export function getAnimationDanceMaterial() {
-    return materials.animationDance;
+export function getAnimationDanceMaterial(uniforms) {
+    uniforms.u_gamma = u_gamma;
+    return new THREE.ShaderMaterial({
+        uniforms,
+        vertexShader: animationDanceVSrc,
+        fragmentShader: animationDanceFSrc,
+        depthWrite: false,
+        transparent: true,
+    });
 }
 
-export function getAnimationSparksMaterial() {
-    return materials.animationSparks;
+export function getAnimationSparksMaterial(uniforms) {
+    uniforms.u_gamma = u_gamma;
+    return new THREE.ShaderMaterial({
+        uniforms,
+        vertexShader: animationSparksVSrc,
+        fragmentShader: animationSparksFSrc,
+        depthWrite: false,
+        transparent: true,
+    });
+}
+
+export function getAnimationGleamMaterial(uniforms) {
+    uniforms.u_gamma = u_gamma;
+    return new THREE.ShaderMaterial({
+        uniforms,
+        vertexShader: animationGleamVSrc,
+        fragmentShader: animationGleamFSrc,
+        depthWrite: false,
+        transparent: true,
+    });
 }
 
 // -------------------------------
 // GENERAL
 
 export function getGamma() {
-    return mapUniforms.u_gamma.value;
+    return u_gamma.value;
 }
 
 export function setGamma(gamma) {
-    mapUniforms.u_gamma.value = gamma;
-    objectUniforms.u_gamma.value = gamma;
-    animationDanceUniforms.u_gamma.value = gamma;
+    u_gamma.value = gamma;
 }

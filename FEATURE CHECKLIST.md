@@ -107,6 +107,7 @@
 - [ ] Level fade
 - [ ] Effects
     - [x] Hit sparks
+    - [x] Invisible item gleam
     - [x] Snake dance animation
     - [ ] Other dance animations
     - [ ] Healing
@@ -127,3 +128,6 @@
 - [ ] Dialog
     - [ ] Text
     - [ ] Sound
+
+# Bugs
+- [ ] Seed 879960546978, Level 1, aStar

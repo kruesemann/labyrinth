@@ -1175,7 +1175,30 @@ function placeSecrets() {
         for (let j = 0; j < generationData.gridRows * generationData.gridColumns; ++j) {
             if (generationData.locationGrid[index] !== 0) {
                 const color = [NOISE.random(), NOISE.random(), NOISE.random()];
-                features.secrets.push({type: "coloredLight", i: generationData.locationGrid[index].i, j: generationData.locationGrid[index].j, color, invisible: true});
+                features.secrets.push({type: "invisible", i: generationData.locationGrid[index].i, j: generationData.locationGrid[index].j, item: {type: "coloredLight", color}});
+                generationData.locationGrid[index] = 0;
+                break;
+            }
+            index = (index + 1) % (generationData.gridRows * generationData.gridColumns);
+        }
+    }
+
+    // particle puzzles
+    const numParticlePuzzles = 1;
+
+    for (let i = 0; i < numParticlePuzzles; ++i) {
+        let index = Math.floor(NOISE.random() * (generationData.gridRows * generationData.gridColumns - 1));
+        for (let j = 0; j < generationData.gridRows * generationData.gridColumns; ++j) {
+            const tile = generationData.locationGrid[index];
+            if (tile !== 0) {
+                const points = [
+                    {i: tile.i + 3, j: tile.j},
+                    {i: tile.i - 3, j: tile.j}
+                ];
+                for (const point of points) {
+                    getTile(point.i, point.j).type = CONSTANTS.TILE_PAVED;
+                }
+                features.secrets.push({type: "particlePuzzle", i: tile.i, j: tile.j, points, item: {type: "sendlight", brightness: 20}});
                 generationData.locationGrid[index] = 0;
                 break;
             }

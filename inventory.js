@@ -211,24 +211,26 @@ function useHintlight() {
     }, 0);
 }
 
-function useSendlight() {
-    const moving = PLAYER.get().moving;
-    if (!moving.left && !moving.up && !moving.right && !moving.down) return;
+function addUseSendlightFunction(sendlight, brightness) {
+    sendlight.use = function() {
+        const moving = PLAYER.get().moving;
+        if (!moving.left && !moving.up && !moving.right && !moving.down) return;
 
-    const {x, y} = PLAYER.getCenter();
-    const light = LIGHT.create(x, y, [1, 0.8, 0.5, CONSTANTS.LIGHT_SENDLIGHT_BRIGHTNESS]);
+        const {x, y} = PLAYER.getCenter();
+        const light = LIGHT.create(x, y, [1, 0.8, 0.2, brightness]);
 
-    if (light === null) return;
+        if (light === null) return;
 
-    light.moving = {left: moving.left, up: moving.up, right: moving.right, down: moving.down};
-    light.activeItemIndex = inventory.activeItems.length;
+        light.moving = {left: moving.left, up: moving.up, right: moving.right, down: moving.down};
+        light.activeItemIndex = inventory.activeItems.length;
 
-    addSendlightMoveStepFunction(light);
-    addMovingLightProcessFunction(light);
+        addSendlightMoveStepFunction(light);
+        addMovingLightProcessFunction(light);
 
-    inventory.activeItems.push(light);
-    changeItemNumber("sendlight", -1);
-    SOUND.play("particle");
+        inventory.activeItems.push(light);
+        changeItemNumber("sendlight", -1);
+        SOUND.play("particle");
+    };
 }
 
 export function addHintlight(number) {
@@ -250,7 +252,7 @@ export function addHintlight(number) {
     changeItemNumber("hintlight", 1);
 }
 
-export function addSendlight(number) {
+export function addSendlight(brightness, number) {
     if (inventory.indices["sendlight"] !== undefined) {
         changeItemNumber("sendlight", number === undefined ? 1 : number);
         return;
@@ -261,8 +263,8 @@ export function addSendlight(number) {
         id: "sendlight",
         name: "Send light",
         number: number === undefined ? 0 : number - 1,
-        use: useSendlight
     };
+    addUseSendlightFunction(sendlight, brightness);
 
     inventory.indices["sendlight"] = sendlight.index;
     inventory.items.push(sendlight);

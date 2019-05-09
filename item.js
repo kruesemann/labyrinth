@@ -126,6 +126,14 @@ function addColoredLightCollectFunction(coloredLight) {
     };
 }
 
+function addSendlightCollectFunction(sendlight) {
+    sendlight.collect = function() {
+        this.position = {x: 0, y: 0};
+        INVENTORY.addSendlight(this.color[3]);
+        this.remove();
+    };
+}
+
 function addWispCollectFunction(wisp, uuid) {
     wisp.collect = function() {
         this.position = {x: 0, y: 0};
@@ -148,6 +156,12 @@ export function createColoredLight(i, j, color) {
     return coloredLight;
 }
 
+export function createSendlight(i, j, brightness) {
+    const sendlight = create(i, j, [1, 0.8, 0.2, brightness]);
+    addSendlightCollectFunction(sendlight);
+    return sendlight;
+}
+
 export function createShrine(i, j) {
     const shrine = create(i, j, [0, 0.5, 0.75]);
     return shrine;
@@ -159,12 +173,19 @@ export function createWisp(i, j, uuid) {
     return wisp;
 }
 
+export function createItem(item) {
+    switch(item.type) {
+        case "coin": return createCoin(item.i, item.j);
+        case "coloredLight": return createColoredLight(item.i, item.j, item.color);
+        case "sendlight": return createSendlight(item.i, item.j, item.brightness);
+        default: console.log("Unknown item"); break;
+    }
+    return undefined;
+}
+
 export function createItems(itemList) {
     for (const item of itemList) {
-        switch(item.type) {
-            case "coin": createCoin(item.i, item.j); break;
-            default: console.log("Unknown item"); break;
-        }
+        createItem(item);
     }
 }
 

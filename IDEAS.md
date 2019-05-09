@@ -10,6 +10,8 @@
     * what happens when maximum luminosity is reached? can the player still collect star fragments?
     * it has to be very clear to the player when maximum luminosity is reached
 
+* second use for transformation dances
+
 ## Items
 
 * star fragments instead of coins and health items
@@ -57,6 +59,19 @@
 * form which only gradually changes directions
 
 * form with independent but connected heads
+
+## Factions
+
+* different factions the player can steal from or help
+    * weaponized light sometimes makes stealing worthwhile
+    * stealing will lower the player's reputation, helping will raise it
+    * hostile factions will attack, friendly ones give gifts
+
+* factions have special levels
+
+* factions can gain or lose power
+    * not through normal help
+    * powerful factions are encountered more often and they have more loot
 
 ## Goal
 

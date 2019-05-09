@@ -12,7 +12,8 @@ let secrets = {
     shrines: {},
     wisps: {},
     beacons: {},
-    invisibles: {}
+    invisibles: {},
+    particlePuzzles: {},
 };
 
 export function reset() {
@@ -20,25 +21,25 @@ export function reset() {
         shrines: {},
         wisps: {},
         beacons: {},
-        invisibles: {}
+        invisibles: {},
+        particlePuzzles: {},
     };
 }
 
 function createShrine(i, j, formIDs) {
-    const {x, y} = MAPUTIL.tileToCenter(i, j);
+    const position = MAPUTIL.tileToCenter(i, j);
     const uuid = NOISE.createUuid();
 
     const shrine = {
         uuid,
-        x,
-        y,
+        position,
         formIDs,
         item: ITEM.createShrine(i, j, uuid),
         hint: HINT.create(i, j, [
             {text: "This is a shrine. You can change form here."},
             {text: "Hold down <b>SPACE</b> and do a little dance."},
             {text: "The snake form requires this dance: <b>DOWN RIGHT UP LEFT</b>", trigger: function() {
-                ANIMATION.playSnakeDance({x, y});
+                ANIMATION.playSnakeDance(position);
             }}
         ])
     };
@@ -54,8 +55,8 @@ function addWispMemberFunctions(wisp) {
 
     wisp.startGleam = function() {
         if (this.gleaming) return;
-        const x = this.x + CONSTANTS.LIGHT_WISP_JUMP * (Math.random() - 0.5);
-        const y = this.y + CONSTANTS.LIGHT_WISP_JUMP * (Math.random() - 0.5);
+        const x = this.position.x + CONSTANTS.LIGHT_WISP_JUMP * (Math.random() - 0.5);
+        const y = this.position.y + CONSTANTS.LIGHT_WISP_JUMP * (Math.random() - 0.5);
         this.set(x, y);
         this.color[3] = Math.floor(Math.random() * (CONSTANTS.LIGHT_WISP_BRIGHTNESS_MAX - CONSTANTS.LIGHT_WISP_BRIGHTNESS_MIN)) + CONSTANTS.LIGHT_WISP_BRIGHTNESS_MIN;
         this.interval = Math.floor(Math.random() * (CONSTANTS.LIGHT_WISP_INTERVAL_MAX - CONSTANTS.LIGHT_WISP_INTERVAL_MIN)) + CONSTANTS.LIGHT_WISP_INTERVAL_MIN;
@@ -95,14 +96,13 @@ function addWispMemberFunctions(wisp) {
 }
 
 function createWisp(i, j, color, change) {
-    const {x, y} = MAPUTIL.tileToCenter(i, j);
+    const position = MAPUTIL.tileToCenter(i, j);
     const uuid = NOISE.createUuid();
 
     const wisp = {
         uuid,
-        x,
-        y,
-        light: LIGHT.create(x, y, [color[0], color[1], color[2], 0]),
+        position,
+        light: LIGHT.create(position.x, position.y, [color[0], color[1], color[2], 0]),
         item: ITEM.createWisp(i, j, uuid),
         color,
         interval: Math.floor(Math.random() * (CONSTANTS.LIGHT_WISP_INTERVAL_MAX - CONSTANTS.LIGHT_WISP_INTERVAL_MIN)) + CONSTANTS.LIGHT_WISP_INTERVAL_MIN,
@@ -124,10 +124,10 @@ export function removeWisp(uuid) {
     secrets.wisps[uuid].remove();
 }
 
-function addBeaconMemberFunctions(beacon, x, y) {
+function addBeaconMemberFunctions(beacon, position) {
     beacon.lightUp = function(baseColor) {
         if (this.light !== null) return false;
-        this.light = LIGHT.create(x, y, baseColor);
+        this.light = LIGHT.create(position.x, position.y, baseColor);
         if (this.light === null) return false;
         this.light.flare(CONSTANTS.LIGHT_BEACON_BRIGHTNESS, CONSTANTS.LIGHT_BEACON_FLARE);
         return true;
@@ -135,36 +135,63 @@ function addBeaconMemberFunctions(beacon, x, y) {
 }
 
 function createBeacon(i, j) {
-    const {x, y} = MAPUTIL.tileToCenter(i, j);
+    const position = MAPUTIL.tileToCenter(i, j);
     const uuid = NOISE.createUuid();
 
     const beacon = {
         uuid,
-        x,
-        y,
+        position,
         light: null
     };
 
-    addBeaconMemberFunctions(beacon, x, y);
+    addBeaconMemberFunctions(beacon, position);
 
     secrets.beacons[uuid] = beacon;
 }
 
-function createColoredLight(i, j, color, invisible) {
+function createInvisible(i, j, color, item) {
     const position = MAPUTIL.tileToCenter(i, j);
     const uuid = NOISE.createUuid();
 
-    const coloredLight = {
+    item.i = 0;
+    item.j = 0;
+    delete item.color;
+
+    const invisible = {
         uuid,
         position,
         color,
-        item: invisible ? ITEM.createColoredLight(0, 0) : ITEM.createColoredLight(i, j, color),
+        item: ITEM.createItem(item),
+        interval: Math.floor(Math.random() * (CONSTANTS.INVISIBLE_GLEAM_INTERVAL_MAX - CONSTANTS.INVISIBLE_GLEAM_INTERVAL_MIN)) + CONSTANTS.INVISIBLE_GLEAM_INTERVAL_MIN
     };
     
-    if (invisible) {
-        coloredLight.interval = Math.floor(Math.random() * (CONSTANTS.INVISIBLE_GLEAM_INTERVAL_MAX - CONSTANTS.INVISIBLE_GLEAM_INTERVAL_MIN)) + CONSTANTS.INVISIBLE_GLEAM_INTERVAL_MIN;
-        secrets.invisibles[uuid] = coloredLight;
-    }
+    secrets.invisibles[uuid] = invisible;
+}
+
+function addParticlePuzzleSolveFunction(particlePuzzle) {
+    particlePuzzle.solve = function() {
+        ITEM.createItem(this.item);
+        delete secrets.particlePuzzles[this.uuid];
+    };
+}
+
+function createParticlePuzzle(i, j, points, item) {
+    const position = MAPUTIL.tileToCenter(i, j);
+    const uuid = NOISE.createUuid();
+
+    item.i = i;
+    item.j = j;
+
+    const particlePuzzle = {
+        uuid,
+        position,
+        points,
+        item,
+    };
+
+    addParticlePuzzleSolveFunction(particlePuzzle);
+
+    secrets.particlePuzzles[uuid] = particlePuzzle;
 }
 
 export function createSecrets(secretList) {
@@ -173,7 +200,8 @@ export function createSecrets(secretList) {
             case "shrine": createShrine(secret.i, secret.j, secret.formIDs); break;
             case "wisp": createWisp(secret.i, secret.j, secret.color, secret.change); break;
             case "beacon": createBeacon(secret.i, secret.j); break;
-            case "coloredLight": createColoredLight(secret.i, secret.j, secret.color, secret.invisible); break;
+            case "invisible": createInvisible(secret.i, secret.j, secret.item.color, secret.item); break;
+            case "particlePuzzle": createParticlePuzzle(secret.i, secret.j, secret.points, secret.item); break;
             default: console.log("Unknown secret"); break;
         }
     }
@@ -187,7 +215,7 @@ export function lightUpBeacon(x, y, baseColor) {
         if (!secrets.beacons.hasOwnProperty(uuid)) continue;
         const beacon = secrets.beacons[uuid];
 
-        const dist = Math.hypot(beacon.x - x, beacon.y - y);
+        const dist = Math.hypot(beacon.position.x - x, beacon.position.y - y);
         if (dist < minDist) {
             nearestBeacon = beacon;
             minDist = dist;
@@ -224,7 +252,7 @@ export function showInvisibles(position, radius) {
     }
 }
 
-export function gleamAllInvisibles(counter) {
+function gleamAllInvisibles(counter) {
     for (const uuid in secrets.invisibles) {
         if (!secrets.invisibles.hasOwnProperty(uuid)) continue;
         const invisible = secrets.invisibles[uuid];
@@ -238,6 +266,36 @@ export function gleamAllInvisibles(counter) {
             ANIMATION.playGleam(invisible.position, [1, 1, 1, 10]);
         }
     }
+}
+
+function isParticle(light) {
+    return light.fading && light.flickering;
+}
+
+function isParticlePuzzleSolved(points) {
+    for (const point of points) {
+        if (!LIGHT.getLightsInRadius(MAPUTIL.tileToCenter(point.i, point.j), 1, isParticle).length) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function solveParticlePuzzles(counter) {
+    if (counter % 50 !== 0) return;
+
+    for (const uuid in secrets.particlePuzzles) {
+        if (!secrets.particlePuzzles.hasOwnProperty(uuid)) continue;
+        const particlePuzzle = secrets.particlePuzzles[uuid];
+
+        if (isParticlePuzzleSolved(particlePuzzle.points))
+            particlePuzzle.solve();
+    }
+}
+
+export function processSecrets(counter) {
+    gleamAllInvisibles(counter);
+    solveParticlePuzzles(counter);
 }
 
 export function getNearestSecret(position, secretID, pred) {
@@ -263,7 +321,7 @@ export function getNearestSecret(position, secretID, pred) {
             }
         }
 
-        const dist = Math.hypot(position.x - secret.x, position.y - secret.y);
+        const dist = Math.hypot(position.x - secret.position.x, position.y - secret.position.y);
         if (dist < minDist) {
             nearestSecret = secret;
             minDist = dist;

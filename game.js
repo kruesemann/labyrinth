@@ -9,6 +9,7 @@ import * as NOISE from "./noise.js";
 import * as OBJECT from "./object.js";
 import * as OVERLAY from "./overlay.js";
 import * as PLAYER from "./player.js";
+import * as SECRET from "./secret.js";
 import * as SOUND from "./sound.js";
 import * as STAGE from "./stage.js";
 
@@ -158,6 +159,7 @@ function gameloop() {
     }
     
     INVENTORY.processActiveItems(game.counter);
+    SECRET.processSecrets(game.counter);
     ITEM.collectItemsUnderPlayer();
     OBJECT.planEnemies(game.counter);
     OBJECT.moveEnemies(game.counter);

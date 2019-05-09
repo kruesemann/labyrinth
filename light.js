@@ -293,7 +293,6 @@ function assignUniformIndices(counter) {
 export function renderLighting(counter) {
     assignUniformIndices(counter);
     SECRET.gleamAllWisps(counter);
-    SECRET.gleamAllInvisibles(counter);
     flickerAll(counter);
 
     const {x, y} = PLAYER.getCenter();
@@ -337,4 +336,19 @@ export function getBrightestLight(pred) {
     }
 
     return brightestLight;
+}
+
+export function getLightsInRadius(position, radius, pred) {
+    let nearLights = [];
+
+    for (const uuid in lightingMap.lights) {
+        if (!lightingMap.lights.hasOwnProperty(uuid)) continue;
+        const light = lightingMap.lights[uuid];
+
+        const dist = Math.hypot(light.position.x - position.x, light.position.y - position.y);
+        if (dist > radius || !pred(light)) continue;
+        nearLights.push(light);
+    }
+
+    return nearLights;
 }

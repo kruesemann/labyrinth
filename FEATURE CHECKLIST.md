@@ -38,6 +38,20 @@
     - [ ] Light-avoiding AI
     - [ ] Different sounds
 
+# Secrets
+- [x] Wisps
+    - [x] Flashing
+    - [x] Hintlight
+- [ ] Beacons
+    - [x] Lighting
+    - [ ] Effects
+- [x] Particle puzzles
+    - [x] Drop points
+- [ ] Shrines
+    - [ ] Light indicating available forms
+- [ ] Rooms
+    - [ ] Doors
+
 # Map Generation
 - [x] Cavern and cave generation
 - [ ] Different level types
@@ -58,6 +72,7 @@
     - [ ] Wisps
     - [ ] Beacons
     - [ ] Rooms
+    - [ ] Particle puzzles
 
 # GUI
 - [ ] Dialog system
@@ -96,7 +111,7 @@
 - [ ] Death sound
 - [ ] Ambient sounds
     - [ ] Separate volume control
-- [ ] No Music
+- [ ] No Music except in menu
 
 # Graphics
 - [x] Lighting
@@ -128,6 +143,9 @@
 - [ ] Dialog
     - [ ] Text
     - [ ] Sound
+
+# General
+- [ ] Separate Game and Graphic Frames
 
 # Bugs
 - [ ] Seed 879960546978, Level 1, aStar

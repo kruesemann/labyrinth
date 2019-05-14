@@ -194,6 +194,7 @@ export function getBrightness() {
 
 export function heal() {
     player.luminosity = UTILITY.add(player.luminosity, CONSTANTS.PLAYER_LUMINOSITY_HEAL);
+    if (getLuminosity() > getLuminosityMax()) player.luminosity = getLuminosityMax();
     updateStatusLight();
 }
 

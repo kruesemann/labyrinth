@@ -160,7 +160,7 @@ function initializeRandomMap() {
  */
 function initializeNoiseData(mapSeed) {
     NOISE.setMapSeed(mapSeed);
-    noiseData.map = NOISE.doubleNoise2D(mapSeed, CONSTANTS.NOISE_CHANNELS, randomMap.numRows, randomMap.numColumns, CONSTANTS.NOISE_COLORS, CONSTANTS.NOISE_EXPONENTS);
+    noiseData.map = NOISE.doubleNoise2D(CONSTANTS.NOISE_CHANNELS, randomMap.numRows, randomMap.numColumns, CONSTANTS.NOISE_COLORS, CONSTANTS.NOISE_EXPONENTS);
 }
 
 /**
@@ -176,34 +176,12 @@ function initializeMetaData(mapSeed, gameSeed) {
     metaData.type = getMapType(mapSeed, metaData.level);
 
     // cave type
-    switch ((mapSeed + "").split(".")[1] % 20) {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-        case 8:
-        case 9:
-        case 10:
-        case 11:
-        case 12:
-        case 13:
-        case 14:
-        case 15:
-        case 16:
-        case 17:
-            metaData.caveType = CONSTANTS.CAVE_TYPE_CAVESYSTEM;
-            break;
-        case 18:
-            metaData.caveType = CONSTANTS.CAVE_TYPE_GRANDCAVERN;
-            break;
-        case 19:
-            metaData.caveType = CONSTANTS.CAVE_TYPE_NARROWS;
-            break;
-    }
+    const options = [
+        {value: CONSTANTS.CAVE_TYPE_CAVESYSTEM, frequency: 18},
+        {value: CONSTANTS.CAVE_TYPE_CAVESYSTEM, frequency: 1},
+        {value: CONSTANTS.CAVE_TYPE_CAVESYSTEM, frequency: 1},
+    ];
+    metaData.caveType = NOISE.withFrequencies(options);
 
     // water level
     switch (metaData.type) {
@@ -259,7 +237,7 @@ function initializeMetaData(mapSeed, gameSeed) {
         metaData.distToDeveloped = 0;
     } else {
         for (let i = 0; i < 5; ++i) {
-            const peekSeed = NOISE.peekMapSeed(gameSeed + metaData.level + i);
+            const peekSeed = NOISE.peekSeed(gameSeed, metaData.level + i);
     
             if (getMapType(peekSeed, metaData.level + i + 1) === CONSTANTS.MAP_TYPE_DEVELOPED) {
                 metaData.distToDeveloped = i + 1;
@@ -325,22 +303,16 @@ function getMapType(seed, level) {
     for (index = 0; index < CONSTANTS.MAP_TYPE_LEVEL_THRESHHOLDS.length; ++index) {
         if (level < CONSTANTS.MAP_TYPE_LEVEL_THRESHHOLDS[index]) break;
     }
-    const groundBound = CONSTANTS.MAP_TYPE_FREQ_GROUND[index];
-    const floodedGroundBound = groundBound + CONSTANTS.MAP_TYPE_FREQ_FLOODEDGROUND[index];
-    const developedBound = floodedGroundBound + CONSTANTS.MAP_TYPE_FREQ_DEVELOPED[index];
-    const rockBound = developedBound + CONSTANTS.MAP_TYPE_FREQ_ROCK[index];
-    const floodedRockBound = rockBound + CONSTANTS.MAP_TYPE_FREQ_FLOODEDROCK[index];
-    const remainder = (seed + "").split(".")[1] % floodedRockBound;
+
+    const options = [
+        {value: CONSTANTS.MAP_TYPE_GROUND, frequency: CONSTANTS.MAP_TYPE_FREQ_GROUND[index]},
+        {value: CONSTANTS.MAP_TYPE_FLOODEDGROUND, frequency: CONSTANTS.MAP_TYPE_FREQ_FLOODEDGROUND[index]},
+        {value: CONSTANTS.MAP_TYPE_DEVELOPED, frequency: CONSTANTS.MAP_TYPE_FREQ_DEVELOPED[index]},
+        {value: CONSTANTS.MAP_TYPE_ROCK, frequency: CONSTANTS.MAP_TYPE_FREQ_ROCK[index]},
+        {value: CONSTANTS.MAP_TYPE_FLOODEDROCK, frequency: CONSTANTS.MAP_TYPE_FREQ_FLOODEDROCK[index]},
+    ];
     
-    if (remainder < groundBound)
-        return CONSTANTS.MAP_TYPE_GROUND;
-    if (remainder < floodedGroundBound)
-        return CONSTANTS.MAP_TYPE_FLOODEDGROUND;
-    if (remainder < developedBound)
-        return CONSTANTS.MAP_TYPE_DEVELOPED;
-    if (remainder < rockBound)
-        return CONSTANTS.MAP_TYPE_ROCK;
-    return CONSTANTS.MAP_TYPE_FLOODEDROCK;
+    return NOISE.withFrequencies(options, seed);
 }
 
 /**
@@ -382,11 +354,11 @@ function generateCaverns() {
                 const rightOffset = (j === numZones.j ? cavernSizeMaxMax : cavernDistMin)        + (numZones.j - j - 1) * randomMap.numColumns / numZones.j + 5;
 
                 generationData.caverns.push({
-                    x: leftOffset + (randomMap.numColumns - leftOffset - rightOffset) * NOISE.random(),
-                    y: lowerOffset + (randomMap.numRows - lowerOffset - upperOffset) * NOISE.random(),
-                    angle: Math.PI * NOISE.random(),
-                    cavernSizeX: cavernSizeMaxMin + (cavernSizeMaxMax - cavernSizeMaxMin) * NOISE.random(),
-                    cavernSizeY: cavernSizeMaxMin + (cavernSizeMaxMax - cavernSizeMaxMin) * NOISE.random(),
+                    x: NOISE.randomInt(leftOffset, randomMap.numColumns - rightOffset),
+                    y: NOISE.randomInt(lowerOffset, randomMap.numRows - upperOffset),
+                    angle: NOISE.randomDouble(0, Math.PI),
+                    cavernSizeX: NOISE.randomInt(cavernSizeMaxMin, cavernSizeMaxMax),
+                    cavernSizeY: NOISE.randomInt(cavernSizeMaxMin, cavernSizeMaxMax),
                 });
             }
         }
@@ -592,12 +564,12 @@ function buildTunnel(cave, caveSystems, targetCave) {
                     current = current.pred;
                 }
 
-                const width = NOISE.random() > 0.3 ? 2 : 1;
+                const width = NOISE.withProbability(0.7) ? 2 : 1;
                 let wide = false;
-                let varianceLength = 3 + Math.floor(10 * NOISE.random());
+                let varianceLength = NOISE.randomInt(3, 13);
                 for (const tileNr of path) {
                     if (varianceLength === 0) {
-                        varianceLength = 3 + Math.floor(10 * NOISE.random());
+                        varianceLength = NOISE.randomInt(3, 13);
                         wide = !wide;
                     }
                     dig(tileNr.i, tileNr.j, wide ? width + 1 : width);
@@ -848,7 +820,7 @@ function findBiomePath(startTile, targetTile) {
  */
 function placeStart() {
     const wideGroundBiomes = getBiomesOfType(CONSTANTS.WIDE_GROUND_BIOME);
-    let index = Math.floor((wideGroundBiomes.length - 1) * NOISE.random());
+    let index = NOISE.randomInt(0, wideGroundBiomes.length - 1);
     for (let i = index; i !== index - 1; i = (i + 1) % (wideGroundBiomes.length - 1)) {
         if (wideGroundBiomes[i].size > Math.sqrt(randomMap.numRows * randomMap.numColumns)) {
             index = i;
@@ -1040,6 +1012,48 @@ function findFreeLocations() {
 }
 
 /**
+ * finds a random location for features
+ * 
+ * @param {bool} useCaverns // use cavern centers as possible locations
+ * @param {bool} useGrid // use free generationData.locationGrid nodes as possible locations
+ * 
+ * @modifies generationData.locationGrid
+ * 
+ * @returns location // the nice random location
+ */
+function getRandomLocation(useCaverns, useGrid) {
+    const locations = [];
+
+    if (useCaverns) {
+        for (const cavern of generationData.caverns) {
+            const {i, j} = MAPUTIL.coordsToTile(cavern.x, cavern.y);
+            const gridIndex = Math.round(i / CONSTANTS.LOCATION_DIST) * generationData.gridColumns + Math.round(j / CONSTANTS.LOCATION_DIST);
+
+            if (generationData.locationGrid[gridIndex] === 0) continue;
+
+            locations.push({i, j});
+        }
+    }
+
+    if (useGrid && !locations.length) {
+        for (let k = 0; k < generationData.gridRows * generationData.gridColumns; ++k) {
+            if (generationData.locationGrid[k] === 0) continue;
+
+            locations.push({
+                i: generationData.locationGrid[k].i + NOISE.randomInt(- CONSTANTS.LOCATION_RADIUS, CONSTANTS.LOCATION_RADIUS),
+                j: generationData.locationGrid[k].j + NOISE.randomInt(- CONSTANTS.LOCATION_RADIUS, CONSTANTS.LOCATION_RADIUS)
+            });
+        }
+    }
+
+    if (!locations.length) return undefined;
+
+    const location = locations[NOISE.randomInt(0, locations.length - 1)];
+    generationData.locationGrid[Math.round(location.i / CONSTANTS.LOCATION_DIST) * generationData.gridColumns + Math.round(location.j / CONSTANTS.LOCATION_DIST)] = 0;
+    return location;
+}
+
+/**
  * places secrets in fitting locations around the map
  * 
  * @modifies randomMap.tileMap
@@ -1049,15 +1063,15 @@ function findFreeLocations() {
 function placeSecrets() {
     // shrines
     function placeShrineTiles(i, j) {
+        for (let k = 0; k < 3; ++k) {
+            for (let l = 0; l < 3; ++l) {
+                getTile(i + k, j + l).type = CONSTANTS.TILE_PAVED;
+                getTile(i + k, j - l).type = CONSTANTS.TILE_PAVED;
+                getTile(i - k, j + l).type = CONSTANTS.TILE_PAVED;
+                getTile(i - k, j - l).type = CONSTANTS.TILE_PAVED;
+            }
+        }
         getTile(i, j).type = CONSTANTS.TILE_SHRINE;
-        getTile(i - 1, j - 1).type = CONSTANTS.TILE_PAVED;
-        getTile(i - 1, j).type = CONSTANTS.TILE_PAVED;
-        getTile(i - 1, j + 1).type = CONSTANTS.TILE_PAVED;
-        getTile(i, j - 1).type = CONSTANTS.TILE_PAVED;
-        getTile(i, j + 1).type = CONSTANTS.TILE_PAVED;
-        getTile(i + 1, j - 1).type = CONSTANTS.TILE_PAVED;
-        getTile(i + 1, j).type = CONSTANTS.TILE_PAVED;
-        getTile(i + 1, j + 1).type = CONSTANTS.TILE_PAVED;
     }
 
 
@@ -1104,10 +1118,11 @@ function placeSecrets() {
 
         if (formIDs.length) {
             if (biome.locations.length > 0) {
-                features.secrets.push({type: "shrine", i: biome.locations[0].i, j: biome.locations[0].j, formIDs});
-                generationData.locationGrid[Math.round(biome.locations[0].i / CONSTANTS.LOCATION_DIST) * generationData.gridColumns + Math.round(biome.locations[0].j / CONSTANTS.LOCATION_DIST)] = 0;
+                const locationIndex = NOISE.randomInt(0, biome.locations.length - 1);
+                features.secrets.push({type: "shrine", i: biome.locations[locationIndex].i, j: biome.locations[locationIndex].j, formIDs});
+                generationData.locationGrid[Math.round(biome.locations[locationIndex].i / CONSTANTS.LOCATION_DIST) * generationData.gridColumns + Math.round(biome.locations[locationIndex].j / CONSTANTS.LOCATION_DIST)] = 0;
                 dot = box = snake = false;
-                placeShrineTiles(biome.locations[0].i, biome.locations[0].j);
+                placeShrineTiles(biome.locations[locationIndex].i, biome.locations[locationIndex].j);
             } else if (i === generationData.pathToExit.length - 1 || i === 0) {
                 features.secrets.push({type: "shrine", i: biome.i, j: biome.j + 2, formIDs});
                 generationData.locationGrid[Math.round(biome.i / CONSTANTS.LOCATION_DIST) * generationData.gridColumns + Math.round(biome.j / CONSTANTS.LOCATION_DIST)] = 0;
@@ -1127,20 +1142,16 @@ function placeSecrets() {
     }
 
     // wisps
-    const numWisps = Math.floor(NOISE.random() * 5);
+    const numWisps = NOISE.randomInt(0, 5);
 
     for (let i = 0; i < numWisps; ++i) {
-        let index = Math.floor(NOISE.random() * (generationData.gridRows * generationData.gridColumns - 1));
-        for (let j = 0; j < generationData.gridRows * generationData.gridColumns; ++j) {
-            if (generationData.locationGrid[index] !== 0) {
-                const color = [NOISE.random(), NOISE.random(), NOISE.random(), 0];
-                const change = (Math.floor(NOISE.random() * (CONSTANTS.LIGHT_WISP_CHANGE_MAX - CONSTANTS.LIGHT_WISP_CHANGE_MIN)) + CONSTANTS.LIGHT_WISP_CHANGE_MIN) / 10;
-                features.secrets.push({type: "wisp", i: generationData.locationGrid[index].i, j: generationData.locationGrid[index].j, color, change});
-                generationData.locationGrid[index] = 0;
-                break;
-            }
-            index = (index + 1) % (generationData.gridRows * generationData.gridColumns);
+        const location = getRandomLocation(false, true);
+        if (!location) {
+            break;
         }
+        const color = [NOISE.randomDouble(0.3, 1), NOISE.randomDouble(0.3, 1), NOISE.randomDouble(0.3, 1), 0];
+        const change = NOISE.randomInt(CONSTANTS.LIGHT_WISP_CHANGE_MIN, CONSTANTS.LIGHT_WISP_CHANGE_MAX) / 10;
+        features.secrets.push({type: "wisp", i: location.i, j: location.j, color, change});
     }
 
     // beacons
@@ -1152,58 +1163,45 @@ function placeSecrets() {
         getTile(i + 1, j).type = CONSTANTS.TILE_BEACON;
     }
 
-    const numBeacons = Math.floor(NOISE.random() * 2) + 1;
+    const numBeacons = NOISE.randomInt(1, 3);
 
     for (let i = 0; i < numBeacons; ++i) {
-        let index = Math.floor(NOISE.random() * (generationData.gridRows * generationData.gridColumns - 1));
-        for (let j = 0; j < generationData.gridRows * generationData.gridColumns; ++j) {
-            if (generationData.locationGrid[index] !== 0) {
-                features.secrets.push({type: "beacon", i: generationData.locationGrid[index].i, j: generationData.locationGrid[index].j});
-                placeBeaconTiles(generationData.locationGrid[index].i, generationData.locationGrid[index].j);
-                generationData.locationGrid[index] = 0;
-                break;
-            }
-            index = (index + 1) % (generationData.gridRows * generationData.gridColumns);
+        const location = getRandomLocation(true, true);
+        if (!location) {
+            break;
         }
+        features.secrets.push({type: "beacon", i: location.i, j: location.j});
+        placeBeaconTiles(location.i, location.j);
     }
 
     // invisibles
-    const numInvisibles = Math.floor(NOISE.random() * 5);
+    const numInvisibles = NOISE.randomInt(0, 5);
 
     for (let i = 0; i < numInvisibles; ++i) {
-        let index = Math.floor(NOISE.random() * (generationData.gridRows * generationData.gridColumns - 1));
-        for (let j = 0; j < generationData.gridRows * generationData.gridColumns; ++j) {
-            if (generationData.locationGrid[index] !== 0) {
-                const color = [NOISE.random(), NOISE.random(), NOISE.random()];
-                features.secrets.push({type: "invisible", i: generationData.locationGrid[index].i, j: generationData.locationGrid[index].j, item: {type: "coloredLight", color}});
-                generationData.locationGrid[index] = 0;
-                break;
-            }
-            index = (index + 1) % (generationData.gridRows * generationData.gridColumns);
+        const location = getRandomLocation(false, true);
+        if (!location) {
+            break;
         }
+        const color = [NOISE.randomDouble(0.3, 1), NOISE.randomDouble(0.3, 1), NOISE.randomDouble(0.3, 1), 0];
+        features.secrets.push({type: "invisible", i: location.i, j: location.j, item: {type: "coloredLight", color}});
     }
 
     // particle puzzles
     const numParticlePuzzles = 1;
 
     for (let i = 0; i < numParticlePuzzles; ++i) {
-        let index = Math.floor(NOISE.random() * (generationData.gridRows * generationData.gridColumns - 1));
-        for (let j = 0; j < generationData.gridRows * generationData.gridColumns; ++j) {
-            const tile = generationData.locationGrid[index];
-            if (tile !== 0) {
-                const points = [
-                    {i: tile.i + 3, j: tile.j},
-                    {i: tile.i - 3, j: tile.j}
-                ];
-                for (const point of points) {
-                    getTile(point.i, point.j).type = CONSTANTS.TILE_PAVED;
-                }
-                features.secrets.push({type: "particlePuzzle", i: tile.i, j: tile.j, points, item: {type: "sendlight", brightness: 20}});
-                generationData.locationGrid[index] = 0;
-                break;
-            }
-            index = (index + 1) % (generationData.gridRows * generationData.gridColumns);
+        const location = getRandomLocation(true, true);
+        if (!location) {
+            break;
         }
+        const points = [
+            {i: location.i + 3, j: location.j},
+            {i: location.i - 3, j: location.j}
+        ];
+        for (const point of points) {
+            getTile(point.i, point.j).type = CONSTANTS.TILE_PAVED;
+        }
+        features.secrets.push({type: "particlePuzzle", i: location.i, j: location.j, points, item: {type: "sendlight", brightness: 20}});
     }
 }
 
@@ -1214,18 +1212,14 @@ function placeSecrets() {
  * @modifies generationData.locationGrid
  */
 function placeItems() {
-    const numItems = Math.floor(NOISE.random() * 10) + 5;
+    const numItems = NOISE.randomInt(5, 15);
 
     for (let i = 0; i < numItems; ++i) {
-        let index = Math.floor(NOISE.random() * (generationData.gridRows * generationData.gridColumns - 1));
-        for (let j = 0; j < generationData.gridRows * generationData.gridColumns; ++j) {
-            if (generationData.locationGrid[index] !== 0) {
-                features.items.push({type: "coin", i: generationData.locationGrid[index].i, j: generationData.locationGrid[index].j});
-                generationData.locationGrid[index] = 0;
-                break;
-            }
-            index = (index + 1) % (generationData.gridRows * generationData.gridColumns);
+        const location = getRandomLocation(false, true);
+        if (!location) {
+            break;
         }
+        features.items.push({type: "coin", i: location.i, j: location.j});
     }
 }
 
@@ -1235,22 +1229,29 @@ function placeItems() {
  * @modifies features.enemies
  */
 function placeEnemies() {
-    const possibleEnemyBiomes = [];
+    const possibleEnemyLocations = [];
 
     const wideGroundBiomes = getBiomesOfType(CONSTANTS.WIDE_GROUND_BIOME);
     for (let i = 0; i < wideGroundBiomes.length; ++i) {
         if (wideGroundBiomes[i].size > Math.sqrt(randomMap.numRows * randomMap.numColumns)) {
-            const dist = Math.hypot(wideGroundBiomes[i].i - features.start.i, wideGroundBiomes[i].j - features.start.j, 2);
-            if (dist > 50) {
-                possibleEnemyBiomes.push(wideGroundBiomes[i]);
+            for (const location of wideGroundBiomes[i].locations) {
+                const dist = Math.hypot(location.i - features.start.i, location.j - features.start.j);
+                if (dist > 50) {
+                    possibleEnemyLocations.push(location);
+                }
             }
         }
     }
 
-    if (possibleEnemyBiomes.length < 1) return;
-    features.enemies.push({i: possibleEnemyBiomes[0].i, j: possibleEnemyBiomes[0].j, color: [0.5, 0, 0], speed: 5, formID: "snake", aiID: "lightAffine"});
-    if (possibleEnemyBiomes.length < 2) return;
-    features.enemies.push({i: possibleEnemyBiomes[1].i, j: possibleEnemyBiomes[1].j, color: [0.5, 0, 0], speed: 3, formID: "dot", aiID: "proxHunter"});    
+    if (!possibleEnemyLocations.length) return;
+    const index1 = NOISE.randomInt(0, possibleEnemyLocations.length - 1);
+    const location1 = possibleEnemyLocations.splice(index1, 1)[0];
+    features.enemies.push({i: location1.i, j: location1.j, color: [0.5, 0, 0], speed: 5, formID: "snake", aiID: "lightAffine"});
+
+    if (!possibleEnemyLocations.length) return;
+    const index2 = NOISE.randomInt(0, possibleEnemyLocations.length - 1);
+    const location2 = possibleEnemyLocations.splice(index2, 1)[0];
+    features.enemies.push({i: location2.i, j: location2.j, color: [0.5, 0, 0], speed: 3, formID: "dot", aiID: "proxHunter"});
 }
 
 /**

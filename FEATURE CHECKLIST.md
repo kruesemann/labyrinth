@@ -54,6 +54,7 @@
 
 # Map Generation
 - [x] Cavern and cave generation
+- [ ] Better tunnel generation
 - [ ] Different level types
     - [x] (Flooded) Ground
     - [x] (Flooded) Rock
@@ -145,7 +146,10 @@
     - [ ] Sound
 
 # General
+- [x] Better RNG
 - [ ] Separate Game and Graphic Frames
 
 # Bugs
 - [ ] Seed 879960546978, Level 1, aStar
+- [x] Lights break on deeper levels?!
+- [x] Maximum luminosity can be violated

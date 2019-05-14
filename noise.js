@@ -1,5 +1,5 @@
-let mapSeed = 0;
-let gameSeed = 0;
+let mapRng = undefined;
+let gameRng = undefined;
 
 export function createUuid() {
     return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
@@ -8,52 +8,65 @@ export function createUuid() {
 }
 
 export function reset() {
-    mapSeed = 0;
-    gameSeed = 0;
+    mapRng = undefined;
+    gameRng = undefined;
 }
 
 export function setGameSeed(s) {
-    gameSeed = s;
+    gameRng = PM_PRNG.create(s);
 }
 
 export function setMapSeed(s) {
-    mapSeed = s;
+    mapRng = PM_PRNG.create(s);
 }
 
-export function random() {
-    const x = Math.sin(mapSeed++) * 1000000;
-    if (mapSeed === 2147483647) {
-        mapSeed = 0;
+export function randomInt(min, max) {
+    return mapRng.nextIntRange(min, max);
+}
+
+export function randomDouble(min, max) {
+    return mapRng.nextDoubleRange(min, max);
+}
+
+export function withProbability(probability) {
+    return mapRng.nextDoubleRange(0, 1) <= probability;
+}
+
+export function withFrequencies(options, seed) {
+    const rng = seed ? PM_PRNG.create(seed) : mapRng;
+    const threshhold = rng.nextDoubleRange(0, 1);
+    const sum = options.reduce((s, option) => s + option.frequency, 0);
+    let frequency = 0;
+    for (const option of options) {
+        frequency += option.frequency / sum;
+        if (threshhold <= frequency) return option.value;
     }
-    return x - Math.floor(x);
+    return undefined;
 }
 
 export function nextMapSeed() {
-    const x = Math.sin(gameSeed++) * 1000000;
-    if (gameSeed === 2147483647) {
-        gameSeed = 0;
-    }
-    return x - Math.floor(x);
+    return gameRng.nextInt();
 }
 
-export function peekMapSeed(s) {
-    const x = Math.sin(s) * 1000000;
-    return x - Math.floor(x);
+export function peekSeed(seed, i) {
+    const rng = PM_PRNG.create(seed);
+    for (let j = 0; j < i - 1; ++j) rng.nextInt();
+    return rng.nextInt();
 }
 
 function noise(gen, nx, ny) {
-    return gen.noise2D(nx, ny)/2 + 0.5;
+    return gen.noise2D(nx, ny) / 2 + 0.5;
 }
 
-export function doubleNoise2D(seed, numChannels, height, width, noiseColors, noiseExponents) {
+export function doubleNoise2D(numChannels, height, width, noiseColors, noiseExponents) {
     const gens = [];
     const centers = [];
 
     for (let i = 0; i < numChannels; ++i) {
-        const rngSeed = Math.abs(seed - 1000 * random());
+        const rngSeed = mapRng.nextInt();
         const rng = PM_PRNG.create(rngSeed);
         gens.push(new SimplexNoise(rng.nextDouble.bind(rng)));
-        centers.push({x: random(), y: random()});
+        centers.push({x: mapRng.nextDouble(), y: mapRng.nextDouble()});
     }
 
     const map = [];

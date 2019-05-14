@@ -265,33 +265,31 @@ function brighter(o1, o2) {
     return o2.brightness - o1.brightness;
 }
 
-function assignUniformIndices(counter) {
-    if (counter % 4 === 0) {
-        SHADER.mapLightingUniforms.u_lightPos.value = new Float32Array(2 * CONSTANTS.LIGHT_MAXNUM);
-        SHADER.mapLightingUniforms.u_lightColor.value = new Float32Array(4 * CONSTANTS.LIGHT_MAXNUM);
+function assignUniformIndices() {
+    SHADER.mapLightingUniforms.u_lightPos.value = new Float32Array(2 * CONSTANTS.LIGHT_MAXNUM);
+    SHADER.mapLightingUniforms.u_lightColor.value = new Float32Array(4 * CONSTANTS.LIGHT_MAXNUM);
 
-        const playerPos = PLAYER.getHead();
-        const list = [];
+    const playerPos = PLAYER.getHead();
+    const list = [];
 
-        for (const uuid in lightingMap.lights) {
-            if (!lightingMap.lights.hasOwnProperty(uuid)) continue;
-            const light = lightingMap.lights[uuid];
-            light.uniformIndex = -1;
-            const dist = Math.hypot(playerPos.x - light.position.x, playerPos.y - light.position.y);
-            if (dist < CONSTANTS.LIGHT_MAX_RENDER_DIST) list.push(light);
-        }
+    for (const uuid in lightingMap.lights) {
+        if (!lightingMap.lights.hasOwnProperty(uuid)) continue;
+        const light = lightingMap.lights[uuid];
+        light.uniformIndex = -1;
+        const dist = Math.hypot(playerPos.x - light.position.x, playerPos.y - light.position.y);
+        if (dist < CONSTANTS.LIGHT_MAX_RENDER_DIST) list.push(light);
+    }
 
-        list.sort(brighter);
+    list.sort(brighter);
 
-        let uInd = 0;
-        for (let light of list) {
-            light.uniformIndex = ++uInd;
-        }
+    let uInd = 0;
+    for (let light of list) {
+        light.uniformIndex = ++uInd;
     }
 }
 
 export function renderLighting(counter) {
-    assignUniformIndices(counter);
+    assignUniformIndices();
     SECRET.gleamAllWisps(counter);
     flickerAll(counter);
 

@@ -1027,9 +1027,12 @@ function getRandomLocation(useCaverns, useGrid) {
         for (let k = 0; k < generationData.gridRows * generationData.gridColumns; ++k) {
             if (generationData.locationGrid[k] === 0) continue;
 
+            const di = NOISE.randomInt(1 - CONSTANTS.LOCATION_RADIUS, CONSTANTS.LOCATION_RADIUS - 1);
+            const dj = NOISE.randomInt(di + 1 - CONSTANTS.LOCATION_RADIUS, CONSTANTS.LOCATION_RADIUS - 1 - di);
+
             locations.push({
-                i: generationData.locationGrid[k].i + NOISE.randomInt(- CONSTANTS.LOCATION_RADIUS, CONSTANTS.LOCATION_RADIUS),
-                j: generationData.locationGrid[k].j + NOISE.randomInt(- CONSTANTS.LOCATION_RADIUS, CONSTANTS.LOCATION_RADIUS)
+                i: generationData.locationGrid[k].i + di,
+                j: generationData.locationGrid[k].j + dj
             });
         }
     }
@@ -1051,12 +1054,16 @@ function getRandomLocation(useCaverns, useGrid) {
 function placeSecrets() {
     // shrines
     function placeShrineTiles(i, j) {
+        function place(m, n) {
+            if (m < 1 || m > randomMap.numRows - 2 || n < 1 || n > randomMap.numColumns - 2) return;
+            getTile(m, n).type = CONSTANTS.TILE_PAVED;
+        }
         for (let k = 0; k < 3; ++k) {
             for (let l = 0; l < 3; ++l) {
-                getTile(i + k, j + l).type = CONSTANTS.TILE_PAVED;
-                getTile(i + k, j - l).type = CONSTANTS.TILE_PAVED;
-                getTile(i - k, j + l).type = CONSTANTS.TILE_PAVED;
-                getTile(i - k, j - l).type = CONSTANTS.TILE_PAVED;
+                place(i + k, j + l);
+                place(i + k, j - l);
+                place(i - k, j + l);
+                place(i - k, j - l);
             }
         }
         getTile(i, j).type = CONSTANTS.TILE_SHRINE;

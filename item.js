@@ -162,9 +162,9 @@ export function createSendlight(i, j, brightness) {
     return sendlight;
 }
 
-export function createShrine(i, j) {
-    const shrine = create(i, j, [0, 0.5, 0.75]);
-    return shrine;
+export function createUncollectable(i, j, color) {
+    const uncollectable = create(i, j, color);
+    return uncollectable;
 }
 
 export function createWisp(i, j, uuid) {

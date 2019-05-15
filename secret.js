@@ -39,6 +39,7 @@ function createShrine(i, j, formIDs) {
             text: `Hold down <b>${OPTIONS.keyCodes[OPTIONS.gameControls.transform]}</b> and do a little dance.`
         }
     ];
+    const items = [];
 
     let dot = false;
     let box = false;
@@ -58,6 +59,7 @@ function createShrine(i, j, formIDs) {
                 ANIMATION.playDotDance(position);
             }
         });
+        items.push(ITEM.createUncollectable(i + 1, j, [0.5, 0.5, 0.5]));
     }
     if (box) {
         hintDialog.push({
@@ -66,6 +68,7 @@ function createShrine(i, j, formIDs) {
                 ANIMATION.playBoxDance(position);
             }
         });
+        items.push(ITEM.createUncollectable(i - 1, j, [0, 0.5, 0]));
     }
     if (snake) {
         hintDialog.push({
@@ -74,13 +77,14 @@ function createShrine(i, j, formIDs) {
                 ANIMATION.playSnakeDance(position);
             }
         });
+        items.push(ITEM.createUncollectable(i, j + 1, [0.5, 0, 0]));
     }
 
     const shrine = {
         uuid,
         position,
         formIDs,
-        item: ITEM.createShrine(i, j, uuid),
+        items,
         hint: HINT.create(i, j, hintDialog)
     };
 

@@ -133,19 +133,19 @@ export function showHelp() {
             buttons: [{text: "Next", index: 11}]
         },
         {
-            text: `Near <em>Shrines</em> you can change into different forms, signified by colored tiles.`,
+            text: `Near <em>Shrines</em> you can change into different forms, signified by colored squares.`,
             buttons: [{text: "Next", index: 12}]
         },
         {
-            text: `In <em>Dot</em> form you are small and cannot swim. It is signified by a white tile.`,
+            text: `In <em>Dot</em> form you are small and cannot swim. It is signified by a white square.`,
             buttons: [{text: "Next", index: 13}]
         },
         {
-            text: `In <em>Box</em> form you can swim but will not fit everywhere. It is signified by a green tile.`,
+            text: `In <em>Box</em> form you can swim but will not fit everywhere. It is signified by a green square.`,
             buttons: [{text: "Next", index: 14}]
         },
         {
-            text: `In <em>Snake</em> form you can go anywhere but cannot easily dodge enemies. It is signified by a red tile.`,
+            text: `In <em>Snake</em> form you can go anywhere but cannot easily dodge enemies. It is signified by a red square.`,
             buttons: [{text: "Next", index: 15}]
         },
         {

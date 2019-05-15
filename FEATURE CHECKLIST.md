@@ -153,3 +153,4 @@
 - [ ] Seed 879960546978, Level 1, aStar
 - [x] Lights break on deeper levels?!
 - [x] Maximum luminosity can be violated
+- [ ] Items in walls

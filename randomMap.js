@@ -466,7 +466,7 @@ function buildTunnel(cave, caveSystems, targetCave) {
         return isTileWall(i, j) ? noiseWeight : 10 + noiseWeight;
     };
 
-    const dig = function (i, j, width) {
+    const dig = function (i, j, wide, oldWidths) {
         const digTile = function(i, j) {
             if (i < 1 || i > randomMap.numRows - 2 || j < 1 || j > randomMap.numColumns - 2) return;
 
@@ -486,41 +486,35 @@ function buildTunnel(cave, caveSystems, targetCave) {
             }
         }
 
-        digTile(i, j); // first layer
-        
-        if (width > 1) {
-            digTile(i - 1, j);// second layer
-            digTile(i + 1, j);
-            digTile(i, j - 1);
-            digTile(i, j + 1);
+        const wideOptions = [
+            {value: 2, frequency: 4},
+            {value: 3, frequency: 4},
+            {value: 4, frequency: 2},
+        ];
+        const narrowOptions = [
+            {value: 1, frequency: 6},
+            {value: 2, frequency: 3},
+            {value: 3, frequency: 1},
+        ];
 
-            if (width > 2) {
-                digTile(i - 2, j); // third layer
-                digTile(i + 2, j);
-                digTile(i, j - 2);
-                digTile(i, j + 2);
-            } else {
-                makeWall(i - 2, j); // third layer
-                makeWall(i + 2, j);
-                makeWall(i, j - 2);
-                makeWall(i, j + 2);
-            }
-        } else {
-            makeWall(i - 1, j);// second layer
-            makeWall(i + 1, j);
-            makeWall(i, j - 1);
-            makeWall(i, j + 1);
+        const widths = [
+            NOISE.withProbability(0.5) || !oldWidths ? NOISE.withFrequencies(wide ? wideOptions : narrowOptions) : oldWidths[0],
+            NOISE.withProbability(0.5) || !oldWidths ? NOISE.withFrequencies(wide ? wideOptions : narrowOptions) : oldWidths[1],
+            NOISE.withProbability(0.5) || !oldWidths ? NOISE.withFrequencies(wide ? wideOptions : narrowOptions) : oldWidths[2],
+            NOISE.withProbability(0.5) || !oldWidths ? NOISE.withFrequencies(wide ? wideOptions : narrowOptions) : oldWidths[3]
+        ];
 
-            makeWall(i - 2, j); // third layer
-            makeWall(i + 2, j);
-            makeWall(i, j - 2);
-            makeWall(i, j + 2);
-        }
-        
-        makeWall(i - 3, j);  // last layer
-        makeWall(i + 3, j);
-        makeWall(i, j - 3);
-        makeWall(i, j + 3);
+        digTile(i, j);
+        for (let k = 1; k < widths[0]; ++k) digTile(i, j - k);
+        makeWall(i, j - widths[0]);
+        for (let k = 1; k < widths[1]; ++k) digTile(i, j + k);
+        makeWall(i, j + widths[1]);
+        for (let k = 1; k < widths[2]; ++k) digTile(i + k, j);
+        makeWall(i + widths[2], j);
+        for (let k = 1; k < widths[3]; ++k) digTile(i - k, j);
+        makeWall(i - widths[3], j);
+
+        return widths;
     }
 
     const searchMap = [];
@@ -564,16 +558,10 @@ function buildTunnel(cave, caveSystems, targetCave) {
                     current = current.pred;
                 }
 
-                const width = NOISE.withProbability(0.7) ? 2 : 1;
-                let wide = false;
-                let varianceLength = NOISE.randomInt(3, 13);
-                for (const tileNr of path) {
-                    if (varianceLength === 0) {
-                        varianceLength = NOISE.randomInt(3, 13);
-                        wide = !wide;
-                    }
-                    dig(tileNr.i, tileNr.j, wide ? width + 1 : width);
-                    --varianceLength;
+                const wide = NOISE.withProbability(0.7);
+                let widths = undefined;
+                for (const tile of path) {
+                    widths = dig(tile.i, tile.j, wide, widths);
                 }
 
                 if (currentCaveSystemID === -1) {

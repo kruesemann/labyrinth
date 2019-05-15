@@ -1,4 +1,4 @@
-const keyCodes = {
+export const keyCodes = {
       3: "BREAK",
       8: "BACKSPACE",
       9: "TAB",

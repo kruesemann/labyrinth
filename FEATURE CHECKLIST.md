@@ -54,7 +54,7 @@
 
 # Map Generation
 - [x] Cavern and cave generation
-- [ ] Better tunnel generation
+- [x] Better tunnel generation
 - [ ] Different level types
     - [x] (Flooded) Ground
     - [x] (Flooded) Rock
@@ -70,10 +70,11 @@
 - [ ] Enemy placement
 - [ ] Secret placement
     - [ ] Shrines
-    - [ ] Wisps
-    - [ ] Beacons
+    - [x] Wisps
+    - [x] Beacons
     - [ ] Rooms
-    - [ ] Particle puzzles
+    - [x] Particle puzzles
+    - [ ] Invisibles
 
 # GUI
 - [ ] Dialog system
@@ -154,3 +155,4 @@
 - [x] Lights break on deeper levels?!
 - [x] Maximum luminosity can be violated
 - [ ] Items in walls
+- [ ] Start and exit on the same tile

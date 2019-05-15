@@ -28,7 +28,7 @@ export function initialize(i, j) {
         formID: "dot"
     };
 
-    player = createPlayer(i, j, [0.1, 0.1, 0.1], 2, parameters.formID);
+    player = createPlayer(i, j, [0.2, 0.2, 0.2], 2, parameters.formID);
     OVERLAY.setForm(parameters.formID);
     player.luminosity = parameters.luminosity;
     player.luminosityMax = parameters.luminosityMax;

@@ -1,5 +1,6 @@
 import * as GAME from "./game.js";
 import * as INPUT from "./input.js";
+import * as OPTIONS from "./options.js";
 import * as OVERLAY from "./overlay.js";
 
 let dialog = {
@@ -87,16 +88,69 @@ export function skipCurrent() {
 
 export function showHelp() {
     show([
-        {text: "Move with the arrow keys.", buttons: [{text: "Continue", index: 1}, {text: "Skip 1", index: 2}]},
-        {text: "When your Glow stops increasing, press <b>E</b> to drop a light particle."},
-        {text: "Find the magenta exit to proceed to the next level. It will get darker further down.", buttons: [{text: "Continue", index: 3}, {text: "Skip 3", index: 7}, {text: "Back", index: 1}, {text: "Reset", index: 0}]},
-        {text: "Avoid the red enemies. They will hurt you."},
-        {text: "Yellow coins increase your score."},
-        {text: "Purple items replenish your health. You will die when your health is depleted."},
-        {text: "Near shrines you can change into different forms."},
-        {text: "In Dot form you are small and cannot swim."},
-        {text: "In Box form you can swim but will not fit everywhere."},
-        {text: "In Snake form you can go anywhere but cannot easily dodge enemies."},
-        {text: "When you see a big glowing <b>Q</b> in the down-left corner, press <b>Q</b> to see a hint.", buttons: [{text: "Done", index: Infinity}]}
+        {
+            text: `You can skip this dialog by pressing <b>${OPTIONS.keyCodes[OPTIONS.dialogControls.dStop]}</b>.`,
+            buttons: [{text: "Next", index: 1}]
+        },
+        {
+            text: `Move with <b>${OPTIONS.keyCodes[OPTIONS.gameControls.gUp]}${OPTIONS.keyCodes[OPTIONS.gameControls.gLeft]}${OPTIONS.keyCodes[OPTIONS.gameControls.gDown]}${OPTIONS.keyCodes[OPTIONS.gameControls.gRight]}</b>.`,
+            buttons: [{text: "Next", index: 2}]
+        },
+        {
+            text: `When your <em>Glow</em> stops increasing, press <b>${OPTIONS.keyCodes[OPTIONS.gameControls.particle]}</b> to drop a light particle.`,
+            buttons: [{text: "Next", index: 3}]
+        },
+        {
+            text: `Dropping a light particle on a <em>Beacon</em> (orange cross) will light the <em>Beacon</em>.`,
+            buttons: [{text: "Next", index: 4}]
+        },
+        {
+            text: `Find the magenta exit to proceed to the next level. It will get darker further down.`,
+            buttons: [{text: "Next", index: 5}]
+        },
+        {
+            text: `Avoid the red enemies. They will take away your <em>Glow</em>.`,
+            buttons: [{text: "Next", index: 6}]
+        },
+        {
+            text: `Collecting yellow <em>Star Fragments</em> or standing next to a lit <em>Beacon</em> will increase your maximum <em>Glow</em> up to a point.`,
+            buttons: [{text: "Next", index: 7}]
+        },
+        {
+            text: `Sometimes you can see hidden items flashing. Uncover them by <em>Flaring</em> with <b>${OPTIONS.keyCodes[OPTIONS.gameControls.flare]}</b>, but beware: <em>Flaring</em> decreases your maximum <em>Glow</em>.`,
+            buttons: [{text: "Next", index: 8}]
+        },
+        {
+            text: `Sometimes you can see regular patterns of dark tiles on the ground. Have them lit up by particles at the same time to uncover a hidden item.`,
+            buttons: [{text: "Next", index: 9}]
+        },
+        {
+            text: `Sometimes you will find <em>Wisps</em>. If you are quick enough you can catch them.`,
+            buttons: [{text: "Next", index: 10}]
+        },
+        {
+            text: `Usable items will appear in your inventory on the left. You can cycle through it by pressing <b>${OPTIONS.keyCodes[OPTIONS.gameControls.browse]}</b> and use the active item by pressing <b>${OPTIONS.keyCodes[OPTIONS.gameControls.useItem]}</b>.`,
+            buttons: [{text: "Next", index: 11}]
+        },
+        {
+            text: `Near <em>Shrines</em> you can change into different forms, signified by colored tiles.`,
+            buttons: [{text: "Next", index: 12}]
+        },
+        {
+            text: `In <em>Dot</em> form you are small and cannot swim. It is signified by a white tile.`,
+            buttons: [{text: "Next", index: 13}]
+        },
+        {
+            text: `In <em>Box</em> form you can swim but will not fit everywhere. It is signified by a green tile.`,
+            buttons: [{text: "Next", index: 14}]
+        },
+        {
+            text: `In <em>Snake</em> form you can go anywhere but cannot easily dodge enemies. It is signified by a red tile.`,
+            buttons: [{text: "Next", index: 15}]
+        },
+        {
+            text: `When you see a big glowing <b>Q</b> in the down-left corner, press <b>${OPTIONS.keyCodes[OPTIONS.gameControls.hint]}</b> to see a hint.`,
+            buttons: [{text: "Again", index: 0}, {text: "Done", index: Infinity}]
+        }
     ], true);
 }

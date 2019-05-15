@@ -5,6 +5,7 @@ import * as ITEM from "./item.js";
 import * as LIGHT from "./light.js";
 import * as MAPUTIL from "./mapUtil.js";
 import * as NOISE from "./noise.js";
+import * as OPTIONS from "./options.js";
 import * as PLAYER from "./player.js";
 import * as SOUND from "./sound.js";
 
@@ -30,18 +31,57 @@ function createShrine(i, j, formIDs) {
     const position = MAPUTIL.tileToCenter(i, j);
     const uuid = NOISE.createUuid();
 
+    const hintDialog = [
+        {
+            text: `This is a shrine. You can change form here.`
+        },
+        {
+            text: `Hold down <b>${OPTIONS.keyCodes[OPTIONS.gameControls.transform]}</b> and do a little dance.`
+        }
+    ];
+
+    let dot = false;
+    let box = false;
+    let snake = false;
+    for (const formID of formIDs) {
+        switch (formID) {
+            case "dot": dot = true; break;
+            case "box": box = true; break;
+            case "snake": snake = true; break;
+            default: console.log("Unknown form"); break;
+        }
+    }
+    if (dot) {
+        hintDialog.push({
+            text: `The dot form requires this dance: <b>RIGHT LEFT DOWN UP</b>`,
+            trigger: function() {
+                ANIMATION.playDotDance(position);
+            }
+        });
+    }
+    if (box) {
+        hintDialog.push({
+            text: `The box form requires this dance: <b>RIGHT LEFT RIGHT LEFT</b>`,
+            trigger: function() {
+                ANIMATION.playBoxDance(position);
+            }
+        });
+    }
+    if (snake) {
+        hintDialog.push({
+            text: `The snake form requires this dance: <b>DOWN RIGHT UP LEFT</b>`,
+            trigger: function() {
+                ANIMATION.playSnakeDance(position);
+            }
+        });
+    }
+
     const shrine = {
         uuid,
         position,
         formIDs,
         item: ITEM.createShrine(i, j, uuid),
-        hint: HINT.create(i, j, [
-            {text: "This is a shrine. You can change form here."},
-            {text: "Hold down <b>SPACE</b> and do a little dance."},
-            {text: "The snake form requires this dance: <b>DOWN RIGHT UP LEFT</b>", trigger: function() {
-                ANIMATION.playSnakeDance(position);
-            }}
-        ])
+        hint: HINT.create(i, j, hintDialog)
     };
 
     secrets.shrines[uuid] = shrine;

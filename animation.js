@@ -67,6 +67,26 @@ class DanceAnimation {
     }
 }
 
+export function playDotDance(position) {
+    new DanceAnimation(position, [
+        -0.4,  0.4,
+         0.4,  0.4,
+        -0.4,  0.4,
+        -0.4, -0.4,
+        -0.4,  0.4,
+    ]);
+}
+
+export function playBoxDance(position) {
+    new DanceAnimation(position, [
+        -0.4,  0.0,
+         0.4,  0.0,
+        -0.4,  0.0,
+         0.4,  0.0,
+        -0.4,  0.0,
+    ]);
+}
+
 export function playSnakeDance(position) {
     new DanceAnimation(position, [
         -0.4,  0.4,

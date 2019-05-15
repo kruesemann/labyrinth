@@ -19,6 +19,8 @@ export function create(i, j, dialog) {
     };
 
     hints.push(hint);
+
+    return hint;
 }
 
 export function getNearestHint() {

@@ -297,10 +297,10 @@ export function ambientSound(counter) {
     });
 
     if (nearestShrine) {
-        SOUND.loop("shrine", 100, {x: nearestShrine.x, y: nearestShrine.y}, 25);
+        SOUND.loop("shrine", 100, nearestShrine.position, 25);
     }
     if (nearestBeacon) {
-        SOUND.loop("beacon2", 100, {x: nearestBeacon.x, y: nearestBeacon.y}, 50);
+        SOUND.loop("beacon2", 100, nearestBeacon.position, 50);
     }
 }
 

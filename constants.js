@@ -71,6 +71,7 @@ export const GROUND_TILES = [
     TILE_PAVED,
     TILE_EXIT,
     TILE_ENTRANCE,
+    TILE_BEACON,
 ];
 export const WATER_TILES = [
     TILE_DEEPWATER,

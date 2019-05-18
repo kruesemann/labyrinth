@@ -353,3 +353,26 @@ export function getLightsInRadius(position, radius, pred) {
 
     return nearLights;
 }
+
+export function getGradient(position, pred) {
+    let gradient = {x: 0, y: 0};
+    for (const uuid in lightingMap.lights) {
+        if (!lightingMap.lights.hasOwnProperty(uuid)) continue;
+        const light = lightingMap.lights[uuid];
+
+        if (light.playerLight
+        || light.brightness < 0.001
+        || !pred(light)) continue;
+
+        gradient.x -= (light.position.x - position.x) / light.brightness;
+        gradient.y -= (light.position.y - position.y) / light.brightness;
+    }
+    const norm = Math.hypot(gradient.x, gradient.y);
+
+    if (norm === 0) return undefined;
+
+    gradient.x /= norm;
+    gradient.y /= norm;
+
+    return gradient;
+}

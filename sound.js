@@ -163,7 +163,7 @@ export function fadeOutLevel() {
 
         audio.sounds[soundID].targetVolume = 0;
         audio.sounds[soundID].targetVolumePriority = 4;
-        audio.sounds[soundID].targetVolumeStep = 0.01;
+        audio.sounds[soundID].targetVolumeStep = 0.05;
     }
 }
 

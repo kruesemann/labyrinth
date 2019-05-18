@@ -34,6 +34,7 @@ export function initialize(i, j) {
     player.luminosityMax = parameters.luminosityMax;
     const center = getCenter();
     player.light = LIGHT.create(center.x, center.y, [parameters.color[0], parameters.color[1], parameters.color[2], parameters.brightness]);
+    player.light.playerLight = true;
     updateStatusLight();
 }
 

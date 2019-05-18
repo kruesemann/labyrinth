@@ -318,26 +318,21 @@ function create(i, j, color, speed, formID, aiID) {
             
             formPlan(this, counter, this.ai);
         },
-        implementPlan: function(plan, counter) {
-            if (plan.update) {
-                if (plan.route.length) {
-                    this.route = plan.route;
-                    if (this.state.action !== CONSTANTS.ACTION_CHARGING) {
-                        this.state = {action: CONSTANTS.ACTION_CHARGING, start: counter};
-                        SOUND.play("charge", false, this.getCenter(), 50);
-                    }
-                    return;
-                }
+        charge: function(plan) {
+            this.route = plan.route;
+            if (this.state.action !== CONSTANTS.ACTION_CHARGING) {
+                this.state = {action: CONSTANTS.ACTION_CHARGING, start: Date.now()};
+                SOUND.play("charge", false, this.getCenter(), 50);
             }
-
-            if (this.route && this.route.length) return;
-
+        },
+        stopCharge: function() {
             if (this.state.action === CONSTANTS.ACTION_CHARGING) {
-                this.state = {action: CONSTANTS.ACTION_IDLE, start: counter};
+                this.state = {action: CONSTANTS.ACTION_IDLE, start: Date.now()};
                 SOUND.fadeOut("charging", 1000);
             }
-
-            formPlan(this, counter, AI.idle);
+        },
+        go: function(plan) {
+            this.route = plan.route;
         },
         idle: function(plan) {
             if (!plan.update) return;
@@ -458,9 +453,15 @@ function create(i, j, color, speed, formID, aiID) {
             };
             object.route = [];
             break;
-        case "lightAffine":
+        case "lightHunter":
             object.ai = function(self, counter) {
-                return AI.lightAffine(self, counter);
+                return AI.lightHunter(self, counter);
+            };
+            object.route = [];
+            break;
+        case "darkHunter":
+            object.ai = function(self, counter) {
+                return AI.darkHunter(self, counter);
             };
             object.route = [];
             break;

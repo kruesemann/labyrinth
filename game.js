@@ -106,6 +106,7 @@ export function increaseScore() {
 
 function loadNextMap() {
     STAGE.resetScene();
+    OVERLAY.levelReset();
     game.mapSeed = NOISE.nextMapSeed();
     MAP.initialize(game.mapSeed, 200, 200, game.seed, game.level);
 }
@@ -169,6 +170,7 @@ function gameloop() {
     MAP.ambientSound(game.counter);
     ANIMATION.animate();
     SOUND.controlVolume(game.counter);
+    OVERLAY.render(game.counter);
     OVERLAY.updateStatus(game.counter);
 
     LIGHT.renderLighting(game.counter);

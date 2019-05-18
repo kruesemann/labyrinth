@@ -49,7 +49,7 @@ export function loadingProgress() {
     for (const id of audio.soundIDs) {
         if (audio.sounds[id]) ++numLoaded;
     }
-    return Math.floor(100 * numLoaded / audio.soundIDs.length);
+    return audio.soundIDs.length ? Math.floor(100 * numLoaded / audio.soundIDs.length) : 100;
 }
 
 export function getAudioListener() {

@@ -174,8 +174,8 @@ float normnoise(float noise) {
     return 0.5 * (noise + 1.0);
 }
 
-float clouds(vec2 uv) {
-    uv += vec2(u_time * 0.05, u_time * 0.01);
+float clouds(vec2 uv, float time) {
+    uv += vec2(time * 0.05, time * 0.01);
     
     vec2 off1 = vec2(50.0, 33.0);
     vec2 off2 = vec2(0.0, 0.0);
@@ -189,12 +189,12 @@ float clouds(vec2 uv) {
     float scale4 = 24.0;
     float scale5 = 48.0;
     float scale6 = 96.0;
-    return normnoise(snoise(vec3((uv + off1) * scale1, u_time * 0.5)) * 0.8 + 
-                     snoise(vec3((uv + off2) * scale2, u_time * 0.4)) * 0.4 +
-                     snoise(vec3((uv + off3) * scale3, u_time * 0.1)) * 0.2 +
-                     snoise(vec3((uv + off4) * scale4, u_time * 0.7)) * 0.1 +
-                     snoise(vec3((uv + off5) * scale5, u_time * 0.2)) * 0.05 +
-                     snoise(vec3((uv + off6) * scale6, u_time * 0.3)) * 0.025);
+    return normnoise(snoise(vec3((uv + off1) * scale1, time * 0.5)) * 0.8 + 
+                     snoise(vec3((uv + off2) * scale2, time * 0.4)) * 0.4 +
+                     snoise(vec3((uv + off3) * scale3, time * 0.1)) * 0.2 +
+                     snoise(vec3((uv + off4) * scale4, time * 0.7)) * 0.1 +
+                     snoise(vec3((uv + off5) * scale5, time * 0.2)) * 0.05 +
+                     snoise(vec3((uv + off6) * scale6, time * 0.3)) * 0.025);
 }
 `;
 
@@ -604,7 +604,7 @@ void main(void) {
     gl_FragColor.rgb += vec3(overflow / 2.0);
     if (gl_FragColor.a == 0.0) {
         gl_FragColor.rgb = mix(u_color.rgb, vec3(dot(vec3(0.3, 0.59, 0.11), u_color.rgb)), 0.6);
-        float noise = pow(clouds(gl_FragCoord.xy / 100.0), 4.0);
+        float noise = pow(clouds(gl_FragCoord.xy / 100.0, u_time), 4.0);
         gl_FragColor.a = u_color.a / 10.0 * noise * smoothstep(0.0, 50.0, 50.0 - length((gl_FragCoord.xy - u_center) * vec2(1.1 + noise / 10.0, 1.0 + noise / 10.0)));
     }
 }

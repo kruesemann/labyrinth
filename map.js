@@ -289,7 +289,7 @@ export function rayCast(start, target) {
 }
 
 export function ambientSound(counter) {
-    if (counter % 10 !== 0) return;
+    if (counter % 20 !== 0) return;
 
     const nearestShrine = PLAYER.getNearestSecret("shrine");
     const nearestBeacon = PLAYER.getNearestSecret("beacon", (beacon) => {

@@ -52,15 +52,15 @@ export function levelReset() {
 }
 
 export function render(counter) {
-    if (counter % 100 === 0) {
+    if (counter % 200 === 0) {
         light.center = [light.size.x / 2 + Math.random() * 8 - 4, light.size.y / 2 + Math.random() * 16 - 8];
     }
-    if (counter % 10 === 0) {
+    if (counter % 20 === 0) {
         SHADER.luminosityUniforms.u_center.value[0] += SHADER.luminosityUniforms.u_center.value[0] < light.center[0] ? 0.5 : -0.5;
         SHADER.luminosityUniforms.u_center.value[1] += SHADER.luminosityUniforms.u_center.value[1] < light.center[1] ? 0.5 : -0.5;
     }
 
-    if (counter % 4 === 0) {
+    if (counter % 8 === 0) {
         SHADER.luminosityUniforms.u_color.value[3] = light.color[3] + Math.random() - 0.5;
         light.renderer.render(light.scene, light.camera);
     }
@@ -160,7 +160,7 @@ export function hideDialog() {
 }
 
 export function updateStatus(counter) {
-    if (counter % 50 !== 0) return;
+    if (counter % 100 !== 0) return;
 
     if (HINT.isPlayerNearHint()) {
         document.getElementById("status-help").style.opacity = 1;

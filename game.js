@@ -1,4 +1,3 @@
-import * as ANIMATION from "./animation.js";
 import * as CONSTANTS from "./constants.js";
 import * as INPUT from "./input.js";
 import * as INVENTORY from "./inventory.js";
@@ -105,10 +104,12 @@ export function increaseScore() {
 }
 
 function loadNextMap() {
+    STAGE.stopRendering();
     STAGE.resetScene();
     OVERLAY.levelReset();
     game.mapSeed = NOISE.nextMapSeed();
     MAP.initialize(game.mapSeed, 200, 200, game.seed, game.level);
+    STAGE.startRendering();
 }
 
 function resolveCollisions() {
@@ -151,7 +152,7 @@ function gameloop() {
 
     resolveCollisions();
 
-    requestAnimationFrame(gameloop);
+    setTimeout(_ => {requestAnimationFrame(gameloop);}, 1);
 
     if (game.counter === CONSTANTS.MAX_COUNTER) {
         game.counter = 0;
@@ -167,12 +168,7 @@ function gameloop() {
     game.nextLevel = PLAYER.move(game.counter);
     MAP.center();
     PLAYER.center();
-    MAP.ambientSound(game.counter);
-    ANIMATION.animate();
     SOUND.controlVolume(game.counter);
-    OVERLAY.render(game.counter);
-    OVERLAY.updateStatus(game.counter);
-
-    LIGHT.renderLighting(game.counter);
-    STAGE.render();
+    SECRET.startGleamAllWisps(game.counter);
+    LIGHT.dimAll(game.counter);
 }

@@ -24,13 +24,13 @@ export function create(i, j, dialog) {
 }
 
 export function getNearestHint() {
-    const {x, y} = PLAYER.getCenter();
+    const playerPos = PLAYER.getCenter();
     let nearestHint = undefined;
     let minDist = Infinity;
 
     for (const hint of hints) {
         const position = MAPUTIL.tileToCoords(hint.i, hint.j);
-        const dist = Math.hypot(position.x - x, position.y - y);
+        const dist = Math.hypot(position.x - playerPos.x, position.y - playerPos.y);
         if (dist < minDist) {
             nearestHint = hint;
             minDist = dist;

@@ -269,13 +269,20 @@ export function lightUpBeacon(x, y, baseColor) {
     return nearestBeacon.lightUp(baseColor);
 }
 
-export function gleamAllWisps(counter) {
+export function startGleamAllWisps(counter) {
     for (const uuid in secrets.wisps) {
         if (!secrets.wisps.hasOwnProperty(uuid)) continue;
         const wisp = secrets.wisps[uuid];
         if (counter % wisp.interval === 0) {
             wisp.startGleam();
         }
+    }
+}
+
+export function gleamAllWisps(counter) {
+    for (const uuid in secrets.wisps) {
+        if (!secrets.wisps.hasOwnProperty(uuid)) continue;
+        const wisp = secrets.wisps[uuid];
         if (counter % CONSTANTS.LIGHT_WISP_INTERVAL === 0) {
             wisp.gleam();
         }

@@ -98,7 +98,7 @@
     - [x] Hint
     - [ ] Form
     - [ ] Inventory
-    - [ ] Light
+    - [x] Light
 - [ ] Screens
     - [x] Game
     - [ ] Start
@@ -109,7 +109,7 @@
     - [x] In Dialog
 
 # Sound
-- [ ] Beacon lighting sound without particle sound
+- [x] Beacon lighting sound without particle sound
 - [ ] Death sound
 - [ ] Ambient sounds
     - [ ] Separate volume control
@@ -148,11 +148,8 @@
 
 # General
 - [x] Better RNG
-- [ ] Separate Game and Graphic Frames
+- [x] Separate Game and Graphic Frames
 
 # Bugs
 - [ ] Seed 879960546978, Level 1, aStar
-- [x] Lights break on deeper levels?!
-- [x] Maximum luminosity can be violated
 - [ ] Items in walls
-- [ ] Start and exit on the same tile

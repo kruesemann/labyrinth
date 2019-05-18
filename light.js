@@ -239,7 +239,7 @@ export function createParticle(x, y, color) {
 }
 
 export function flickerAll(counter) {
-    if (counter % 4 === 0) {
+    if (counter % 8 === 0) {
         for (const uuid in lightingMap.lights) {
             if (!lightingMap.lights.hasOwnProperty(uuid)) continue;
             const light = lightingMap.lights[uuid];
@@ -249,6 +249,9 @@ export function flickerAll(counter) {
             }
         }
     }
+}
+
+export function dimAll(counter) {
     if (counter % 10 === 0) {
         for (const uuid in lightingMap.lights) {
             if (!lightingMap.lights.hasOwnProperty(uuid)) continue;
@@ -293,10 +296,10 @@ export function renderLighting(counter) {
     SECRET.gleamAllWisps(counter);
     flickerAll(counter);
 
-    const {x, y} = PLAYER.getCenter();
+    const playerPos = PLAYER.getCenter();
     const mapDimensions = MAP.getTileMapInfo();
     const screenDimensions = STAGE.getScreenWorldDimensions();
-    SHADER.mapLightingUniforms.u_texelTranslation.value = [(x - screenDimensions.x / 2) / mapDimensions.numColumns, (y - screenDimensions.y / 2) / mapDimensions.numRows];
+    SHADER.mapLightingUniforms.u_texelTranslation.value = [(playerPos.x - screenDimensions.x / 2) / mapDimensions.numColumns, (playerPos.y - screenDimensions.y / 2) / mapDimensions.numRows];
     SHADER.mapUniforms.u_texture.value = STAGE.renderToTexture([lightingMap.mesh], lightingMap.dimensions);
 }
 

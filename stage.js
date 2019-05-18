@@ -5,6 +5,7 @@ import * as INPUT from "./input.js";
 import * as INVENTORY from "./inventory.js";
 import * as LIGHT from "./light.js";
 import * as MAP from "./map.js";
+import * as OVERLAY from "./overlay.js";
 import * as SOUND from "./sound.js";
 
 const renderer = new THREE.WebGLRenderer();
@@ -20,6 +21,8 @@ let stage = {
     scene: undefined,
     bufferCamera: undefined,
     bufferScene: undefined,
+    rendering : false,
+    counter: 0,
 };
 
 export function reset() {
@@ -50,6 +53,8 @@ export function reset() {
         scene: undefined,
         bufferCamera: undefined,
         bufferScene: undefined,
+        rendering : false,
+        counter: 0,
     };
 }
 
@@ -61,6 +66,8 @@ export function initialize() {
         scene: new THREE.Scene(),
         bufferCamera: undefined,
         bufferScene: undefined,
+        rendering : false,
+        counter: 0,
     };
 
     stage.camera.add(SOUND.getAudioListener());
@@ -116,7 +123,29 @@ export function zoom(delta) {
     LIGHT.initialize({x: 200, y: 200});
 }
 
-export function render() {
+export function startRendering() {
+    stage.rendering = true;
+}
+
+export function stopRendering() {
+    stage.rendering = false;
+}
+
+function render() {
+    requestAnimationFrame(render);
+    if (!stage.rendering) return;
+
+    if (stage.counter === CONSTANTS.MAX_COUNTER) {
+        stage.counter = 0;
+    } else {
+        ++stage.counter;
+    }
+
+    MAP.ambientSound(stage.counter);
+    ANIMATION.animate();
+    OVERLAY.render(stage.counter);
+    OVERLAY.updateStatus(stage.counter);
+    LIGHT.renderLighting(stage.counter);
 	renderer.render(stage.scene, stage.camera);
 }
 
@@ -173,3 +202,5 @@ export function renderToTexture(meshes, dimensions) {
 export function getScreenWorldDimensions() {
     return stage.camera.screenWorldDimensions;
 }
+
+requestAnimationFrame(render);

@@ -36,6 +36,10 @@ export function isTileWall(i, j, tileGetter) {
     return isTileOfType(i, j, CONSTANTS.WALL_TILES, tileGetter);
 }
 
+export function isTileNotWall(i, j, tileGetter) {
+    return !isTileWall(i, j, tileGetter);
+}
+
 export function isTileWater(i, j, tileGetter) {
     return isTileOfType(i, j, CONSTANTS.WATER_TILES, tileGetter);
 }
@@ -86,6 +90,35 @@ export function isTileWideWater(i, j, tileGetter) {
 
 export function isTileNarrowWater(i, j, tileGetter) {
     return isTileWater(i, j, tileGetter) && !isTileWideWater(i, j, tileGetter);
+}
+
+export function isTileNarrowPath(i, j, tileGetter, isAllowed) {
+    if (!isAllowed(i, j, tileGetter)) return false;
+
+    // adjacent tiles
+    if (!isAllowed(i, j - 1, tileGetter) && !isAllowed(i, j + 1, tileGetter)) return true;
+    if (!isAllowed(i - 1, j, tileGetter) && !isAllowed(i + 1, j, tileGetter)) return true;
+    
+    // diagonal tiles
+    for (let k = 4; k < 8; ++k) {
+        const dir = CONSTANTS.DIRECTIONS[k];
+        if (isAllowed(i + dir.i, j + dir.j, tileGetter)) continue;
+        if (!isAllowed(i - dir.i, j, tileGetter)) {
+            if (!isAllowed(i + dir.i, j - dir.j, tileGetter)) return true;
+            return isAllowed(i, j + dir.j, tileGetter);
+        }
+        if (!isAllowed(i, j - dir.j, tileGetter)) {
+            if (!isAllowed(i - dir.i, j + dir.j, tileGetter)) return true;
+            return isAllowed(i + dir.i, j, tileGetter);
+        }
+        if (!isAllowed(i - dir.i, j - dir.j, tileGetter)) return true;
+    }
+    
+    return false;
+}
+
+export function isTileNotNarrowPath(i, j, tileGetter) {
+    return isTileNotWall(i, j, tileGetter) && !isTileNarrowPath(i, j, tileGetter, isTileNotWall);
 }
 
 export function aStar(mapInfo, position, target, isAllowed, maxDist) {
@@ -156,7 +189,7 @@ export function aStar(mapInfo, position, target, isAllowed, maxDist) {
 
             const neighbor = compMap[(ni - mapStart.i) * (mapEnd.j - mapStart.j) + nj - mapStart.j];
 
-            if (neighbor.closed) continue;
+            if (!neighbor || neighbor.closed) continue;
             if (!isAllowed(ni, nj)) continue;
             if (dir.i !== 0
                 && dir.j !== 0

@@ -112,11 +112,11 @@ export function create(seed, numRows, numColumns, gameSeed, level) {
     placeOtherTiles();      // sets some parts of randomMap.tileMap to water, grass or secondary tiles
     labelAllBiomes();       // fills generationData.biomeGraph.biomes and generationData.biomeIDsOfType
     buildBiomeGraph();      // fills generationData.biomeGraph.adjMatrix
+    findFreeLocations();    // fills generationData.locationGrid (entries may be 0) and sets generationData.gridRows and generationData.gridColumns
     placeStart();           // sets features.start
     placeExit();            // sets features.exit
     findPathToExit();       // fills generationData.pathToExit
     placeWayPoints();       // fills features.wayPoints
-    findFreeLocations();    // fills generationData.locationGrid (entries may be 0) and sets generationData.gridRows and generationData.gridColumns
     placeSecrets();         // fills features.secrets
     placeItems();           // fills features.items
     placeEnemies();         // fills features.enemies
@@ -251,15 +251,15 @@ function initializeMetaData(mapSeed, gameSeed) {
         case CONSTANTS.MAP_TYPE_GROUND:
             metaData.numberBiomeTypes = 2;
             metaData.biomeTypes = [
-                {type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGround},
+                {type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGroundPath},
                 {type: CONSTANTS.WIDE_GROUND_BIOME, isAllowed: isTileGround},
             ];
             break;
         case CONSTANTS.MAP_TYPE_FLOODEDGROUND:
             metaData.numberBiomeTypes = 4;
             metaData.biomeTypes = [
-                {type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGround},
-                {type: CONSTANTS.NARROW_WATER_BIOME, isAllowed: isTileNarrowWater},
+                {type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGroundPath},
+                {type: CONSTANTS.NARROW_WATER_BIOME, isAllowed: isTileNarrowWaterPath},
                 {type: CONSTANTS.WIDE_GROUND_BIOME, isAllowed: isTileGround},
                 {type: CONSTANTS.WIDE_WATER_BIOME, isAllowed: isTileWater},
             ];
@@ -267,22 +267,22 @@ function initializeMetaData(mapSeed, gameSeed) {
         case CONSTANTS.MAP_TYPE_DEVELOPED:
             metaData.numberBiomeTypes = 2;
             metaData.biomeTypes = [
-                {type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGround},
+                {type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGroundPath},
                 {type: CONSTANTS.WIDE_GROUND_BIOME, isAllowed: isTileGround},
             ];
             break;
         case CONSTANTS.MAP_TYPE_ROCK:
             metaData.numberBiomeTypes = 2;
             metaData.biomeTypes = [
-                {type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGround},
+                {type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGroundPath},
                 {type: CONSTANTS.WIDE_GROUND_BIOME, isAllowed: isTileGround},
             ];
             break;
         case CONSTANTS.MAP_TYPE_FLOODEDROCK:
             metaData.numberBiomeTypes = 4;
             metaData.biomeTypes = [
-                {type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGround},
-                {type: CONSTANTS.NARROW_WATER_BIOME, isAllowed: isTileNarrowWater},
+                {type: CONSTANTS.NARROW_GROUND_BIOME, isAllowed: isTileNarrowGroundPath},
+                {type: CONSTANTS.NARROW_WATER_BIOME, isAllowed: isTileNarrowWaterPath},
                 {type: CONSTANTS.WIDE_GROUND_BIOME, isAllowed: isTileGround},
                 {type: CONSTANTS.WIDE_WATER_BIOME, isAllowed: isTileWater},
             ];
@@ -801,79 +801,6 @@ function findBiomePath(startTile, targetTile) {
 }
 
 /**
- * determines the starting coordinates in a fitting biome randomly
- * 
- * @modifies randomMap.tileMap[i].type
- * @modifies features.start
- */
-function placeStart() {
-    const wideGroundBiomes = getBiomesOfType(CONSTANTS.WIDE_GROUND_BIOME);
-    let index = NOISE.randomInt(0, wideGroundBiomes.length - 1);
-    for (let i = index; i !== index - 1; i = (i + 1) % (wideGroundBiomes.length - 1)) {
-        if (wideGroundBiomes[i].size > Math.sqrt(randomMap.numRows * randomMap.numColumns)) {
-            index = i;
-            break;
-        }
-    }
-    const startBiome = wideGroundBiomes[index];
-    features.start = {i: startBiome.i, j: startBiome.j};
-    getTile(startBiome.i, startBiome.j).type = CONSTANTS.TILE_ENTRANCE;
-}
-
-/**
- * determines the exit coordinates in a fitting biome farthest away from features.start
- * 
- * @modifies randomMap.tileMap[i].type
- * @modifies features.exit
- */
-function placeExit() {
-    const wideGroundBiomes = getBiomesOfType(CONSTANTS.WIDE_GROUND_BIOME);
-    let maxDist = 0;
-    let maxIndex = 0;
-    for (let i = 0; i < wideGroundBiomes.length; ++i) {
-        if (wideGroundBiomes[i].size > Math.sqrt(randomMap.numRows * randomMap.numColumns)) {
-            const dist = Math.hypot(wideGroundBiomes[i].i - features.start.i, wideGroundBiomes[i].j - features.start.j, 2);
-            if (dist > maxDist) {
-                maxDist = dist;
-                maxIndex = i;
-            }
-        }
-    }
-    const exitBiome = wideGroundBiomes[maxIndex];
-    features.exit = {i: exitBiome.i, j: exitBiome.j};
-    getTile(exitBiome.i, exitBiome.j).type = CONSTANTS.TILE_EXIT;
-}
-
-/**
- * finds a path through generationData.biomeGraph from features.start to features.exit
- * 
- * @modifies generationData.pathToExit
- */
-function findPathToExit() {
-    generationData.pathToExit = findBiomePath(getTile(features.start.i, features.start.j), getTile(features.exit.i, features.exit.j));
-}
-
-/**
- * places waypoints along a path to the exit
- * 
- * @modifies features.wayPoints
- */
-function placeWayPoints() {
-    const start = MAPUTIL.tileToCenter(features.start.i, features.start.j);
-    const target = MAPUTIL.tileToCenter(features.exit.i, features.exit.j);
-    const path = MAPUTIL.aStar({numColumns: randomMap.numColumns, numRows: randomMap.numRows}, start, target, isTileNotWall);
-    let counter = 50;
-    for (const coords of path) {
-        if (counter === 50) {
-            features.wayPoints.push(coords);
-            counter = 0;
-        } else {
-            ++counter;
-        }
-    }
-}
-
-/**
  * finds locations with free space in the vicinity for the placement of features
  * 
  * @modifies generationData.locationGrid
@@ -1009,7 +936,7 @@ function findFreeLocations() {
  * 
  * @returns location // the nice random location
  */
-function getRandomLocation(useCaverns, useGrid) {
+function getRandomLocation(useCaverns, useGrid, position, radius) {
     const locations = [];
 
     if (useCaverns) {
@@ -1018,6 +945,10 @@ function getRandomLocation(useCaverns, useGrid) {
             const gridIndex = Math.round(i / CONSTANTS.LOCATION_DIST) * generationData.gridColumns + Math.round(j / CONSTANTS.LOCATION_DIST);
 
             if (generationData.locationGrid[gridIndex] === 0) continue;
+            if (position && radius) {
+                const dist = Math.hypot(cavern.x - position.x, cavern.y - position.y);
+                if (dist < radius) continue;
+            }
 
             locations.push({i, j});
         }
@@ -1028,7 +959,13 @@ function getRandomLocation(useCaverns, useGrid) {
             if (generationData.locationGrid[k] === 0) continue;
 
             const di = NOISE.randomInt(1 - CONSTANTS.LOCATION_RADIUS, CONSTANTS.LOCATION_RADIUS - 1);
-            const dj = NOISE.randomInt(di + 1 - CONSTANTS.LOCATION_RADIUS, CONSTANTS.LOCATION_RADIUS - 1 - di);
+            const dj = NOISE.randomInt(Math.abs(di) + 1 - CONSTANTS.LOCATION_RADIUS, CONSTANTS.LOCATION_RADIUS - 1 - Math.abs(di));
+
+            if (position && radius) {
+                const {x, y} = MAPUTIL.tileToCenter(generationData.locationGrid[k].i + di, generationData.locationGrid[k].j + dj);
+                const dist = Math.hypot(x - position.x, y - position.y);
+                if (dist < radius) continue;
+            }
 
             locations.push({
                 i: generationData.locationGrid[k].i + di,
@@ -1045,90 +982,153 @@ function getRandomLocation(useCaverns, useGrid) {
 }
 
 /**
+ * determines the starting coordinates in a fitting biome randomly
+ * 
+ * @modifies features.start
+ */
+function placeStart() {
+    const wideGroundBiomes = getBiomesOfType(CONSTANTS.WIDE_GROUND_BIOME);
+    if (!wideGroundBiomes.length) {
+        features.start = {i: 1, j: 1};
+        getTile(features.start.i, features.start.j).type = CONSTANTS.TILE_ENTRANCE;
+        return;
+    }
+    let index = NOISE.randomInt(0, wideGroundBiomes.length - 1);
+    for (let i = index; i !== (index - 1) % (wideGroundBiomes.length - 1); i = (i + 1) % (wideGroundBiomes.length - 1)) {
+        if (wideGroundBiomes[i].size > 2 * Math.sqrt(randomMap.numRows * randomMap.numColumns)) {
+            index = i;
+            break;
+        }
+    }
+    const startBiome = wideGroundBiomes[index];
+    features.start = {i: startBiome.i, j: startBiome.j};
+    getTile(features.start.i, features.start.j).type = CONSTANTS.TILE_ENTRANCE;
+}
+
+/**
+ * determines the exit coordinates in a fitting biome farthest away from features.start
+ * 
+ * @modifies features.exit
+ */
+function placeExit() {
+    const wideGroundBiomes = getBiomesOfType(CONSTANTS.WIDE_GROUND_BIOME);
+    let maxDist = 0;
+    let maxIndex = 0;
+    for (let i = 0; i < wideGroundBiomes.length; ++i) {
+        if (wideGroundBiomes[i].size > Math.sqrt(randomMap.numRows * randomMap.numColumns)) {
+            const dist = Math.hypot(wideGroundBiomes[i].i - features.start.i, wideGroundBiomes[i].j - features.start.j, 2);
+            if (dist > maxDist) {
+                maxDist = dist;
+                maxIndex = i;
+            }
+        }
+    }
+
+    if (maxDist < 50) {
+        const location = getRandomLocation(false, true, features.start, 50);
+        if (!location) {
+            features.exit = {i: features.start.i + 1, j: features.start.j};
+            getTile(features.exit.i, features.exit.j).type = CONSTANTS.TILE_EXIT;
+            return;
+        }
+        features.exit = {i: location.i, j: location.j};
+        getTile(features.exit.i, features.exit.j).type = CONSTANTS.TILE_EXIT;
+        return;
+    }
+
+    const exitBiome = wideGroundBiomes[maxIndex];
+    features.exit = {i: exitBiome.i, j: exitBiome.j};
+    getTile(features.exit.i, features.exit.j).type = CONSTANTS.TILE_EXIT;
+}
+
+/**
+ * finds a path through generationData.biomeGraph from features.start to features.exit
+ * 
+ * @modifies generationData.pathToExit
+ */
+function findPathToExit() {
+    generationData.pathToExit = findBiomePath(getTile(features.start.i, features.start.j), getTile(features.exit.i, features.exit.j));
+}
+
+/**
+ * places waypoints along a path to the exit
+ * 
+ * @modifies features.wayPoints
+ */
+function placeWayPoints() {
+    const start = MAPUTIL.tileToCenter(features.start.i, features.start.j);
+    const target = MAPUTIL.tileToCenter(features.exit.i, features.exit.j);
+    const path = MAPUTIL.aStar({numColumns: randomMap.numColumns, numRows: randomMap.numRows}, start, target, isTileNotWall);
+    let counter = 50;
+    for (const coords of path) {
+        if (counter === 50) {
+            features.wayPoints.push(coords);
+            counter = 0;
+        } else {
+            ++counter;
+        }
+    }
+}
+
+/**
  * places secrets in fitting locations around the map
  * 
- * @modifies randomMap.tileMap
+ * @modifies randomMap.tileMap.type
  * @modifies features.secrets
  * @modifies generationData.locationGrid
  */
 function placeSecrets() {
-    // shrines
-    function placeShrineTiles(i, j) {
-        function place(m, n) {
-            if (m < 1 || m > randomMap.numRows - 2 || n < 1 || n > randomMap.numColumns - 2) return;
-            getTile(m, n).type = CONSTANTS.TILE_PAVED;
-        }
-        for (let k = 0; k < 3; ++k) {
-            for (let l = 0; l < 3; ++l) {
-                place(i + k, j + l);
-                place(i + k, j - l);
-                place(i - k, j + l);
-                place(i - k, j - l);
-            }
-        }
-        getTile(i, j).type = CONSTANTS.TILE_SHRINE;
+    function place(i, j, tileType) {
+        if (i < 1 || i > randomMap.numRows - 2 || j < 1 || j > randomMap.numColumns - 2) return;
+        if (!MAPUTIL.isTileOfType(i, j, [
+            CONSTANTS.TILE_DEEPWATER,
+            CONSTANTS.TILE_WATER,
+            CONSTANTS.TILE_DIRT,
+            CONSTANTS.TILE_GRASS,
+            CONSTANTS.TILE_ROCK,
+            CONSTANTS.TILE_HIGHWALL,
+            CONSTANTS.TILE_WALL,
+        ], getTile)) return false;
+        getTile(i, j).type = tileType;
+        return true;
     }
 
+    // shrines
+    function placeShrineTiles(i, j) {
+        for (let k = 0; k < 3; ++k) {
+            for (let l = 0; l < 3; ++l) {
+                if (k === 0 && l === 0) continue;
+                place(i + k, j + l, CONSTANTS.TILE_PAVED);
+                place(i + k, j - l, CONSTANTS.TILE_PAVED);
+                place(i - k, j + l, CONSTANTS.TILE_PAVED);
+                place(i - k, j - l, CONSTANTS.TILE_PAVED);
+            }
+        }
+        place(i, j, CONSTANTS.TILE_SHRINE);
+    }
 
+    const shrines = [];
+    if (generationData.pathToExit.length) {
+        shrines.push({biome: generationData.pathToExit[generationData.pathToExit.length - 1], location: features.exit});
+    }
     let dot = false;
     let box = false;
     let snake = false;
     for (let i = 0; i < generationData.pathToExit.length; ++i) {
         const biome = generationData.pathToExit[i];
-        let formIDs = [];
-        if (snake || box && dot) {
-            formIDs.push("snake");
-            if (biome.type !== CONSTANTS.NARROW_GROUND_BIOME
-            && biome.type !== CONSTANTS.NARROW_WATER_BIOME) {
-                formIDs.push("box");
-            }
-            if (biome.type !== CONSTANTS.WIDE_WATER_BIOME
-            && biome.type !== CONSTANTS.NARROW_WATER_BIOME) {
-                formIDs.push("dot");
-            }
-        }
-        else if (box) {
-            if (biome.type !== CONSTANTS.NARROW_GROUND_BIOME
-            && biome.type !== CONSTANTS.NARROW_WATER_BIOME) {
-                formIDs.push("box");
-            } else {
-                formIDs.push("snake");
-            }
-            if (biome.type !== CONSTANTS.WIDE_WATER_BIOME
-            && biome.type !== CONSTANTS.NARROW_WATER_BIOME) {
-                formIDs.push("dot");
-            }
-        } else if (dot) {
-            if (biome.type !== CONSTANTS.NARROW_GROUND_BIOME
-            && biome.type !== CONSTANTS.NARROW_WATER_BIOME) {
-                formIDs.push("box");
-            }
-            if (biome.type !== CONSTANTS.WIDE_WATER_BIOME
-            && biome.type !== CONSTANTS.NARROW_WATER_BIOME) {
-                formIDs.push("dot");
-            } else {
-                formIDs.push("snake");
-            }
-        }
 
-        if (formIDs.length) {
+        if (biome.size > 50 && (dot || box || snake)) {
+            const shrine = {biome};
+            dot = box = snake = false;
+
             if (biome.locations.length > 0) {
-                const locationIndex = NOISE.randomInt(0, biome.locations.length - 1);
-                features.secrets.push({type: "shrine", i: biome.locations[locationIndex].i, j: biome.locations[locationIndex].j, formIDs});
-                generationData.locationGrid[Math.round(biome.locations[locationIndex].i / CONSTANTS.LOCATION_DIST) * generationData.gridColumns + Math.round(biome.locations[locationIndex].j / CONSTANTS.LOCATION_DIST)] = 0;
-                dot = box = snake = false;
-                placeShrineTiles(biome.locations[locationIndex].i, biome.locations[locationIndex].j);
+                shrine.location = biome.locations[NOISE.randomInt(0, biome.locations.length - 1)];
             } else if (i === generationData.pathToExit.length - 1 || i === 0) {
-                features.secrets.push({type: "shrine", i: biome.i, j: biome.j + 2, formIDs});
-                generationData.locationGrid[Math.round(biome.i / CONSTANTS.LOCATION_DIST) * generationData.gridColumns + Math.round(biome.j / CONSTANTS.LOCATION_DIST)] = 0;
-                dot = box = snake = false;
-                placeShrineTiles(biome.i, biome.j + 2);
-            } else if (biome.size > 50) {
-                features.secrets.push({type: "shrine", i: biome.i, j: biome.j, formIDs});
-                generationData.locationGrid[Math.round(biome.i / CONSTANTS.LOCATION_DIST) * generationData.gridColumns + Math.round(biome.j / CONSTANTS.LOCATION_DIST)] = 0;
-                dot = box = snake = false;
-                placeShrineTiles(biome.i, biome.j);
+                shrine.location = {i: biome.i, j: biome.j + 3};
+            } else {
+                shrine.location = {i: biome.i, j: biome.j};
             }
+            shrines.push(shrine);
         }
         
         if (biome.type === CONSTANTS.NARROW_GROUND_BIOME) dot = true;
@@ -1136,8 +1136,59 @@ function placeSecrets() {
         else if (biome.type === CONSTANTS.NARROW_WATER_BIOME) snake = true;
     }
 
+    const DOT = 1;
+    const BOX = 2;
+    let currentForm = 3;
+    for (let i = shrines.length - 1; i > 0; --i) {
+        const shrine = shrines[i];
+
+        const start = MAPUTIL.tileToCenter(shrine.location.i, shrine.location.j);
+        const target = MAPUTIL.tileToCenter(shrines[i - 1].location.i, shrines[i - 1].location.j);
+
+        if ((currentForm & DOT) && !MAPUTIL.aStar({numColumns: randomMap.numColumns, numRows: randomMap.numRows}, start, target, isTileGround).length
+        || (currentForm & BOX) && !MAPUTIL.aStar({numColumns: randomMap.numColumns, numRows: randomMap.numRows}, start, target, isTileNotNarrowPath).length
+        || !(currentForm & DOT) && !(currentForm & BOX)) {
+            const formIDs = ["snake"];
+            currentForm = 0;
+            if (shrine.biome.type !== CONSTANTS.WIDE_WATER_BIOME
+            && shrine.biome.type !== CONSTANTS.NARROW_WATER_BIOME) {
+                formIDs.push("dot");
+                currentForm += DOT;
+            }
+            if (shrine.biome.type !== CONSTANTS.NARROW_GROUND_BIOME
+            && shrine.biome.type !== CONSTANTS.NARROW_WATER_BIOME) {
+                formIDs.push("box");
+                currentForm += BOX;
+            }
+            features.secrets.push({type: "shrine", i: shrine.location.i, j: shrine.location.j, formIDs});
+            generationData.locationGrid[Math.round(shrine.location.i / CONSTANTS.LOCATION_DIST) * generationData.gridColumns + Math.round(shrine.location.j / CONSTANTS.LOCATION_DIST)] = 0;
+            placeShrineTiles(shrine.location.i, shrine.location.j);
+        }
+    }
+
+    const numRandomShrines = NOISE.randomInt(1, 3);
+
+    for (let i = 0; i < numRandomShrines; ++i) {
+        const location = getRandomLocation(false, true);
+        if (!location) {
+            break;
+        }
+        const formIDs = ["dot", "box", "snake"];
+        const biomeType = generationData.biomeGraph.biomes[getTile(location.i, location.j).biomeID].type;
+        if (biomeType !== CONSTANTS.WIDE_WATER_BIOME
+        && biomeType !== CONSTANTS.NARROW_WATER_BIOME) {
+            formIDs.push("dot");
+        }
+        if (biomeType !== CONSTANTS.NARROW_GROUND_BIOME
+        && biomeType !== CONSTANTS.NARROW_WATER_BIOME) {
+            formIDs.push("box");
+        }
+        features.secrets.push({type: "shrine", i: location.i, j: location.j, formIDs});
+        placeShrineTiles(location.i, location.j);
+    }
+
     // wisps
-    const numWisps = NOISE.randomInt(0, 5);
+    const numWisps = NOISE.randomInt(5, 10);
 
     for (let i = 0; i < numWisps; ++i) {
         const location = getRandomLocation(false, true);
@@ -1151,11 +1202,11 @@ function placeSecrets() {
 
     // beacons
     function placeBeaconTiles(i, j) {
-        getTile(i - 1, j).type = CONSTANTS.TILE_BEACON;
-        getTile(i, j - 1).type = CONSTANTS.TILE_BEACON;
-        getTile(i, j).type = CONSTANTS.TILE_BEACON;
-        getTile(i, j + 1).type = CONSTANTS.TILE_BEACON;
-        getTile(i + 1, j).type = CONSTANTS.TILE_BEACON;
+        place(i - 1, j, CONSTANTS.TILE_BEACON);
+        place(i, j - 1, CONSTANTS.TILE_BEACON);
+        place(i, j, CONSTANTS.TILE_BEACON);
+        place(i, j + 1, CONSTANTS.TILE_BEACON);
+        place(i + 1, j, CONSTANTS.TILE_BEACON);
     }
 
     const numBeacons = NOISE.randomInt(1, 3);
@@ -1177,25 +1228,32 @@ function placeSecrets() {
         if (!location) {
             break;
         }
-        const color = [NOISE.randomDouble(0.3, 1), NOISE.randomDouble(0.3, 1), NOISE.randomDouble(0.3, 1), 0];
+        let color = [NOISE.randomDouble(0.1, 1), NOISE.randomDouble(0.1, 1), NOISE.randomDouble(0.1, 1), 0];
+        const factor = color[0] < color[1] ? (color[1] < color[2] ? 1 / color[2] : 1 / color[1]) : (color[0] < color[2] ? 1 / color[2] : 1 / color[0]);
+        color[0] *= factor;
+        color[1] *= factor;
+        color[2] *= factor;
         features.secrets.push({type: "invisible", i: location.i, j: location.j, item: {type: "coloredLight", color}});
     }
 
     // particle puzzles
-    const numParticlePuzzles = 1;
+    const numParticlePuzzles = NOISE.randomInt(0, 1);
 
     for (let i = 0; i < numParticlePuzzles; ++i) {
         const location = getRandomLocation(true, true);
         if (!location) {
             break;
         }
-        const points = [
-            {i: location.i + 3, j: location.j},
-            {i: location.i - 3, j: location.j}
-        ];
-        for (const point of points) {
-            getTile(point.i, point.j).type = CONSTANTS.TILE_PAVED;
+
+        const numPoints = NOISE.randomInt(1, 5);
+        const points = [];
+        for (let j = 0; j < numPoints; ++j) {
+            const point = {i: location.i + NOISE.randomInt(-5, 5), j: location.j + NOISE.randomInt(-5, 5)}
+            if (place(point.i, point.j, CONSTANTS.TILE_PAVED)) {
+                points.push(point);
+            }
         }
+
         features.secrets.push({type: "particlePuzzle", i: location.i, j: location.j, points, item: {type: "sendlight", brightness: 20}});
     }
 }
@@ -1241,12 +1299,12 @@ function placeEnemies() {
     if (!possibleEnemyLocations.length) return;
     const index1 = NOISE.randomInt(0, possibleEnemyLocations.length - 1);
     const location1 = possibleEnemyLocations.splice(index1, 1)[0];
-    features.enemies.push({i: location1.i, j: location1.j, color: [0.5, 0, 0], speed: 5, formID: "snake", aiID: "lightAffine"});
+    features.enemies.push({i: location1.i, j: location1.j, color: [0.5, 0, 0], speed: 5, formID: "snake", aiID: "lightHunter"});
 
     if (!possibleEnemyLocations.length) return;
     const index2 = NOISE.randomInt(0, possibleEnemyLocations.length - 1);
     const location2 = possibleEnemyLocations.splice(index2, 1)[0];
-    features.enemies.push({i: location2.i, j: location2.j, color: [0.5, 0, 0], speed: 3, formID: "dot", aiID: "proxHunter"});
+    features.enemies.push({i: location2.i, j: location2.j, color: [0.5, 0, 0], speed: 3, formID: "dot", aiID: "darkHunter"});
 }
 
 /**
@@ -1389,42 +1447,21 @@ function isTileWall(i, j) {
 }
 
 function isTileNotWall(i, j) {
-    return !isTileWall(i, j);
+    return MAPUTIL.isTileNotWall(i, j, getTile);
 }
 
 function isTileWater(i, j) {
     return MAPUTIL.isTileWater(i, j, getTile);
 }
 
-function isTileNarrow(i, j, isAllowed) {
-    if (!isAllowed(i, j)) return false;
-
-    // adjacent tiles
-    if (!isAllowed(i, j - 1) && !isAllowed(i, j + 1)) return true;
-    if (!isAllowed(i - 1, j) && !isAllowed(i + 1, j)) return true;
-    
-    // diagonal tiles
-    for (let k = 4; k < 8; ++k) {
-        const dir = CONSTANTS.DIRECTIONS[k];
-        if (isAllowed(i + dir.i, j + dir.j)) continue;
-        if (!isAllowed(i - dir.i, j)) {
-            if (!isAllowed(i + dir.i, j - dir.j)) return true;
-            return isAllowed(i, j + dir.j);
-        }
-        if (!isAllowed(i, j - dir.j)) {
-            if (!isAllowed(i - dir.i, j + dir.j)) return true;
-            return isAllowed(i + dir.i, j);
-        }
-        if (!isAllowed(i - dir.i, j - dir.j)) return true;
-    }
-    
-    return false;
+function isTileNarrowGroundPath(i, j) {
+    return MAPUTIL.isTileNarrowPath(i, j, getTile, isTileGround);
 }
 
-function isTileNarrowGround(i, j) {
-    return isTileNarrow(i, j, isTileGround);
+function isTileNarrowWaterPath(i, j) {
+    return MAPUTIL.isTileNarrowPath(i, j, getTile, isTileWater);
 }
 
-function isTileNarrowWater(i, j) {
-    return isTileNarrow(i, j, isTileWater);
+function isTileNotNarrowPath(i, j) {
+    return MAPUTIL.isTileNotNarrowPath(i, j, getTile);
 }

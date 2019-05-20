@@ -34,8 +34,8 @@
     - [x] Near monsters can be heard
     - [x] Idle behaviour
     - [x] Chasing AI
-    - [ ] Light-affine AI
-    - [ ] Light-avoiding AI
+    - [x] Light-affine AI
+    - [x] Light-avoiding AI
     - [ ] Different sounds
 
 # Secrets
@@ -66,10 +66,10 @@
     - [ ] Grand cavern
     - [ ] Narrows
 - [x] Deterministic seeds
-- [ ] Item placement
+- [x] Item placement
 - [ ] Enemy placement
 - [ ] Secret placement
-    - [ ] Shrines
+    - [x] Shrines
     - [x] Wisps
     - [x] Beacons
     - [ ] Rooms
@@ -87,6 +87,7 @@
 - [ ] Game Menu
     - [x] Seed selection
     - [ ] Saving
+    - [ ] Difficulty
     - [x] Options
     - [x] Controls
 - [ ] Info
@@ -126,7 +127,7 @@
     - [x] Hit sparks
     - [x] Invisible item gleam
     - [x] Snake dance animation
-    - [ ] Other dance animations
+    - [x] Other dance animations
     - [ ] Healing
     - [ ] Transformation
     - [ ] Particle drop sparks
@@ -151,5 +152,4 @@
 - [x] Separate Game and Graphic Frames
 
 # Bugs
-- [ ] Seed 879960546978, Level 1, aStar
-- [ ] Items in walls
+

@@ -13,7 +13,6 @@ const light = {
     color: [0, 0, 0, 0],
     center: [50, 50]
 };
-light.camera.position.z = 10;
 light.scene.add(light.camera);
 light.renderer.setSize(light.size.x, light.size.y);
 document.getElementById("status-light").appendChild(light.renderer.domElement);

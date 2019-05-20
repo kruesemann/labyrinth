@@ -199,6 +199,12 @@ export function heal() {
     updateStatusLight();
 }
 
+export function increaseLuminosityMax() {
+    player.luminosityMax = UTILITY.add(player.luminosityMax, CONSTANTS.PLAYER_LUMINOSITY_MAX_GROWTH);
+    if (player.luminosityMax > CONSTANTS.PLAYER_LUMINOSITY_MAX_MAX);
+    player.luminosityMax = CONSTANTS.PLAYER_LUMINOSITY_MAX_MAX;
+}
+
 function updateStatusLight() {
     OVERLAY.setLight([player.light.color[0], player.light.color[1], player.light.color[2], getLuminosity()]);
 }

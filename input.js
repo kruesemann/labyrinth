@@ -208,6 +208,9 @@ function keyDownGame(event) {
             INVENTORY.addHintlight(5);
             INVENTORY.addSendlight(20, 5);
             break;
+        case 78://n
+            PLAYER.increaseLuminosityMax();
+            break;
     }
 }
 

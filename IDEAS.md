@@ -6,7 +6,7 @@
     * enemies take luminosity from the player
     * if the luminosity reaches zero the player dies
     * star fragments and beacons replenish luminosity to a maximum value
-    * special items can increase maximum luminosity
+    * special events or places can increase maximum luminosity
     * what happens when maximum luminosity is reached? can the player still collect star fragments?
     * it has to be very clear to the player when maximum luminosity is reached
 
@@ -73,6 +73,8 @@
     * not through normal help
     * powerful factions are encountered more often and they have more loot
 
+* creepy faction giving you items of dubious origin under vague terms
+
 ## Goal
 
 * find exit
@@ -94,9 +96,10 @@
 
 * grove with star fragments
 
-* invisible items revealed by flare
-
 * crystal-encased items obtainable with the help of flare
+
+* places or events that will increase maximum luminosity or let light replenish faster
+    * "you are small. you cannot carry that power. let me help you."
 
 ## Objects
 

@@ -155,7 +155,7 @@ function createBoxForm(x, y, color) {
                 || MAP.isNextTileOfType(this.nodes[3].x, this.nodes[3].y, dx, dy, CONSTANTS.FORBIDDEN_BOX_TILES);
         },
         isAllowed: function(i, j) {
-            return !MAP.isTileWall(i, j);
+            return MAP.isTileNotWall(i, j);
         },
         getCenter: function() {
             return {x: this.nodes[0].x + 0.5, y: this.nodes[0].y + 0.5};
@@ -277,7 +277,7 @@ function createSnakeForm(x, y, color) {
             return MAP.isNextTileOfType(this.nodes[0].x, this.nodes[0].y, dx, dy, CONSTANTS.FORBIDDEN_SNAKE_TILES);
         },
         isAllowed: function(i, j) {
-            return !MAP.isTileWall(i, j);
+            return MAP.isTileNotWall(i, j);
         },
         getCenter: function() {
             return this.nodes[0];

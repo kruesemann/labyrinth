@@ -14,6 +14,7 @@ const KEY_F11   = 122;
 
 let transformBuffer = {sequence: [-1, -1, -1, -1], startIndex: 0, ongoing: false, shrine: undefined};
 let state = CONSTANTS.STATE_MENU;
+let mouse = {x: 0, y: 0};
 
 export function menuControls() {
     state = CONSTANTS.STATE_MENU;
@@ -74,7 +75,12 @@ function wheelHandler(event) {
     STAGE.zoom(event.wheelDelta || -event.detail);
 }
 
-function keyDownGame(event) {
+function mouseHandler(event) {
+    mouse.x = event.clientX;
+    mouse.y = event.clientY;
+}
+
+function downGame(bindingValue) {
     function checkTransformationSequence() {
         let transformationCode = 0;
         for (let i = 0; i < 4; ++i) {
@@ -115,80 +121,118 @@ function keyDownGame(event) {
         }
     }
 
-    switch (event.keyCode) {
-        case OPTIONS.gameControls.browse:
-            INVENTORY.browseRight();
-            break;
-        case OPTIONS.gameControls.menu:
-            OVERLAY.ingameMenu();
-            break;
-        case OPTIONS.gameControls.transform:
-            if (!transformBuffer.ongoing) {
-                transformBuffer.shrine = PLAYER.getNearestSecret("shrine");
-                if (transformBuffer.shrine
-                && transformBuffer.shrine.positionDist < 5) {
-                    transformBuffer.ongoing = true;
-                    SOUND.loop("transforming", 100);
-                }
-            }
-            break;
-        case OPTIONS.gameControls.gLeft:
-            PLAYER.moveLeft();
-            if (transformBuffer.ongoing) {
-                transformBuffer.sequence[transformBuffer.startIndex] = 1;
-                transformBuffer.startIndex = (transformBuffer.startIndex + 1) % 4;
-                checkTransformationSequence();
-            }
-            break;
-        case OPTIONS.gameControls.gUp:
-            PLAYER.moveUp();
-            if (transformBuffer.ongoing) {
-                transformBuffer.sequence[transformBuffer.startIndex] = 2;
-                transformBuffer.startIndex = (transformBuffer.startIndex + 1) % 4;
-                checkTransformationSequence();
-            }
-            break;
-        case OPTIONS.gameControls.gRight:
-            PLAYER.moveRight();
-            if (transformBuffer.ongoing) {
-                transformBuffer.sequence[transformBuffer.startIndex] = 3;
-                transformBuffer.startIndex = (transformBuffer.startIndex + 1) % 4;
-                checkTransformationSequence();
-            }
-            break;
-        case OPTIONS.gameControls.gDown:
-            PLAYER.moveDown();
-            if (transformBuffer.ongoing) {
-                transformBuffer.sequence[transformBuffer.startIndex] = 4;
-                transformBuffer.startIndex = (transformBuffer.startIndex + 1) % 4;
-                checkTransformationSequence();
-            }
-            break;
-        case OPTIONS.gameControls.gSkip:
-            DIALOG.skipCurrent();
-            break;
-        case OPTIONS.gameControls.particle:
-            PLAYER.dropParticle();
-            break;
-        case OPTIONS.gameControls.flare:
-            PLAYER.flare();
-            break;
-        case OPTIONS.gameControls.hint:
-            const nearestHint = HINT.getNearestHint();
-            if (nearestHint.playerDist < 5) {
-                nearestHint.show();
-            }
-            break;
-        case OPTIONS.gameControls.useItem:
-            INVENTORY.useItem();
-            break;
-        case OPTIONS.gameControls.pause:
-            GAME.togglePause();
-            break;
-        case OPTIONS.gameControls.gStop:
-            DIALOG.stop();
-            break;
+    if (bindingValue.code === OPTIONS.gameControls.browse.code
+    && bindingValue.key === OPTIONS.gameControls.browse.key) {
+        INVENTORY.browseRight();
     }
+
+    if (bindingValue.code === OPTIONS.gameControls.menu.code
+    && bindingValue.key === OPTIONS.gameControls.menu.key) {
+        OVERLAY.ingameMenu();
+    }
+
+    if (bindingValue.code === OPTIONS.gameControls.transform.code
+    && bindingValue.key === OPTIONS.gameControls.transform.key) {
+        if (!transformBuffer.ongoing) {
+            transformBuffer.shrine = PLAYER.getNearestSecret("shrine");
+            if (transformBuffer.shrine
+            && transformBuffer.shrine.positionDist < 5) {
+                transformBuffer.ongoing = true;
+                SOUND.loop("transforming", 100);
+            }
+        }
+    }
+
+    if (bindingValue.code === OPTIONS.gameControls.gLeft.code
+    && bindingValue.key === OPTIONS.gameControls.gLeft.key) {
+        PLAYER.moveLeft();
+        if (transformBuffer.ongoing) {
+            transformBuffer.sequence[transformBuffer.startIndex] = 1;
+            transformBuffer.startIndex = (transformBuffer.startIndex + 1) % 4;
+            checkTransformationSequence();
+        }
+    }
+
+    if (bindingValue.code === OPTIONS.gameControls.gUp.code
+    && bindingValue.key === OPTIONS.gameControls.gUp.key) {
+        PLAYER.moveUp();
+        if (transformBuffer.ongoing) {
+            transformBuffer.sequence[transformBuffer.startIndex] = 2;
+            transformBuffer.startIndex = (transformBuffer.startIndex + 1) % 4;
+            checkTransformationSequence();
+        }
+    }
+
+    if (bindingValue.code === OPTIONS.gameControls.gRight.code
+    && bindingValue.key === OPTIONS.gameControls.gRight.key) {
+        PLAYER.moveRight();
+        if (transformBuffer.ongoing) {
+            transformBuffer.sequence[transformBuffer.startIndex] = 3;
+            transformBuffer.startIndex = (transformBuffer.startIndex + 1) % 4;
+            checkTransformationSequence();
+        }
+    }
+
+    if (bindingValue.code === OPTIONS.gameControls.gDown.code
+    && bindingValue.key === OPTIONS.gameControls.gDown.key) {
+        PLAYER.moveDown();
+        if (transformBuffer.ongoing) {
+            transformBuffer.sequence[transformBuffer.startIndex] = 4;
+            transformBuffer.startIndex = (transformBuffer.startIndex + 1) % 4;
+            checkTransformationSequence();
+        }
+    }
+
+    if (bindingValue.code === OPTIONS.gameControls.gSkip.code
+    && bindingValue.key === OPTIONS.gameControls.gSkip.key) {
+        DIALOG.skipCurrent();
+    }
+
+    if (bindingValue.code === OPTIONS.gameControls.particle.code
+    && bindingValue.key === OPTIONS.gameControls.particle.key) {
+        PLAYER.dropParticle();
+    }
+
+    if (bindingValue.code === OPTIONS.gameControls.flare.code
+    && bindingValue.key === OPTIONS.gameControls.flare.key) {
+        PLAYER.flare();
+    }
+
+    if (bindingValue.code === OPTIONS.gameControls.flare.code
+    && bindingValue.key === OPTIONS.gameControls.flare.key) {
+        PLAYER.flare();
+    }
+
+    if (bindingValue.code === OPTIONS.gameControls.hint.code
+    && bindingValue.key === OPTIONS.gameControls.hint.key) {
+        const nearestHint = HINT.getNearestHint();
+        if (nearestHint.playerDist < 5) {
+            nearestHint.show();
+        }
+    }
+
+    if (bindingValue.code === OPTIONS.gameControls.useItem.code
+    && bindingValue.key === OPTIONS.gameControls.useItem.key) {
+        INVENTORY.useItem(mouse);
+    }
+
+    if (bindingValue.code === OPTIONS.gameControls.pause.code
+    && bindingValue.key === OPTIONS.gameControls.pause.key) {
+        GAME.togglePause();
+    }
+
+    if (bindingValue.code === OPTIONS.gameControls.gStop.code
+    && bindingValue.key === OPTIONS.gameControls.gStop.key) {
+        DIALOG.stop();
+    }
+}
+
+function buttonDownGame(event) {
+    downGame({code: event.button, key: false});
+}
+
+function keyDownGame(event) {
+    downGame({code: event.keyCode, key: true});
 
     // DEBUG
     switch (event.keyCode) {
@@ -214,54 +258,103 @@ function keyDownGame(event) {
     }
 }
 
-function keyUpGame(event) {
-    switch (event.keyCode) {
-        case OPTIONS.gameControls.transform:
-            transformBuffer = {sequence: [-1, -1, -1, -1], startIndex: 0, ongoing: false, shrine: undefined};
-            SOUND.forceFadeOut("transforming", 50);
-            break;
-        case OPTIONS.gameControls.gLeft:
-            PLAYER.stopLeft();
-            break;
-        case OPTIONS.gameControls.gUp:
-            PLAYER.stopUp();
-            break;
-        case OPTIONS.gameControls.gRight:
-            PLAYER.stopRight();
-            break;
-        case OPTIONS.gameControls.gDown:
-            PLAYER.stopDown();
-            break;
+function upGame(bindingValue) {
+    if (bindingValue.code === OPTIONS.gameControls.transform.code
+    && bindingValue.key === OPTIONS.gameControls.transform.key) {
+        transformBuffer = {sequence: [-1, -1, -1, -1], startIndex: 0, ongoing: false, shrine: undefined};
+        SOUND.forceFadeOut("transforming", 50);
     }
+    
+    if (bindingValue.code === OPTIONS.gameControls.gLeft.code
+    && bindingValue.key === OPTIONS.gameControls.gLeft.key) {
+        PLAYER.stopLeft();
+    }
+    
+    if (bindingValue.code === OPTIONS.gameControls.gUp.code
+    && bindingValue.key === OPTIONS.gameControls.gUp.key) {
+        PLAYER.stopUp();
+    }
+    
+    if (bindingValue.code === OPTIONS.gameControls.gRight.code
+    && bindingValue.key === OPTIONS.gameControls.gRight.key) {
+        PLAYER.stopRight();
+    }
+    
+    if (bindingValue.code === OPTIONS.gameControls.gDown.code
+    && bindingValue.key === OPTIONS.gameControls.gDown.key) {
+        PLAYER.stopDown();
+    }
+}
+
+function buttonUpGame(event) {
+    upGame({code: event.button, key: false});
+}
+
+function keyUpGame(event) {
+    upGame({code: event.keyCode, key: true});
+}
+
+function downMenu(bindingValue) {
+    if (bindingValue.code !== OPTIONS.menuControls.mBack.code
+    || bindingValue.key !== OPTIONS.menuControls.mBack.key) return;
+
+    if (document.getElementById("menu-ingame").style.display === "block") {
+        document.getElementById("menu-ingame-back").dispatchEvent(new MouseEvent("click"));
+    } else if (document.getElementById("menu-options").style.display === "block") {
+        document.getElementById("menu-options-back").dispatchEvent(new MouseEvent("click"));
+    }
+}
+
+function buttonDownMenu(event) {
+    downMenu(event.button);
 }
 
 function keyDownMenu(event) {
-    if (document.getElementById("menu-ingame").style.display === "block"
-    && event.keyCode === OPTIONS.menuControls.mBack) {
-        document.getElementById("menu-ingame-back").dispatchEvent(new MouseEvent("click"));
-        return;
+    downMenu(event.keyCode);
+}
+
+function buttonUpMenu() {}
+function keyUpMenu() {}
+
+function downDialog(bindingValue) {
+    if (bindingValue.code === OPTIONS.dialogControls.dSkip.code
+    && bindingValue.key === OPTIONS.dialogControls.dSkip.key) {
+        DIALOG.skipCurrent();
     }
-    if (document.getElementById("menu-options").style.display === "block"
-    && event.keyCode === OPTIONS.menuControls.mBack) {
-        document.getElementById("menu-options-back").dispatchEvent(new MouseEvent("click"));
-        return;
+    
+    if (bindingValue.code === OPTIONS.dialogControls.dStop.code
+    && bindingValue.key === OPTIONS.dialogControls.dStop.key) {
+        DIALOG.stop();
     }
 }
 
-function keyUpMenu(event) {}
+function buttonDownDialog(event) {
+    downDialog({code: event.button, key: false});
+}
 
 function keyDownDialog(event) {
-    switch (event.keyCode) {
-        case OPTIONS.dialogControls.dSkip:
-            DIALOG.skipCurrent();
-            break;
-        case OPTIONS.dialogControls.dStop:
-            DIALOG.stop();
-            break;
+    downDialog({code: event.keyCode, key: true});
+}
+
+function buttonUpDialog() {}
+function keyUpDialog() {}
+
+function buttonDownHandler(event) {
+    event.preventDefault();
+    switch (state) {
+        case CONSTANTS.STATE_GAME: buttonDownGame(event); break;
+        case CONSTANTS.STATE_MENU: buttonDownMenu(event); break;
+        case CONSTANTS.STATE_DIALOG: buttonDownDialog(event); break;
     }
 }
 
-function keyUpDialog(event) {}
+function buttonUpHandler(event) {
+    switch (state) {
+        case CONSTANTS.STATE_GAME: buttonUpGame(event); break;
+        case CONSTANTS.STATE_MENU: buttonUpMenu(event); break;
+        case CONSTANTS.STATE_DIALOG: buttonUpDialog(event); break;
+    }
+}
 
 function keyDownHandler(event) {
     if (event.keyCode === KEY_F11) {
@@ -289,14 +382,21 @@ function keyUpHandler(event) {
 
 export function initialize() {
     transformBuffer = {sequence: [-1, -1, -1, -1], startIndex: 0, ongoing: false, shrine: undefined};
+    mouse = {x: 0, y: 0};
 
     document.removeEventListener("mousewheel", wheelHandler);
     document.removeEventListener("DOMMouseScroll", wheelHandler);
+    document.removeEventListener("mousemove", mouseHandler);
     window.removeEventListener("keydown", keyDownHandler);
     window.removeEventListener("keyup", keyUpHandler);
+    document.removeEventListener("mousedown", buttonDownHandler);
+    document.removeEventListener("mouseup", buttonUpHandler);
 
     document.addEventListener("mousewheel", wheelHandler);
     document.addEventListener("DOMMouseScroll", wheelHandler);
+    document.addEventListener("mousemove", mouseHandler);
     window.addEventListener("keydown", keyDownHandler);
     window.addEventListener("keyup", keyUpHandler);
+    document.addEventListener("mousedown", buttonDownHandler);
+    document.addEventListener("mouseup", buttonUpHandler);
 }

@@ -6,6 +6,7 @@ import * as OVERLAY from "./overlay.js";
 import * as PLAYER from "./player.js";
 import * as SECRET from "./secret.js";
 import * as SOUND from "./sound.js";
+import * as STAGE from "./stage.js";
 
 let inventory = {
     activeIndex: -1,
@@ -107,7 +108,8 @@ function addHintlightMoveStepFunction(light) {
                 x = 0;
             }
         }
-        if (MAP.isNextTileOfType(this.position.x, this.position.y, x, 0, CONSTANTS.WALL_TILES)) {
+        let tile = MAPUTIL.coordsToTile(this.position.x + x, this.position.y);
+        if (MAP.isTileWall(tile.i, tile.j)) {
             x = 0;
         }
 
@@ -121,11 +123,13 @@ function addHintlightMoveStepFunction(light) {
                 y = 0;
             }
         }
-        if (MAP.isNextTileOfType(this.position.x, this.position.y, 0, y, CONSTANTS.WALL_TILES)) {
+        tile = MAPUTIL.coordsToTile(this.position.x, this.position.y + y);
+        if (MAP.isTileWall(tile.i, tile.j)) {
             y = 0;
         }
 
-        if (MAP.isNextTileOfType(this.position.x, this.position.y, x, y, CONSTANTS.WALL_TILES)) {
+        tile = MAPUTIL.coordsToTile(this.position.x + x, this.position.y + y);
+        if (MAP.isTileWall(tile.i, tile.j)) {
             x = 0;
             y = 0;
         }
@@ -147,41 +151,10 @@ function addSendlightMoveStepFunction(light) {
             SOUND.play("beacon1");
         }
 
-        let x = 0;
-        let y = 0;
+        const tile = MAPUTIL.coordsToTile(this.position.x + this.direction.x, this.position.y + this.direction.y);
+        if (MAP.isTileWall(tile.i, tile.j)) return;
 
-        if (this.moving.left) {
-            x = -CONSTANTS.OBJECT_STRIDE;
-        }
-        if (this.moving.right) {
-            if (x === 0) {
-                x = CONSTANTS.OBJECT_STRIDE;
-            } else {
-                x = 0;
-            }
-        }
-
-        if (this.moving.up) {
-            y = CONSTANTS.OBJECT_STRIDE;
-        }
-        if (this.moving.down) {
-            if (y === 0) {
-                y = -CONSTANTS.OBJECT_STRIDE;
-            } else {
-                y = 0;
-            }
-        }
-
-        if (MAP.isNextTileOfType(this.position.x, this.position.y, x, y, CONSTANTS.WALL_TILES)) {
-            x = 0;
-            y = 0;
-        }
-
-        if (x !== 0 || y !== 0) {
-            this.changePosition({x, y});
-        }
-
-        return;
+        this.changePosition(this.direction);
     };
 }
 
@@ -212,16 +185,18 @@ function useHintlight() {
 }
 
 function addUseSendlightFunction(sendlight, brightness) {
-    sendlight.use = function() {
-        const moving = PLAYER.get().moving;
-        if (!moving.left && !moving.up && !moving.right && !moving.down) return;
-
+    sendlight.use = function(mousePos) {
         const {x, y} = PLAYER.getCenter();
+        const mouseCoords = STAGE.screenToCoords(mousePos);
+        const norm = Math.hypot(mouseCoords.x - x, mouseCoords.y - y) / CONSTANTS.OBJECT_STRIDE;
+
+        if (norm === 0) return;
+
         const light = LIGHT.create(x, y, [1, 0.8, 0.2, brightness]);
 
         if (light === null) return;
 
-        light.moving = {left: moving.left, up: moving.up, right: moving.right, down: moving.down};
+        light.direction = {x: (mouseCoords.x - x) / norm, y: (mouseCoords.y - y) / norm};
         light.activeItemIndex = inventory.activeItems.length;
 
         addSendlightMoveStepFunction(light);
@@ -271,9 +246,9 @@ export function addSendlight(brightness, number) {
     changeItemNumber("sendlight", 1);
 }
 
-function useColoredLightFunction(color) {
+function createFunctionUseColoredLight(color) {
     const id = `${color}light`;
-    return function useColoredLight() {
+    return function() {
         PLAYER.setLightColor(color);
         changeItemNumber(id, -1);
     };
@@ -291,7 +266,7 @@ export function addColoredLight(color, number) {
         id,
         name: `${color} light`,
         number: number === undefined ? 0 : number - 1,
-        use: useColoredLightFunction(color)
+        use: createFunctionUseColoredLight(color)
     };
 
     inventory.indices[id] = coloredLight.index;
@@ -299,9 +274,9 @@ export function addColoredLight(color, number) {
     changeItemNumber(id, 1);
 }
 
-export function useItem() {
+export function useItem(mousePos) {
     if (inventory.activeIndex === -1) return;
-    inventory.items[inventory.activeIndex].use();
+    inventory.items[inventory.activeIndex].use(mousePos);
 }
 
 export function processActiveItems(counter) {

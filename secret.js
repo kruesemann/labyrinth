@@ -36,7 +36,7 @@ function createShrine(i, j, formIDs) {
             text: `This is a shrine. You can change form here.`
         },
         {
-            text: `Hold down <b>${OPTIONS.keyCodes[OPTIONS.gameControls.transform]}</b> and do a little dance.`
+            text: `Hold down <b>${OPTIONS.translateBinding(OPTIONS.gameControls.transform)}</b> and do a little dance.`
         }
     ];
     const items = [];

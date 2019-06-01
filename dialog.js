@@ -89,15 +89,15 @@ export function skipCurrent() {
 export function showHelp() {
     show([
         {
-            text: `You can skip this dialog by pressing <b>${OPTIONS.keyCodes[OPTIONS.dialogControls.dStop]}</b>.`,
+            text: `You can skip this dialog by pressing <b>${OPTIONS.translateBinding(OPTIONS.dialogControls.dStop)}</b>.`,
             buttons: [{text: "Next", index: 1}]
         },
         {
-            text: `Move with <b>${OPTIONS.keyCodes[OPTIONS.gameControls.gUp]}${OPTIONS.keyCodes[OPTIONS.gameControls.gLeft]}${OPTIONS.keyCodes[OPTIONS.gameControls.gDown]}${OPTIONS.keyCodes[OPTIONS.gameControls.gRight]}</b>.`,
+            text: `Move with <b>${OPTIONS.translateBinding(OPTIONS.gameControls.gUp)}${OPTIONS.translateBinding(OPTIONS.gameControls.gLeft)}${OPTIONS.translateBinding(OPTIONS.gameControls.gDown)}${OPTIONS.translateBinding(OPTIONS.gameControls.gRight)}</b>.`,
             buttons: [{text: "Next", index: 2}]
         },
         {
-            text: `When your <em>Glow</em> stops increasing, press <b>${OPTIONS.keyCodes[OPTIONS.gameControls.particle]}</b> to drop a light particle.`,
+            text: `When your <em>Glow</em> stops increasing, press <b>${OPTIONS.translateBinding(OPTIONS.gameControls.particle)}</b> to drop a light particle.`,
             buttons: [{text: "Next", index: 3}]
         },
         {
@@ -117,7 +117,7 @@ export function showHelp() {
             buttons: [{text: "Next", index: 7}]
         },
         {
-            text: `Sometimes you can see hidden items flashing. Uncover them by <em>Flaring</em> with <b>${OPTIONS.keyCodes[OPTIONS.gameControls.flare]}</b>, but beware: <em>Flaring</em> decreases your maximum <em>Glow</em>.`,
+            text: `Sometimes you can see hidden items flashing. Uncover them by <em>Flaring</em> with <b>${OPTIONS.translateBinding(OPTIONS.gameControls.flare)}</b>, but beware: <em>Flaring</em> decreases your maximum <em>Glow</em>.`,
             buttons: [{text: "Next", index: 8}]
         },
         {
@@ -129,7 +129,7 @@ export function showHelp() {
             buttons: [{text: "Next", index: 10}]
         },
         {
-            text: `Usable items will appear in your inventory on the left. You can cycle through it by pressing <b>${OPTIONS.keyCodes[OPTIONS.gameControls.browse]}</b> and use the active item by pressing <b>${OPTIONS.keyCodes[OPTIONS.gameControls.useItem]}</b>.`,
+            text: `Usable items will appear in your inventory on the left. You can cycle through it by pressing <b>${OPTIONS.translateBinding(OPTIONS.gameControls.browse)}</b> and use the active item by pressing <b>${OPTIONS.translateBinding(OPTIONS.gameControls.useItem)}</b>.`,
             buttons: [{text: "Next", index: 11}]
         },
         {
@@ -149,7 +149,7 @@ export function showHelp() {
             buttons: [{text: "Next", index: 15}]
         },
         {
-            text: `When you see a big glowing <b>Q</b> in the down-left corner, press <b>${OPTIONS.keyCodes[OPTIONS.gameControls.hint]}</b> to see a hint.`,
+            text: `When you see a big glowing <b>Q</b> in the down-left corner, press <b>${OPTIONS.translateBinding(OPTIONS.gameControls.hint)}</b> to see a hint.`,
             buttons: [{text: "Again", index: 0}, {text: "Done", index: Infinity}]
         }
     ], true);

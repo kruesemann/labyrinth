@@ -1304,7 +1304,12 @@ function placeEnemies() {
     if (!possibleEnemyLocations.length) return;
     const index2 = NOISE.randomInt(0, possibleEnemyLocations.length - 1);
     const location2 = possibleEnemyLocations.splice(index2, 1)[0];
-    features.enemies.push({i: location2.i, j: location2.j, color: [0.5, 0, 0], speed: 3, formID: "dot", aiID: "darkHunter"});
+    features.enemies.push({i: location2.i, j: location2.j, color: [0.5, 0, 0], speed: 1, formID: "dot", aiID: "darkHunter"});
+
+    if (!possibleEnemyLocations.length) return;
+    const index3 = NOISE.randomInt(0, possibleEnemyLocations.length - 1);
+    const location3 = possibleEnemyLocations.splice(index3, 1)[0];
+    features.enemies.push({i: location3.i, j: location3.j, color: [0.5, 0, 0], speed: 3, formID: "box", aiID: "proxHunter"});
 }
 
 /**

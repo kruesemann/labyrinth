@@ -1,4 +1,12 @@
-export const keyCodes = {
+const buttonCodes = {
+    0: "LEFT MOUSE",
+    1: "MIDDLE MOUSE",
+    2: "RIGHT MOUSE",
+    3: "MOUSE 4",
+    4: "MOUSE 5",
+};
+
+const keyCodes = {
       3: "BREAK",
       8: "BACKSPACE",
       9: "TAB",
@@ -180,69 +188,73 @@ export let dialogControls = undefined;
 
 export function reset() {
     gameControls = {
-        gLeft:       65, // a
-        gUp:         87, // w
-        gRight:      68, // d
-        gDown:       83, // s
-        browse:       9, // tab
-        menu:        27, // esc
-        transform:   32, // space
-        gSkip:      190, // .
-        gStop:       88, // x
-        particle:    69, // e
-        flare:       70, // f
-        hint:        81, // q
-        useItem:     82, // r
-        pause:       80, // p
+        gLeft:      {code:  65, key: true}, // a
+        gUp:        {code:  87, key: true}, // w
+        gRight:     {code:  68, key: true}, // d
+        gDown:      {code:  83, key: true}, // s
+        browse:     {code:   9, key: true}, // tab
+        menu:       {code:  27, key: true}, // esc
+        transform:  {code:  32, key: true}, // space
+        gSkip:      {code: 190, key: true}, // .
+        gStop:      {code:  88, key: true}, // x
+        particle:   {code:  69, key: true}, // e
+        flare:      {code:  70, key: true}, // f
+        hint:       {code:  81, key: true}, // q
+        useItem:    {code:  82, key: true}, // r
+        pause:      {code:  80, key: true}, // p
     };
     
     menuControls = {
-        mLeft:       37, // left
-        mUp:         38, // up
-        mRight:      39, // right
-        mDown:       40, // down
-        mEnter:      13, // enter
-        mBack:       27, // esc
+        mLeft:      {code:   37, key: true}, // left
+        mUp:        {code:   38, key: true}, // up
+        mRight:     {code:   39, key: true}, // right
+        mDown:      {code:   40, key: true}, // down
+        mEnter:     {code:   13, key: true}, // enter
+        mBack:      {code:   27, key: true}, // esc
     };
     
     dialogControls = {
-        dLeft:       37, // left
-        dUp:         38, // up
-        dRight:      39, // right
-        dDown:       40, // down
-        dEnter:      13, // enter
-        dSkip:      190, // .
-        dStop:       88, // x
+        dLeft:      {code:   37, key: true}, // left
+        dUp:        {code:   38, key: true}, // up
+        dRight:     {code:   39, key: true}, // right
+        dDown:      {code:   40, key: true}, // down
+        dEnter:     {code:   13, key: true}, // enter
+        dSkip:      {code:  190, key: true}, // .
+        dStop:      {code:   88, key: true}, // x
     };
 
     for (const key in gameControls) {
         if (!gameControls.hasOwnProperty(key)) continue;
-        document.getElementById(key).innerHTML = keyCodes[gameControls[key]];
+        document.getElementById(key).innerHTML = translateBinding(gameControls[key]);
         document.getElementById(key).addEventListener("click", gameBindingHandler);
     }
 
     for (const key in menuControls) {
         if (!menuControls.hasOwnProperty(key)) continue;
-        document.getElementById(key).innerHTML = keyCodes[menuControls[key]];
+        document.getElementById(key).innerHTML = translateBinding(menuControls[key]);
         document.getElementById(key).addEventListener("click", menuBindingHandler);
     }
 
     for (const key in dialogControls) {
         if (!dialogControls.hasOwnProperty(key)) continue;
-        document.getElementById(key).innerHTML = keyCodes[dialogControls[key]];
+        document.getElementById(key).innerHTML = translateBinding(dialogControls[key]);
         document.getElementById(key).addEventListener("click", dialogBindingHandler);
     }
 }
 
-function isUsed(newBinding, keyCode, layout) {
+export function translateBinding(binding) {
+    return binding.key ? keyCodes[binding.code] : buttonCodes[binding.code];
+}
+
+function isUsed(newBindingKey, newBindingValue, layout) {
     for (const key in layout) {
-        if (!layout.hasOwnProperty(key) || key === newBinding) continue;
-        if (layout[key] === keyCode) return key;
+        if (!layout.hasOwnProperty(key) || key === newBindingKey) continue;
+        if (layout[key].code === newBindingValue) return key;
     }
     return undefined;
 }
 
-function getConfirmation(newBinding, keyCode, layout, oldBinding) {
+function getConfirmation(newBindingKey, newBindingValue, layout, oldBindingKey) {
     document.getElementById("screen-menu").style.pointerEvents = "none";
     document.getElementById("screen-window").style.display = "block";
     document.getElementById("window-text").innerHTML = "This key is already bound to another function. Replace binding?";
@@ -258,8 +270,8 @@ function getConfirmation(newBinding, keyCode, layout, oldBinding) {
     noButton.innerHTML = "No";
 
     yesButton.addEventListener("click", _ => {
-        changeControls(newBinding, keyCode, layout);
-        changeControls(oldBinding, undefined, layout);
+        changeControls(newBindingKey, newBindingValue, layout);
+        changeControls(oldBindingKey, undefined, layout);
         document.getElementById("screen-menu").style.pointerEvents = "auto";
         document.getElementById("screen-window").style.display = "none";
         windowButtons.removeChild(yesButton);
@@ -277,32 +289,68 @@ function getConfirmation(newBinding, keyCode, layout, oldBinding) {
     windowButtons.appendChild(noButton);
 }
 
-function changeControls(newBinding, keyCode, layout) {
-    layout[newBinding] = keyCode;
-    document.getElementById(newBinding).innerHTML = keyCode ? keyCodes[keyCode] : "&zwnj;";
+function changeControls(newBindingKey, newBindingValue, layout) {
+    layout[newBindingKey] = newBindingValue;
+    document.getElementById(newBindingKey).innerHTML = newBindingValue ? translateBinding(newBindingValue) : "&zwnj;";
 }
 
 function bindingHandler(clickEvent, layout) {
-    function setBinding(keyEvent) {
-        if (!keyCodes[keyEvent.keyCode]) return;
-    
-        keyEvent.stopImmediatePropagation();
-        const oldBinding = isUsed(clickEvent.target.id, keyEvent.keyCode, layout);
-        if (oldBinding) {
-            getConfirmation(clickEvent.target.id, keyEvent.keyCode, layout, oldBinding);
+    document.getElementById("screen-menu").style.pointerEvents = "none";
+    document.getElementById("screen-window").style.display = "block";
+    document.getElementById("window-text").innerHTML = "Please press a key or mouse button to change the binding.";
+
+    const windowButtons = document.getElementById("window-buttons");
+    const cancelButton = document.createElement("BUTTON");
+    cancelButton.classList.add("input-h");
+    cancelButton.classList.add("button");
+    cancelButton.innerHTML = "Cancel";
+
+    cancelButton.addEventListener("click", event => {
+        event.stopPropagation();
+        document.getElementById("screen-menu").style.pointerEvents = "auto";
+        document.getElementById("screen-window").style.display = "none";
+        clickEvent.target.blur();
+        windowButtons.removeChild(cancelButton);
+    });
+
+    windowButtons.appendChild(cancelButton);
+
+    function setBinding(event) {
+        let newBindingValue;
+        if ("keyCode" in event) {
+            if (!keyCodes[event.keyCode]) return;
+            newBindingValue = {code: event.keyCode, key: true};
+        } else if ("button" in event) {
+            if (!buttonCodes[event.button]) return;
+            newBindingValue = {code: event.button, key: false};
         } else {
-            changeControls(clickEvent.target.id, keyEvent.keyCode, layout);
+            return;
         }
+
+        document.getElementById("screen-menu").style.pointerEvents = "auto";
+        document.getElementById("screen-window").style.display = "none";
+        windowButtons.removeChild(cancelButton);
+
+        event.stopPropagation();
+        event.preventDefault();
+
+        const oldBindingKey = isUsed(clickEvent.target.id, newBindingValue, layout);
+        if (oldBindingKey) {
+            getConfirmation(clickEvent.target.id, newBindingValue, layout, oldBindingKey);
+        } else {
+            changeControls(clickEvent.target.id, newBindingValue, layout);
+        }
+
         clickEvent.target.blur();
         document.removeEventListener("keydown", setBinding);
+        document.removeEventListener("click", setBinding);
     }
 
     clickEvent.target.focus();
-    clickEvent.stopImmediatePropagation();
+
+    clickEvent.stopPropagation();
     document.addEventListener("keydown", setBinding);
-    document.addEventListener("click", _ => {
-        document.removeEventListener("keydown", setBinding);
-    });
+    document.addEventListener("click", setBinding);
 }
 
 function gameBindingHandler(event) {

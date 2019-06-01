@@ -203,4 +203,21 @@ export function getScreenWorldDimensions() {
     return stage.camera.screenWorldDimensions;
 }
 
+export function screenToCoords(screenPos) {
+    let vec = new THREE.Vector3(
+        (screenPos.x / stage.width) * 2 - 1,
+        1 - (screenPos.y / stage.height) * 2,
+        0.5
+    );
+    let pos = new THREE.Vector3();
+
+    vec.unproject(stage.camera);
+    vec.sub(stage.camera.position).normalize();
+    const distance = - stage.camera.position.z / vec.z;
+
+    pos.copy(stage.camera.position).add(vec.multiplyScalar(distance));
+
+    return {x: pos.x, y: pos.y};
+}
+
 requestAnimationFrame(render);
